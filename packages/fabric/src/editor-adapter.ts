@@ -20,6 +20,11 @@ import {
 } from "./object-factory";
 
 const NODE_META_KEY = "__coursewareNodeMeta";
+/**
+ * 对象拖拽、缩放、旋转结束后，Fabric 可能会短暂抛出一次空选中。
+ * 这里保留一个很短的兜底窗口，避免编辑侧面板被误清空。
+ */
+const SELECTION_RETENTION_WINDOW_MS = 180;
 
 interface FabricNodeMeta {
   nodeId: string;
@@ -44,15 +49,30 @@ export interface FabricEditorAdapterOptions {
 }
 
 export class FabricEditorAdapter {
+  /** 当前挂载的 Fabric 画布实例。 */
   private canvas: Canvas | null = null;
+  /** 当前绑定的编辑控制器。 */
   private controller: EditorController | null = null;
+  /** 当前快照订阅的释放函数。 */
   private unsubscribeSnapshot: (() => void) | null = null;
+  /** 当前激活的 slide id。 */
   private currentSlideId: string | null = null;
+  /** 节点 id 到 Fabric 对象的映射。 */
   private readonly objectMap = new Map<string, FabricNodeObject>();
+  /** 当前是否处于内部同步阶段。 */
   private isSyncing = false;
+  /** 用于避免异步渲染串扰的同步版本号。 */
   private syncVersion = 0;
+  /** 上一次参与渲染的文档引用。 */
   private lastDocumentRef: EditorSnapshot["document"] | null = null;
+  /** 上一次完成渲染的 slide id。 */
   private lastRenderedSlideId: string | null = null;
+  /** 最近一次需要保留的单选节点 id。 */
+  private retainedSelectionNodeId: string | null = null;
+  /** 最近一次保留选中态的截止时间戳。 */
+  private retainedSelectionExpiresAt = 0;
+  /** 对象变换后的延迟重选计时器。 */
+  private selectionRestoreTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(options: FabricEditorAdapterOptions = {}) {
     this.currentSlideId = options.slideId ?? null;
@@ -138,6 +158,7 @@ export class FabricEditorAdapter {
     this.objectMap.clear();
     this.lastDocumentRef = null;
     this.lastRenderedSlideId = null;
+    this.clearSelectionRestoreTimer();
 
     if (!this.canvas) {
       return;
@@ -257,6 +278,22 @@ export class FabricEditorAdapter {
       this.emitSelectionChange();
     });
 
+    /**
+     * 变换过程先记录当前目标节点。
+     * 这样即使 Fabric 中途抛出空选中，也能在短窗口内保住单选态。
+     */
+    canvas.on("object:moving", (event) => {
+      this.captureSelectionTarget(event.target as FabricNodeObject | undefined);
+    });
+
+    canvas.on("object:scaling", (event) => {
+      this.captureSelectionTarget(event.target as FabricNodeObject | undefined);
+    });
+
+    canvas.on("object:rotating", (event) => {
+      this.captureSelectionTarget(event.target as FabricNodeObject | undefined);
+    });
+
     canvas.on("object:modified", (event) => {
       this.handleObjectModified(event);
     });
@@ -271,10 +308,19 @@ export class FabricEditorAdapter {
       return;
     }
 
-    const nodeIds = this.canvas
+    const canvasNodeIds = this.canvas
       .getActiveObjects()
       .map((object) => readNodeMeta(object as FabricNodeObject)?.nodeId)
       .filter((nodeId): nodeId is string => Boolean(nodeId));
+    const retainedNodeId = this.getRetainedSelectionNodeId();
+    const nodeIds =
+      canvasNodeIds.length === 0 && retainedNodeId ? [retainedNodeId] : canvasNodeIds;
+
+    if (nodeIds.length === 1) {
+      this.retainSelection(nodeIds[0]);
+    } else {
+      this.clearRetainedSelection();
+    }
 
     this.controller.handleAdapterEvent({
       type: "adapter.selection.changed",
@@ -298,6 +344,7 @@ export class FabricEditorAdapter {
     const action = (event.action ?? event.transform?.action ?? "").toLowerCase();
     const nextGeometry = readObjectGeometry(target);
     const previousNode = findNode(this.controller.getSnapshot(), this.currentSlideId, meta.nodeId);
+    this.retainSelection(meta.nodeId);
 
     if (action.includes("scale") || action.includes("resize") || action.includes("skew")) {
       if (
@@ -314,6 +361,8 @@ export class FabricEditorAdapter {
           patch: nextGeometry,
         });
       }
+      this.syncRetainedSelection();
+      this.scheduleSelectionRestore(meta.nodeId);
       return;
     }
 
@@ -326,6 +375,8 @@ export class FabricEditorAdapter {
           rotation: nextGeometry.rotation,
         });
       }
+      this.syncRetainedSelection();
+      this.scheduleSelectionRestore(meta.nodeId);
       return;
     }
 
@@ -338,6 +389,9 @@ export class FabricEditorAdapter {
         y: nextGeometry.y,
       });
     }
+
+    this.syncRetainedSelection();
+    this.scheduleSelectionRestore(meta.nodeId);
   }
 
   private handleTextChanged(target: FabricNodeObject | undefined): void {
@@ -362,6 +416,105 @@ export class FabricEditorAdapter {
       nodeId: meta.nodeId,
       text: target.text,
     });
+  }
+
+  /** 从当前 Fabric 目标对象中提取要保留的单选节点。 */
+  private captureSelectionTarget(target: FabricNodeObject | undefined): void {
+    const meta = target ? readNodeMeta(target) : null;
+    if (!meta) {
+      return;
+    }
+
+    this.retainSelection(meta.nodeId);
+  }
+
+  /** 为单个节点开启一个很短的选中保留窗口。 */
+  private retainSelection(nodeId: string): void {
+    this.retainedSelectionNodeId = nodeId;
+    this.retainedSelectionExpiresAt = Date.now() + SELECTION_RETENTION_WINDOW_MS;
+  }
+
+  /** 清空当前保留的选中节点。 */
+  private clearRetainedSelection(): void {
+    this.retainedSelectionNodeId = null;
+    this.retainedSelectionExpiresAt = 0;
+  }
+
+  /** 清理尚未执行的延迟重选任务。 */
+  private clearSelectionRestoreTimer(): void {
+    if (!this.selectionRestoreTimer) {
+      return;
+    }
+
+    clearTimeout(this.selectionRestoreTimer);
+    this.selectionRestoreTimer = null;
+  }
+
+  /** 读取当前仍然有效的保留节点 id。 */
+  private getRetainedSelectionNodeId(): string | null {
+    if (
+      !this.retainedSelectionNodeId ||
+      Date.now() > this.retainedSelectionExpiresAt
+    ) {
+      this.clearRetainedSelection();
+      return null;
+    }
+
+    return this.retainedSelectionNodeId;
+  }
+
+  /** 在对象变换落盘后，显式把单选态同步回标准控制器。 */
+  private syncRetainedSelection(): void {
+    if (!this.controller || !this.currentSlideId) {
+      return;
+    }
+
+    const nodeId = this.getRetainedSelectionNodeId();
+    if (!nodeId) {
+      return;
+    }
+
+    this.controller.handleAdapterEvent({
+      type: "adapter.selection.changed",
+      slideId: this.currentSlideId,
+      nodeIds: [nodeId],
+    });
+  }
+
+  /** 在对象变换落盘后的下一拍重建 Fabric 和控制器两边的单选态。 */
+  private scheduleSelectionRestore(nodeId: string): void {
+    if (!this.currentSlideId) {
+      return;
+    }
+
+    const slideId = this.currentSlideId;
+    this.clearSelectionRestoreTimer();
+    this.selectionRestoreTimer = setTimeout(() => {
+      this.selectionRestoreTimer = null;
+
+      if (!this.canvas || !this.controller || this.currentSlideId !== slideId) {
+        return;
+      }
+
+      const targetObject = this.objectMap.get(nodeId);
+      if (!targetObject) {
+        return;
+      }
+
+      this.isSyncing = true;
+      try {
+        this.canvas.setActiveObject(targetObject);
+        this.canvas.renderAll();
+      } finally {
+        this.isSyncing = false;
+      }
+
+      this.controller.handleAdapterEvent({
+        type: "adapter.selection.changed",
+        slideId,
+        nodeIds: [nodeId],
+      });
+    }, 0);
   }
 
   private applySelection(canvas: Canvas, selection: SelectionState, slideId: string): void {
