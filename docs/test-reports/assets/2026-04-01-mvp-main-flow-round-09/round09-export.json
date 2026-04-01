@@ -1,0 +1,82 @@
+{
+  "version": "1.0.0",
+  "meta": {
+    "id": "document-331f54bd-ee94-41cd-9ed8-bfdd9886458b",
+    "title": "主流程补测-1774977198"
+  },
+  "slides": [
+    {
+      "id": "slide-80cb066f-560f-467c-a315-dc08b199f0f8",
+      "name": "第1页",
+      "size": {
+        "width": 1280,
+        "height": 720
+      },
+      "background": {
+        "fill": "#FFFFFF"
+      },
+      "nodes": [
+        {
+          "id": "node-2883dd2e-9039-4404-9167-81b78d8819bf",
+          "type": "text",
+          "name": "Text",
+          "x": 110,
+          "y": 110,
+          "width": 420,
+          "height": 72,
+          "rotation": 0,
+          "opacity": 1,
+          "visible": true,
+          "locked": false,
+          "props": {
+            "text": "新建文本",
+            "fontSize": 32,
+            "color": "#172033",
+            "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+            "lineHeight": 1.5,
+            "textAlign": "left"
+          }
+        },
+        {
+          "id": "node-84e6aa4d-f507-46ad-a06c-3654e5216609",
+          "type": "rect",
+          "name": "Rectangle",
+          "x": 160,
+          "y": 180,
+          "width": 280,
+          "height": 180,
+          "rotation": 0,
+          "opacity": 1,
+          "visible": true,
+          "locked": false,
+          "props": {
+            "fill": "#99F6E4",
+            "stroke": "#4B7BE5",
+            "strokeWidth": 1,
+            "radius": 16
+          }
+        }
+      ],
+      "timeline": {
+        "steps": [],
+        "animations": []
+      }
+    },
+    {
+      "id": "slide-fdec3665-ff24-4b86-8df1-d2114b85ecd6",
+      "name": "Slide 2",
+      "size": {
+        "width": 1280,
+        "height": 720
+      },
+      "background": {
+        "fill": "#FFFFFF"
+      },
+      "nodes": [],
+      "timeline": {
+        "steps": [],
+        "animations": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,1143 @@
+<script setup lang="ts">
+import {
+  createNodeAnimation,
+  createTimelineAction,
+  createTimelineStep,
+  type NodeAnimation,
+  type Slide,
+  type StepTrigger,
+  type TimelineAction,
+  type TimelineStep,
+} from "@canvas-courseware/core";
+import { computed } from "vue";
+import {
+  formatAnimationKindLabel,
+  formatEasingLabel,
+  formatNodeTypeLabel,
+  formatTimelineActionLabel,
+  formatTriggerLabel,
+} from "../shared";
+
+/** 时间轴步骤触发方式选项。 */
+const triggerOptions = [
+  {
+    label: "页面点击",
+    value: "page-click",
+  },
+  {
+    label: "自动触发",
+    value: "auto",
+  },
+  {
+    label: "对象点击",
+    value: "node-click",
+  },
+] as const;
+
+/** 时间轴动作类型选项。 */
+const actionTypeOptions = [
+  {
+    label: formatTimelineActionLabel("show-node"),
+    value: "show-node",
+  },
+  {
+    label: formatTimelineActionLabel("hide-node"),
+    value: "hide-node",
+  },
+  {
+    label: formatTimelineActionLabel("play-animation"),
+    value: "play-animation",
+  },
+] as const;
+
+/** 动画类型选项。 */
+const animationKindOptions = [
+  {
+    label: formatAnimationKindLabel("appear"),
+    value: "appear",
+  },
+  {
+    label: formatAnimationKindLabel("fade"),
+    value: "fade",
+  },
+  {
+    label: formatAnimationKindLabel("slide-up"),
+    value: "slide-up",
+  },
+] as const;
+
+/** 缓动函数选项。 */
+const easingOptions = [
+  {
+    label: formatEasingLabel("linear"),
+    value: "linear",
+  },
+  {
+    label: formatEasingLabel("ease-in"),
+    value: "ease-in",
+  },
+  {
+    label: formatEasingLabel("ease-out"),
+    value: "ease-out",
+  },
+  {
+    label: formatEasingLabel("ease-in-out"),
+    value: "ease-in-out",
+  },
+] as const;
+
+/** 时间轴面板的只读输入。 */
+const props = withDefaults(
+  defineProps<{
+    /** 当前激活的 slide。 */
+    slide?: Slide | null;
+    /** 当前首个选中的节点 id，用来给新建 step 和 animation 提供默认目标。 */
+    selectedNodeId?: string | null;
+  }>(),
+  {
+    slide: null,
+    selectedNodeId: null,
+  },
+);
+
+/** 时间轴面板向外派发的标准化编辑意图。 */
+const emit = defineEmits<{
+  /** 新增或更新一个时间轴步骤。 */
+  "upsert-step": [step: TimelineStep];
+  /** 删除一个时间轴步骤。 */
+  "remove-step": [stepId: string];
+  /** 新增或更新一个动画资源。 */
+  "upsert-animation": [animation: NodeAnimation];
+  /** 删除一个动画资源。 */
+  "remove-animation": [animationId: string];
+}>();
+
+/** 当前是否已经有激活页面。 */
+const hasSlide = computed(() => Boolean(props.slide));
+
+/** 当前页面是否已经有对象可供 timeline 配置。 */
+const hasNodes = computed(() => (props.slide?.nodes.length ?? 0) > 0);
+
+/** 当前页面的节点选项，供动作和动画配置下拉框复用。 */
+const nodeOptions = computed(() =>
+  (props.slide?.nodes ?? []).map((node) => ({
+    value: node.id,
+    label: node.name,
+    detail: formatNodeTypeLabel(node.type),
+  })),
+);
+
+/** 当前页面的动画选项，供动作和摘要展示复用。 */
+const animationOptions = computed(() =>
+  (props.slide?.timeline.animations ?? []).map((animation) => ({
+    value: animation.id,
+    targetId: animation.targetId,
+    label: `${formatAnimationKindLabel(animation.kind)} · ${resolveNodeName(animation.targetId)}`,
+    detail: `${animation.durationMs}ms`,
+  })),
+);
+
+/** 当前最适合作为默认目标节点的 id。 */
+const preferredNodeId = computed(
+  () => props.selectedNodeId ?? props.slide?.nodes[0]?.id ?? "",
+);
+
+/** 读取文本输入框和下拉框的字符串值。 */
+const readTextInputValue = (event: Event, fallback = ""): string => {
+  const target = event.target;
+  return target instanceof HTMLInputElement || target instanceof HTMLSelectElement
+    ? target.value
+    : fallback;
+};
+
+/** 读取数字输入框的值，并在非法输入时回退到当前值。 */
+const readNumberInputValue = (event: Event, fallback: number, minimum = 0): number => {
+  const target = event.target;
+  const parsed = target instanceof HTMLInputElement ? Number(target.value) : Number.NaN;
+
+  if (Number.isNaN(parsed)) {
+    return fallback;
+  }
+
+  return Math.max(parsed, minimum);
+};
+
+/** 根据节点 id 解析一个更适合 UI 展示的节点名称。 */
+function resolveNodeName(nodeId: string): string {
+  const node = props.slide?.nodes.find((item) => item.id === nodeId);
+  return node?.name ?? "未匹配对象";
+}
+
+/** 生成一步 trigger 的紧凑说明，便于卡片标题行直接展示。 */
+function resolveTriggerSummary(trigger: StepTrigger): string {
+  if (trigger.type === "node-click") {
+    return `${formatTriggerLabel(trigger.type)} · ${resolveNodeName(trigger.targetId)}`;
+  }
+
+  return formatTriggerLabel(trigger.type);
+}
+
+/** 返回当前页面的第一条动画 id，供动作切换时兜底使用。 */
+function resolveFirstAnimationId(): string {
+  return props.slide?.timeline.animations[0]?.id ?? "";
+}
+
+/** 返回某个节点可以直接复用的第一条动画 id。 */
+function resolveFirstAnimationIdForNode(targetId: string): string {
+  return props.slide?.timeline.animations.find((animation) => animation.targetId === targetId)?.id ?? "";
+}
+
+/** 读取某个步骤中最适合作为触发对象候选的节点 id。 */
+function resolvePrimaryActionTargetId(step: TimelineStep): string {
+  const directTargetAction = step.actions.find(
+    (action) => action.type === "show-node" || action.type === "hide-node",
+  );
+
+  if (directTargetAction && "targetId" in directTargetAction) {
+    return directTargetAction.targetId;
+  }
+
+  const firstAnimatedAction = step.actions.find((action) => action.type === "play-animation");
+  if (firstAnimatedAction?.animationId) {
+    const animation = props.slide?.timeline.animations.find(
+      (item) => item.id === firstAnimatedAction.animationId,
+    );
+
+    if (animation?.targetId) {
+      return animation.targetId;
+    }
+  }
+
+  return preferredNodeId.value;
+}
+
+/** 统一根据 union 字段重建 timeline 动作，避免分支更新时漏字段。 */
+function buildTimelineAction(
+  actionId: string,
+  type: TimelineAction["type"],
+  options: {
+    targetId?: string;
+    animationId?: string;
+  },
+): TimelineAction {
+  switch (type) {
+    case "hide-node":
+      return {
+        id: actionId,
+        type,
+        targetId: options.targetId ?? "",
+      };
+    case "play-animation":
+      return {
+        id: actionId,
+        type,
+        animationId: options.animationId ?? "",
+      };
+    case "show-node":
+    default:
+      return {
+        id: actionId,
+        type: "show-node",
+        targetId: options.targetId ?? "",
+        animationId: options.animationId || undefined,
+      };
+  }
+}
+
+/** 统一向外发出 step 更新。 */
+function emitStep(step: TimelineStep): void {
+  emit("upsert-step", step);
+}
+
+/** 统一向外发出 animation 更新。 */
+function emitAnimation(animation: NodeAnimation): void {
+  emit("upsert-animation", animation);
+}
+
+/** 计算某个动作在当前表单里可选的动画列表。 */
+function resolveAnimationOptionsForAction(action: TimelineAction) {
+  if (action.type === "show-node") {
+    return animationOptions.value.filter((animation) => animation.targetId === action.targetId);
+  }
+
+  if (action.type === "play-animation") {
+    return animationOptions.value;
+  }
+
+  return [];
+}
+
+/** 读取动作当前真正可用的动画值，避免 show-node 选到别的对象的动画。 */
+function resolveActionAnimationValue(action: TimelineAction): string {
+  if (action.type === "play-animation") {
+    return action.animationId;
+  }
+
+  if (action.type !== "show-node" || !action.animationId) {
+    return "";
+  }
+
+  const matchedAnimation = props.slide?.timeline.animations.find(
+    (animation) =>
+      animation.id === action.animationId && animation.targetId === action.targetId,
+  );
+
+  return matchedAnimation?.id ?? "";
+}
+
+/** 读取动作当前最合理的目标节点。 */
+function resolveActionTargetId(action: TimelineAction): string {
+  if (action.type === "show-node" || action.type === "hide-node") {
+    return action.targetId;
+  }
+
+  const animation = props.slide?.timeline.animations.find(
+    (item) => item.id === action.animationId,
+  );
+  return animation?.targetId ?? preferredNodeId.value;
+}
+
+/** 在某个步骤中替换指定动作，并保持其余动作顺序不变。 */
+function updateStepAction(
+  step: TimelineStep,
+  actionId: string,
+  updater: (action: TimelineAction) => TimelineAction,
+): void {
+  emitStep({
+    ...step,
+    actions: step.actions.map((action) => (action.id === actionId ? updater(action) : action)),
+  });
+}
+
+/** 新增一个步骤，默认用当前选中对象生成首条 show-node 动作。 */
+function handleCreateStep(): void {
+  if (!props.slide || !preferredNodeId.value) {
+    return;
+  }
+
+  emitStep(
+    createTimelineStep({
+      name: `步骤 ${props.slide.timeline.steps.length + 1}`,
+      actions: [
+        createTimelineAction({
+          type: "show-node",
+          targetId: preferredNodeId.value,
+          animationId: resolveFirstAnimationIdForNode(preferredNodeId.value) || undefined,
+        }),
+      ],
+    }),
+  );
+}
+
+/** 删除一个步骤。 */
+function handleRemoveStep(stepId: string): void {
+  emit("remove-step", stepId);
+}
+
+/** 更新步骤名称。 */
+function handleStepNameInput(step: TimelineStep, event: Event): void {
+  emitStep({
+    ...step,
+    name: readTextInputValue(event, step.name),
+  });
+}
+
+/** 更新步骤触发方式，并在 auto 时补默认延迟。 */
+function handleStepTriggerTypeChange(step: TimelineStep, event: Event): void {
+  const nextTriggerType = readTextInputValue(event, step.trigger.type) as StepTrigger["type"];
+
+  emitStep({
+    ...step,
+    trigger:
+      nextTriggerType === "auto"
+        ? {
+            type: "auto",
+            delayMs: step.trigger.type === "auto" ? step.trigger.delayMs : 600,
+          }
+        : nextTriggerType === "node-click"
+          ? {
+              type: "node-click",
+              targetId:
+                step.trigger.type === "node-click"
+                  ? step.trigger.targetId
+                  : resolvePrimaryActionTargetId(step),
+            }
+        : {
+            type: "page-click",
+          },
+  });
+}
+
+/** 更新自动步骤的延迟时间。 */
+function handleStepDelayChange(step: TimelineStep, event: Event): void {
+  if (step.trigger.type !== "auto") {
+    return;
+  }
+
+  emitStep({
+    ...step,
+    trigger: {
+      type: "auto",
+      delayMs: readNumberInputValue(event, step.trigger.delayMs, 0),
+    },
+  });
+}
+
+/** 更新对象点击触发器的目标对象。 */
+function handleStepTriggerTargetChange(step: TimelineStep, event: Event): void {
+  if (step.trigger.type !== "node-click") {
+    return;
+  }
+
+  emitStep({
+    ...step,
+    trigger: {
+      type: "node-click",
+      targetId: readTextInputValue(event, step.trigger.targetId),
+    },
+  });
+}
+
+/** 给某个步骤新增一条动作。 */
+function handleAddAction(step: TimelineStep): void {
+  emitStep({
+    ...step,
+    actions: [
+      ...step.actions,
+      createTimelineAction({
+        type: "show-node",
+        targetId: preferredNodeId.value,
+        animationId: resolveFirstAnimationIdForNode(preferredNodeId.value) || undefined,
+      }),
+    ],
+  });
+}
+
+/** 删除步骤中的一条动作。 */
+function handleRemoveAction(step: TimelineStep, actionId: string): void {
+  emitStep({
+    ...step,
+    actions: step.actions.filter((action) => action.id !== actionId),
+  });
+}
+
+/** 更新动作类型，并自动对齐目标节点和动画引用。 */
+function handleActionTypeChange(step: TimelineStep, actionId: string, event: Event): void {
+  const nextType = readTextInputValue(event) as TimelineAction["type"];
+
+  updateStepAction(step, actionId, (action) => {
+    const currentTargetId = resolveActionTargetId(action) || preferredNodeId.value;
+    const currentAnimationId =
+      action.type === "show-node" || action.type === "play-animation"
+        ? action.animationId
+        : undefined;
+    const nextAnimationId =
+      nextType === "show-node"
+        ? resolveFirstAnimationIdForNode(currentTargetId) || undefined
+        : currentAnimationId || resolveFirstAnimationId() || undefined;
+
+    return buildTimelineAction(action.id, nextType, {
+      targetId: currentTargetId,
+      animationId: nextAnimationId,
+    });
+  });
+}
+
+/** 更新动作目标节点，并在 show-node 时自动收敛到同目标动画。 */
+function handleActionTargetChange(step: TimelineStep, actionId: string, event: Event): void {
+  const nextTargetId = readTextInputValue(event);
+
+  updateStepAction(step, actionId, (action) => {
+    if (action.type !== "show-node" && action.type !== "hide-node") {
+      return action;
+    }
+
+    return buildTimelineAction(action.id, action.type, {
+      targetId: nextTargetId,
+      animationId:
+        action.type === "show-node"
+          ? resolveFirstAnimationIdForNode(nextTargetId) || undefined
+          : undefined,
+    });
+  });
+}
+
+/** 更新动作关联动画。 */
+function handleActionAnimationChange(step: TimelineStep, actionId: string, event: Event): void {
+  const nextAnimationId = readTextInputValue(event);
+
+  updateStepAction(step, actionId, (action) => {
+    if (action.type === "hide-node") {
+      return action;
+    }
+
+    return buildTimelineAction(action.id, action.type, {
+      targetId: resolveActionTargetId(action),
+      animationId: nextAnimationId || undefined,
+    });
+  });
+}
+
+/** 新增一个动画资源，默认绑定当前选中对象。 */
+function handleCreateAnimation(): void {
+  if (!props.slide || !preferredNodeId.value) {
+    return;
+  }
+
+  emitAnimation(
+    createNodeAnimation({
+      targetId: preferredNodeId.value,
+    }),
+  );
+}
+
+/** 删除一个动画资源。 */
+function handleRemoveAnimation(animationId: string): void {
+  emit("remove-animation", animationId);
+}
+
+/** 更新动画目标对象。 */
+function handleAnimationTargetChange(animation: NodeAnimation, event: Event): void {
+  emitAnimation({
+    ...animation,
+    targetId: readTextInputValue(event, animation.targetId),
+  });
+}
+
+/** 更新动画类型。 */
+function handleAnimationKindChange(animation: NodeAnimation, event: Event): void {
+  const nextKind = readTextInputValue(event, animation.kind) as NodeAnimation["kind"];
+
+  emitAnimation({
+    ...animation,
+    kind: nextKind,
+    offsetY: nextKind === "slide-up" ? animation.offsetY ?? 32 : undefined,
+  });
+}
+
+/** 更新动画时长。 */
+function handleAnimationDurationChange(animation: NodeAnimation, event: Event): void {
+  emitAnimation({
+    ...animation,
+    durationMs: readNumberInputValue(event, animation.durationMs, 0),
+  });
+}
+
+/** 更新动画延迟。 */
+function handleAnimationDelayChange(animation: NodeAnimation, event: Event): void {
+  emitAnimation({
+    ...animation,
+    delayMs: readNumberInputValue(event, animation.delayMs ?? 0, 0),
+  });
+}
+
+/** 更新动画缓动。 */
+function handleAnimationEasingChange(animation: NodeAnimation, event: Event): void {
+  emitAnimation({
+    ...animation,
+    easing: readTextInputValue(event, animation.easing ?? "ease-out") as NodeAnimation["easing"],
+  });
+}
+
+/** 更新 slide-up 动画的纵向偏移。 */
+function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): void {
+  emitAnimation({
+    ...animation,
+    offsetY: readNumberInputValue(event, animation.offsetY ?? 32, 0),
+  });
+}
+</script>
+
+<template>
+  <section class="timeline-panel">
+    <header class="panel-head">
+      <div>
+        <p class="panel-kicker">时间轴管理</p>
+        <h3>Timeline</h3>
+      </div>
+      <span class="panel-count">{{ hasSlide ? "当前页" : "未选择" }}</span>
+    </header>
+
+    <div class="summary-grid">
+      <article class="summary-card">
+        <span class="summary-label">Steps</span>
+        <strong>{{ slide?.timeline.steps.length ?? 0 }}</strong>
+      </article>
+      <article class="summary-card">
+        <span class="summary-label">Animations</span>
+        <strong>{{ slide?.timeline.animations.length ?? 0 }}</strong>
+      </article>
+    </div>
+
+    <div v-if="!hasSlide" class="group-card empty-card">
+      <div class="group-head">
+        <h4>时间轴配置</h4>
+        <span class="group-badge">待选择</span>
+      </div>
+      <p class="group-copy">先切换到一个页面，这里才会显示它的步骤列表和动画资源。</p>
+    </div>
+
+    <template v-else>
+      <div v-if="!hasNodes" class="group-card empty-card">
+        <div class="group-head">
+          <h4>还不能配置时间轴</h4>
+          <span class="group-badge warning">先放内容</span>
+        </div>
+        <p class="group-copy">
+          当前页面还没有对象。先在画布里插入文本、矩形或图片，再把它们接进播放步骤。
+        </p>
+      </div>
+
+      <section class="group-card">
+        <div class="group-head">
+          <div>
+            <h4>步骤列表</h4>
+            <p class="group-copy compact">按当前顺序执行，支持页面点击、自动触发、对象点击和多动作组合。</p>
+          </div>
+          <button
+            class="soft-button"
+            type="button"
+            :disabled="!hasNodes"
+            @click="handleCreateStep"
+          >
+            新增步骤
+          </button>
+        </div>
+
+        <div v-if="(slide?.timeline.steps.length ?? 0) > 0" class="step-list">
+          <article
+            v-for="(step, stepIndex) in slide?.timeline.steps ?? []"
+            :key="step.id"
+            class="step-card"
+          >
+            <header class="card-head">
+              <div class="card-title-row">
+                <span class="card-index">{{ String(stepIndex + 1).padStart(2, "0") }}</span>
+                <div class="card-copy">
+                  <strong>{{ step.name }}</strong>
+                  <small>{{ resolveTriggerSummary(step.trigger) }} · {{ step.actions.length }} 个动作</small>
+                </div>
+              </div>
+
+              <button class="danger-button" type="button" @click="handleRemoveStep(step.id)">
+                删除步骤
+              </button>
+            </header>
+
+            <div class="field-grid">
+              <label class="field field-span-2">
+                <span class="field-label">步骤名称</span>
+                <input class="field-input" :value="step.name" @input="handleStepNameInput(step, $event)" />
+              </label>
+
+              <label class="field">
+                <span class="field-label">触发方式</span>
+                <select class="field-input" :value="step.trigger.type" @change="handleStepTriggerTypeChange(step, $event)">
+                  <option v-for="option in triggerOptions" :key="option.value" :value="option.value">
+                    {{ option.label }}
+                  </option>
+                </select>
+              </label>
+
+              <label v-if="step.trigger.type === 'node-click'" class="field">
+                <span class="field-label">触发对象</span>
+                <select
+                  class="field-input"
+                  :value="step.trigger.targetId"
+                  @change="handleStepTriggerTargetChange(step, $event)"
+                >
+                  <option v-for="option in nodeOptions" :key="option.value" :value="option.value">
+                    {{ option.label }} · {{ option.detail }}
+                  </option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span class="field-label">自动延迟</span>
+                <input
+                  class="field-input"
+                  type="number"
+                  min="0"
+                  step="100"
+                  :disabled="step.trigger.type !== 'auto'"
+                  :value="step.trigger.type === 'auto' ? step.trigger.delayMs : 0"
+                  @change="handleStepDelayChange(step, $event)"
+                />
+              </label>
+            </div>
+
+            <div class="subsection-head">
+              <div>
+                <strong>步骤动作</strong>
+                <small>单个步骤可以同时显示、隐藏对象，或单独播放动画。</small>
+              </div>
+              <button
+                class="ghost-button"
+                type="button"
+                :disabled="!hasNodes"
+                @click="handleAddAction(step)"
+              >
+                新增动作
+              </button>
+            </div>
+
+            <div v-if="step.actions.length > 0" class="action-list">
+              <article
+                v-for="(action, actionIndex) in step.actions"
+                :key="action.id"
+                class="action-card"
+              >
+                <div class="action-head">
+                  <div class="action-copy">
+                    <span class="action-index">动作 {{ actionIndex + 1 }}</span>
+                    <strong>{{ formatTimelineActionLabel(action.type) }}</strong>
+                  </div>
+                  <button
+                    class="danger-text-button"
+                    type="button"
+                    @click="handleRemoveAction(step, action.id)"
+                  >
+                    删除
+                  </button>
+                </div>
+
+                <div class="field-grid">
+                  <label class="field">
+                    <span class="field-label">动作类型</span>
+                    <select
+                      class="field-input"
+                      :value="action.type"
+                      @change="handleActionTypeChange(step, action.id, $event)"
+                    >
+                      <option
+                        v-for="option in actionTypeOptions"
+                        :key="option.value"
+                        :value="option.value"
+                      >
+                        {{ option.label }}
+                      </option>
+                    </select>
+                  </label>
+
+                  <label class="field">
+                    <span class="field-label">目标对象</span>
+                    <select
+                      class="field-input"
+                      :disabled="action.type === 'play-animation'"
+                      :value="resolveActionTargetId(action)"
+                      @change="handleActionTargetChange(step, action.id, $event)"
+                    >
+                      <option v-for="option in nodeOptions" :key="option.value" :value="option.value">
+                        {{ option.label }} · {{ option.detail }}
+                      </option>
+                    </select>
+                  </label>
+
+                  <label class="field field-span-2">
+                    <span class="field-label">关联动画</span>
+                    <select
+                      class="field-input"
+                      :disabled="action.type === 'hide-node'"
+                      :value="resolveActionAnimationValue(action)"
+                      @change="handleActionAnimationChange(step, action.id, $event)"
+                    >
+                      <option v-if="action.type === 'show-node'" value="">无动画</option>
+                      <option
+                        v-if="action.type === 'play-animation' && resolveAnimationOptionsForAction(action).length === 0"
+                        value=""
+                      >
+                        请先创建动画资源
+                      </option>
+                      <option
+                        v-for="option in resolveAnimationOptionsForAction(action)"
+                        :key="option.value"
+                        :value="option.value"
+                      >
+                        {{ option.label }} · {{ option.detail }}
+                      </option>
+                    </select>
+                  </label>
+                </div>
+              </article>
+            </div>
+            <p v-else class="panel-empty">当前步骤还没有动作，新增动作后它才会对预览产生效果。</p>
+          </article>
+        </div>
+        <p v-else class="panel-empty">当前页面还没有步骤。新增后，预览器会按这里的顺序执行。</p>
+      </section>
+
+      <section class="group-card">
+        <div class="group-head">
+          <div>
+            <h4>动画资源</h4>
+            <p class="group-copy compact">`show-node` 只会显示与目标对象一致的动画资源，避免引用错位。</p>
+          </div>
+          <button
+            class="soft-button"
+            type="button"
+            :disabled="!hasNodes"
+            @click="handleCreateAnimation"
+          >
+            新增动画
+          </button>
+        </div>
+
+        <div v-if="(slide?.timeline.animations.length ?? 0) > 0" class="animation-list">
+          <article
+            v-for="animation in slide?.timeline.animations ?? []"
+            :key="animation.id"
+            class="animation-card"
+          >
+            <header class="card-head">
+              <div class="card-title-row">
+                <span class="card-index subtle">{{ formatAnimationKindLabel(animation.kind) }}</span>
+                <div class="card-copy">
+                  <strong>{{ resolveNodeName(animation.targetId) }}</strong>
+                  <small>{{ animation.durationMs }}ms · {{ animation.easing ?? "ease-out" }}</small>
+                </div>
+              </div>
+
+              <button class="danger-button" type="button" @click="handleRemoveAnimation(animation.id)">
+                删除动画
+              </button>
+            </header>
+
+            <div class="field-grid">
+              <label class="field field-span-2">
+                <span class="field-label">目标对象</span>
+                <select
+                  class="field-input"
+                  :value="animation.targetId"
+                  @change="handleAnimationTargetChange(animation, $event)"
+                >
+                  <option v-for="option in nodeOptions" :key="option.value" :value="option.value">
+                    {{ option.label }} · {{ option.detail }}
+                  </option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span class="field-label">动画类型</span>
+                <select
+                  class="field-input"
+                  :value="animation.kind"
+                  @change="handleAnimationKindChange(animation, $event)"
+                >
+                  <option
+                    v-for="option in animationKindOptions"
+                    :key="option.value"
+                    :value="option.value"
+                  >
+                    {{ option.label }}
+                  </option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span class="field-label">缓动函数</span>
+                <select
+                  class="field-input"
+                  :value="animation.easing ?? 'ease-out'"
+                  @change="handleAnimationEasingChange(animation, $event)"
+                >
+                  <option v-for="option in easingOptions" :key="option.value" :value="option.value">
+                    {{ option.label }}
+                  </option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span class="field-label">时长</span>
+                <input
+                  class="field-input"
+                  type="number"
+                  min="0"
+                  step="10"
+                  :value="animation.durationMs"
+                  @change="handleAnimationDurationChange(animation, $event)"
+                />
+              </label>
+
+              <label class="field">
+                <span class="field-label">延迟</span>
+                <input
+                  class="field-input"
+                  type="number"
+                  min="0"
+                  step="10"
+                  :value="animation.delayMs ?? 0"
+                  @change="handleAnimationDelayChange(animation, $event)"
+                />
+              </label>
+
+              <label v-if="animation.kind === 'slide-up'" class="field field-span-2">
+                <span class="field-label">上滑偏移</span>
+                <input
+                  class="field-input"
+                  type="number"
+                  min="0"
+                  step="1"
+                  :value="animation.offsetY ?? 32"
+                  @change="handleAnimationOffsetYChange(animation, $event)"
+                />
+              </label>
+            </div>
+          </article>
+        </div>
+        <p v-else class="panel-empty">当前页面还没有动画资源。你可以先新建动画，再把它挂到步骤动作上。</p>
+      </section>
+    </template>
+  </section>
+</template>
+
+<style scoped>
+.timeline-panel {
+  display: grid;
+  gap: var(--cw-space-4);
+  padding: var(--cw-space-5);
+  border: 1px solid var(--cw-color-border);
+  border-radius: var(--cw-radius-lg);
+  background:
+    linear-gradient(180deg, rgba(13, 148, 136, 0.08), rgba(255, 255, 255, 0.96)),
+    var(--cw-color-surface);
+  box-shadow: var(--cw-shadow-weak);
+}
+
+.panel-head,
+.group-head,
+.card-head,
+.subsection-head,
+.action-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--cw-space-3);
+}
+
+.panel-kicker,
+.summary-label,
+.field-label,
+.action-index {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cw-color-primary);
+}
+
+.panel-head h3,
+.group-head h4 {
+  margin: var(--cw-space-2) 0 0;
+}
+
+.panel-head h3 {
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--cw-space-3);
+}
+
+.summary-card,
+.group-card,
+.step-card,
+.animation-card,
+.action-card {
+  display: grid;
+  gap: var(--cw-space-3);
+  padding: 16px;
+  border: 1px solid rgba(19, 78, 74, 0.08);
+  border-radius: var(--cw-radius-md);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.summary-card strong {
+  font-size: 28px;
+  line-height: 1;
+  color: var(--cw-color-text);
+}
+
+.panel-count,
+.group-badge,
+.card-index {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 var(--cw-space-3);
+  border-radius: var(--cw-radius-pill);
+  font-size: 13px;
+  color: var(--cw-color-text);
+  background: rgba(19, 78, 74, 0.08);
+}
+
+.card-index.subtle {
+  color: var(--cw-color-primary);
+  background: rgba(13, 148, 136, 0.12);
+}
+
+.group-badge.warning {
+  color: var(--cw-color-accent);
+  background: rgba(234, 88, 12, 0.12);
+}
+
+.group-copy,
+.card-copy small,
+.subsection-head small,
+.panel-empty {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--cw-color-muted);
+}
+
+.group-copy.compact {
+  margin-top: 4px;
+}
+
+.step-list,
+.animation-list,
+.action-list {
+  display: grid;
+  gap: var(--cw-space-3);
+}
+
+.card-title-row,
+.card-copy,
+.action-copy {
+  display: grid;
+  gap: var(--cw-space-2);
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--cw-space-3);
+}
+
+.field {
+  display: grid;
+  gap: var(--cw-space-2);
+}
+
+.field-span-2 {
+  grid-column: span 2;
+}
+
+.field-input {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid rgba(13, 148, 136, 0.16);
+  border-radius: var(--cw-radius-md);
+  font-size: 14px;
+  color: var(--cw-color-text);
+  background: rgba(255, 255, 255, 0.96);
+  outline: none;
+  transition:
+    border-color var(--cw-duration-fast) var(--cw-ease-standard),
+    box-shadow var(--cw-duration-fast) var(--cw-ease-standard),
+    background var(--cw-duration-fast) var(--cw-ease-standard);
+}
+
+.field-input:focus-visible,
+.soft-button:focus-visible,
+.ghost-button:focus-visible,
+.danger-button:focus-visible,
+.danger-text-button:focus-visible {
+  border-color: rgba(13, 148, 136, 0.4);
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.14);
+}
+
+.field-input:disabled {
+  color: var(--cw-color-muted);
+  cursor: not-allowed;
+  background: rgba(148, 163, 184, 0.08);
+}
+
+.soft-button,
+.ghost-button,
+.danger-button,
+.danger-text-button {
+  min-height: 44px;
+  padding: 0 var(--cw-space-4);
+  border-radius: var(--cw-radius-pill);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform var(--cw-duration-fast) var(--cw-ease-standard),
+    background var(--cw-duration-fast) var(--cw-ease-standard),
+    border-color var(--cw-duration-fast) var(--cw-ease-standard);
+}
+
+.soft-button,
+.ghost-button {
+  border: 1px solid rgba(13, 148, 136, 0.18);
+  color: var(--cw-color-text);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.danger-button,
+.danger-text-button {
+  border: 1px solid rgba(220, 38, 38, 0.16);
+  color: var(--cw-color-danger);
+  background: var(--cw-color-danger-soft);
+}
+
+.danger-text-button {
+  min-height: 36px;
+  padding: 0 12px;
+}
+
+.soft-button:hover:enabled,
+.ghost-button:hover:enabled,
+.danger-button:hover:enabled,
+.danger-text-button:hover:enabled {
+  transform: translateY(-1px);
+}
+
+.soft-button:disabled,
+.ghost-button:disabled,
+.danger-button:disabled,
+.danger-text-button:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.empty-card {
+  text-align: left;
+}
+
+@media (max-width: 768px) {
+  .timeline-panel,
+  .summary-card,
+  .group-card,
+  .step-card,
+  .animation-card,
+  .action-card {
+    padding: var(--cw-space-4);
+  }
+
+  .summary-grid,
+  .field-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .field-span-2 {
+    grid-column: span 1;
+  }
+
+  .panel-head,
+  .group-head,
+  .card-head,
+  .subsection-head,
+  .action-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+</style>

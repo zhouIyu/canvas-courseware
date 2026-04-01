@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "useDefineForClassFields": true,
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "verbatimModuleSyntax": true,
+    "baseUrl": ".",
+    "paths": {
+      "@canvas-courseware/core": ["packages/core/src/index.ts"],
+      "@canvas-courseware/core/*": ["packages/core/src/*"],
+      "@canvas-courseware/fabric": ["packages/fabric/src/index.ts"],
+      "@canvas-courseware/fabric/*": ["packages/fabric/src/*"],
+      "@canvas-courseware/vue": ["packages/vue/src/index.ts"],
+      "@canvas-courseware/vue/*": ["packages/vue/src/*"]
+    }
+  }
+}
