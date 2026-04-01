@@ -1,0 +1,37 @@
+html,
+body,
+#app {
+  min-height: 100%;
+  width: 100%;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  font-family: var(--cw-font-sans);
+  color: var(--cw-color-text);
+  background:
+    radial-gradient(circle at top left, rgba(20, 184, 166, 0.12), transparent 28%),
+    radial-gradient(circle at 85% 15%, rgba(234, 88, 12, 0.12), transparent 24%),
+    linear-gradient(180deg, rgba(240, 253, 250, 0.92), rgba(236, 253, 245, 0.98)),
+    var(--cw-color-bg);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.56) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.52) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.72), transparent);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
