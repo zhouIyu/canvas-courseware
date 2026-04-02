@@ -10,6 +10,7 @@
     "typecheck": "vue-tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "@arco-design/web-vue": "^2.57.0",
     "@canvas-courseware/core": "workspace:*",
     "@canvas-courseware/vue": "workspace:*",
     "vue": "^3.5.0",

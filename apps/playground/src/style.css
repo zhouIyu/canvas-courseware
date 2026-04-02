@@ -1,3 +1,36 @@
+:root {
+  --color-primary-1: #ecfeff;
+  --color-primary-2: #cffafe;
+  --color-primary-3: #a5f3fc;
+  --color-primary-4: #67e8f9;
+  --color-primary-5: #22d3ee;
+  --color-primary-6: #0d9488;
+  --color-primary-7: #0f766e;
+  --color-primary-8: #115e59;
+  --color-primary-9: #134e4a;
+  --color-primary-10: #042f2e;
+  --color-warning-6: #ea580c;
+  --color-danger-6: #dc2626;
+  --color-text-1: #134e4a;
+  --color-text-2: #1f766f;
+  --color-text-3: #64748b;
+  --color-neutral-2: #d1fae5;
+  --color-neutral-3: #99f6e4;
+  --color-neutral-4: #6ee7d8;
+  --color-fill-2: rgba(16, 185, 129, 0.08);
+  --color-fill-3: rgba(20, 184, 166, 0.12);
+  --color-fill-4: rgba(13, 148, 136, 0.2);
+  --color-bg-1: #f0fdfa;
+  --color-bg-2: #ffffff;
+  --color-bg-3: #f8fffd;
+  --color-bg-4: #f4fefa;
+  --color-bg-5: #ecfdf5;
+  --border-radius-small: 12px;
+  --border-radius-medium: 16px;
+  --border-radius-large: 24px;
+  --font-size-body-3: 15px;
+}
+
 html,
 body,
 #app {
@@ -27,6 +60,19 @@ body::before {
     linear-gradient(90deg, rgba(255, 255, 255, 0.52) 1px, transparent 1px);
   background-size: 32px 32px;
   mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.72), transparent);
+}
+
+a {
+  color: inherit;
+}
+
+.arco-btn,
+.arco-input-wrapper,
+.arco-card,
+.arco-tag,
+.arco-select-view,
+.arco-modal {
+  border-radius: var(--border-radius-medium);
 }
 
 button,

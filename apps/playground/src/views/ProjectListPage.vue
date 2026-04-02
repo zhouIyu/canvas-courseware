@@ -28,6 +28,10 @@ const formatUpdatedAt = (updatedAt: string): string =>
     minute: "2-digit",
   }).format(new Date(updatedAt));
 
+/** 生成项目标题首字母占位。 */
+const resolveProjectInitial = (projectTitle: string): string =>
+  projectTitle.trim().slice(0, 1) || "课";
+
 /** 当前搜索结果。 */
 const filteredProjects = computed(() => {
   const keyword = searchQuery.value.trim().toLowerCase();
@@ -73,16 +77,6 @@ const openProject = async (projectId: string) => {
 
 /** 删除某个项目并刷新列表。 */
 const removeProject = (projectId: string) => {
-  const targetProject = projectSummaries.value.find((project) => project.id === projectId);
-  if (!targetProject) {
-    return;
-  }
-
-  const confirmed = window.confirm(`确认删除项目「${targetProject.title}」吗？`);
-  if (!confirmed) {
-    return;
-  }
-
   projectRepository.remove(projectId);
   refreshProjectSummaries();
 };
@@ -106,41 +100,42 @@ onMounted(() => {
       </div>
 
       <div class="hero-actions">
-        <button class="primary-button" type="button" @click="createProject">新建项目</button>
-        <span class="project-count">{{ projectCountLabel }}</span>
+        <a-button size="large" type="primary" @click="createProject">新建项目</a-button>
+        <a-tag color="arcoblue">{{ projectCountLabel }}</a-tag>
       </div>
     </section>
 
     <section class="library-shell">
       <header class="section-head">
-        <div>
+        <div class="section-copy">
           <p class="section-kicker">Project Library</p>
           <h2>项目列表</h2>
         </div>
 
-        <label class="search-field">
-          <span class="sr-only">搜索项目</span>
-          <input
-            v-model="searchQuery"
-            class="search-input"
-            type="search"
-            placeholder="搜索项目标题..."
-          />
-        </label>
+        <a-input-search
+          v-model="searchQuery"
+          allow-clear
+          class="search-input"
+          placeholder="搜索项目标题..."
+        />
       </header>
 
       <div v-if="filteredProjects.length > 0" class="project-grid">
-        <article
+        <a-card
           v-for="project in filteredProjects"
           :key="project.id"
+          :bordered="false"
           class="project-card"
+          hoverable
         >
-          <div
-            class="project-thumbnail"
-            :style="{ background: project.thumbnail ?? 'linear-gradient(135deg, #CCFBF1, #FFFFFF)' }"
-          >
-            <span>{{ project.title.slice(0, 1) }}</span>
-          </div>
+          <template #cover>
+            <div
+              class="project-thumbnail"
+              :style="{ background: project.thumbnail ?? 'linear-gradient(135deg, #CCFBF1, #FFFFFF)' }"
+            >
+              <span>{{ resolveProjectInitial(project.title) }}</span>
+            </div>
+          </template>
 
           <div class="project-copy">
             <div class="project-meta">
@@ -152,21 +147,21 @@ onMounted(() => {
           </div>
 
           <div class="project-actions">
-            <button class="secondary-button" type="button" @click="openProject(project.id)">
-              打开
-            </button>
-            <button class="danger-button" type="button" @click="removeProject(project.id)">
-              删除
-            </button>
+            <a-button type="primary" @click="openProject(project.id)">打开</a-button>
+            <a-popconfirm
+              :content="`确认删除项目「${project.title}」吗？`"
+              position="top"
+              @ok="removeProject(project.id)"
+            >
+              <a-button status="danger" type="outline">删除</a-button>
+            </a-popconfirm>
           </div>
-        </article>
+        </a-card>
       </div>
 
-      <div v-else class="empty-state">
-        <strong>没有匹配的项目</strong>
-        <p>换个关键词试试，或者直接创建一个新的课件项目。</p>
-        <button class="primary-button" type="button" @click="createProject">创建项目</button>
-      </div>
+      <a-empty v-else class="empty-state" description="没有匹配的项目">
+        <a-button type="primary" @click="createProject">创建项目</a-button>
+      </a-empty>
     </section>
   </main>
 </template>
@@ -182,10 +177,10 @@ onMounted(() => {
 
 .hero-shell,
 .library-shell {
-  border: 1px solid var(--cw-color-border);
+  border: 1px solid color-mix(in srgb, var(--cw-color-border) 68%, #ffffff);
   border-radius: var(--cw-radius-xl);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.86)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.9)),
     var(--cw-color-surface);
   box-shadow: var(--cw-shadow-medium);
 }
@@ -208,7 +203,7 @@ onMounted(() => {
 }
 
 .hero-copy h1,
-.section-head h2 {
+.section-copy h2 {
   margin: 14px 0 0;
   line-height: 1.08;
 }
@@ -227,10 +222,11 @@ onMounted(() => {
 }
 
 .hero-actions {
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
   gap: var(--cw-space-3);
-  align-content: end;
-  justify-items: start;
 }
 
 .library-shell {
@@ -241,27 +237,17 @@ onMounted(() => {
 
 .section-head {
   display: flex;
-  align-items: end;
+  align-items: flex-end;
   justify-content: space-between;
   gap: var(--cw-space-4);
 }
 
-.section-head h2 {
+.section-copy h2 {
   font-size: clamp(28px, 4vw, 36px);
 }
 
-.search-field {
-  width: min(360px, 100%);
-}
-
 .search-input {
-  width: 100%;
-  min-height: 48px;
-  padding: 0 16px;
-  border: 1px solid rgba(19, 78, 74, 0.12);
-  border-radius: var(--cw-radius-pill);
-  color: var(--cw-color-text);
-  background: #ffffff;
+  width: min(360px, 100%);
 }
 
 .project-grid {
@@ -270,24 +256,20 @@ onMounted(() => {
   gap: var(--cw-space-5);
 }
 
-.project-card {
+.project-card :deep(.arco-card-body) {
   display: grid;
   gap: var(--cw-space-4);
-  padding: 18px;
-  border: 1px solid rgba(19, 78, 74, 0.08);
-  border-radius: var(--cw-radius-lg);
-  background:
-    linear-gradient(180deg, rgba(240, 253, 250, 0.74), rgba(255, 255, 255, 0.94)),
-    var(--cw-color-surface);
-  box-shadow: var(--cw-shadow-weak);
+}
+
+.project-card :deep(.arco-card-cover) {
+  margin-bottom: 0;
 }
 
 .project-thumbnail {
   display: grid;
   place-items: center;
   min-height: 180px;
-  border-radius: calc(var(--cw-radius-lg) - 6px);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.64);
+  border-radius: calc(var(--cw-radius-lg) - 8px);
 }
 
 .project-thumbnail span {
@@ -321,8 +303,7 @@ onMounted(() => {
   line-height: 1.3;
 }
 
-.project-copy p,
-.empty-state p {
+.project-copy p {
   margin: 0;
   font-size: 14px;
   line-height: 1.7;
@@ -334,82 +315,11 @@ onMounted(() => {
   gap: var(--cw-space-2);
 }
 
-.project-count {
-  display: inline-flex;
-  align-items: center;
-  min-height: 42px;
-  padding: 0 var(--cw-space-4);
-  border-radius: var(--cw-radius-pill);
-  font-size: 14px;
-  color: var(--cw-color-primary);
-  background: rgba(13, 148, 136, 0.12);
-}
-
-.primary-button,
-.secondary-button,
-.danger-button {
-  min-height: 44px;
-  padding: 0 var(--cw-space-4);
-  border-radius: var(--cw-radius-pill);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    transform var(--cw-duration-fast) var(--cw-ease-standard),
-    background var(--cw-duration-fast) var(--cw-ease-standard),
-    border-color var(--cw-duration-fast) var(--cw-ease-standard);
-}
-
-.primary-button {
-  border: 1px solid transparent;
-  color: #ffffff;
-  background: linear-gradient(135deg, var(--cw-color-primary), var(--cw-color-primary-2));
-}
-
-.secondary-button {
-  border: 1px solid rgba(13, 148, 136, 0.18);
-  color: var(--cw-color-text);
-  background: rgba(255, 255, 255, 0.92);
-}
-
-.danger-button {
-  border: 1px solid rgba(220, 38, 38, 0.16);
-  color: var(--cw-color-danger);
-  background: var(--cw-color-danger-soft);
-}
-
-.primary-button:hover,
-.secondary-button:hover,
-.danger-button:hover {
-  transform: translateY(-1px);
-}
-
 .empty-state {
-  display: grid;
-  gap: var(--cw-space-3);
-  justify-items: center;
   padding: 56px 24px;
-  border: 1px dashed rgba(13, 148, 136, 0.18);
+  border: 1px dashed rgba(13, 148, 136, 0.2);
   border-radius: var(--cw-radius-lg);
-  text-align: center;
-  background: rgba(255, 255, 255, 0.72);
-}
-
-.empty-state strong {
-  font-size: 20px;
-  color: var(--cw-color-text);
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+  background: rgba(255, 255, 255, 0.8);
 }
 
 @media (max-width: 1180px) {
@@ -420,12 +330,17 @@ onMounted(() => {
 
 @media (max-width: 900px) {
   .hero-shell,
-  .section-head,
   .project-grid {
     grid-template-columns: 1fr;
   }
 
+  .hero-actions {
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+
   .section-head {
+    flex-direction: column;
     align-items: flex-start;
   }
 }
@@ -442,6 +357,10 @@ onMounted(() => {
 
   .project-grid {
     grid-template-columns: 1fr;
+  }
+
+  .project-actions {
+    flex-wrap: wrap;
   }
 }
 </style>
