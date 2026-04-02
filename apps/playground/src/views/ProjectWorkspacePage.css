@@ -1,10 +1,11 @@
 .workspace-page {
   display: grid;
   gap: var(--cw-space-4);
+  width: 100%;
   min-width: 0;
   min-height: 100dvh;
-  max-width: 1680px;
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
   padding: 18px;
 }
 
