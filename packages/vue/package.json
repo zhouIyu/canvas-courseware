@@ -18,6 +18,7 @@
     "@canvas-courseware/fabric": "workspace:*"
   },
   "peerDependencies": {
+    "@arco-design/web-vue": "^2.57.0",
     "vue": "^3.5.0"
   },
   "scripts": {

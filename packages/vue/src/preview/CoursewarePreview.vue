@@ -93,6 +93,21 @@ const playbackStatusLabel = computed(() =>
   formatPlaybackStatus(state.value.status),
 );
 
+/** 播放状态对应的标签色值。 */
+const playbackStatusTagColor = computed(() => {
+  switch (state.value.status) {
+    case "playing":
+      return "#165dff";
+    case "paused":
+      return "#ea580c";
+    case "completed":
+      return "#0d9488";
+    case "idle":
+    default:
+      return "#64748b";
+  }
+});
+
 /** 下一步触发方式摘要。 */
 const nextTriggerLabel = computed(() =>
   formatTriggerLabel(state.value.nextTrigger),
@@ -162,7 +177,7 @@ const toggleTimelinePanel = () => {
         <p class="section-kicker">Preview Workbench</p>
         <div class="title-row">
           <h2>{{ title }}</h2>
-          <span class="status-pill accent">{{ playbackStatusLabel }}</span>
+          <a-tag :color="playbackStatusTagColor" bordered>{{ playbackStatusLabel }}</a-tag>
         </div>
         <p class="preview-copy">
           预览器只消费同一份通用 JSON，并把页面点击、自动触发、对象点击等 step 状态翻译成可理解的播放反馈。
@@ -177,9 +192,9 @@ const toggleTimelinePanel = () => {
             <p class="section-kicker">Slides</p>
             <h3>{{ isSlideRailCollapsed ? "页面" : "快速切换" }}</h3>
           </div>
-          <button class="secondary-button compact-button" type="button" @click="toggleSlideRail">
+          <a-button class="compact-button" size="small" type="outline" @click="toggleSlideRail">
             {{ isSlideRailCollapsed ? "展开" : "收起" }}
-          </button>
+          </a-button>
         </header>
 
         <div v-if="!isSlideRailCollapsed" class="slide-chip-list">
@@ -200,9 +215,9 @@ const toggleTimelinePanel = () => {
         <div v-else class="collapsed-side-shell">
           <span class="collapsed-count">{{ state.document?.slides.length ?? 0 }}</span>
           <small>{{ activeSlideIndex >= 0 ? `当前第 ${activeSlideIndex + 1} 页` : "未选择页面" }}</small>
-          <button class="secondary-button compact-button" type="button" @click="toggleSlideRail">
+          <a-button class="compact-button" size="small" type="outline" @click="toggleSlideRail">
             展开
-          </button>
+          </a-button>
         </div>
       </aside>
 
@@ -214,14 +229,14 @@ const toggleTimelinePanel = () => {
           </div>
           <div class="stage-head-actions">
             <div class="status-badges">
-              <span class="status-pill accent">{{ playbackStatusLabel }}</span>
-              <span class="status-pill">{{ stepPositionLabel }}</span>
-              <span v-if="!isEmbedded" class="status-pill">{{ nextTriggerLabel }}</span>
-              <span v-if="!isEmbedded" class="status-pill">{{ stageSizeLabel }}</span>
+              <a-tag :color="playbackStatusTagColor" bordered>{{ playbackStatusLabel }}</a-tag>
+              <a-tag bordered>{{ stepPositionLabel }}</a-tag>
+              <a-tag v-if="!isEmbedded" bordered>{{ nextTriggerLabel }}</a-tag>
+              <a-tag v-if="!isEmbedded" bordered>{{ stageSizeLabel }}</a-tag>
             </div>
             <div class="preview-actions">
-              <button class="secondary-button" type="button" @click="resetPreview">重置播放</button>
-              <button class="primary-button" type="button" @click="playNextStep">播放下一步</button>
+              <a-button type="outline" @click="resetPreview">重置播放</a-button>
+              <a-button type="primary" @click="playNextStep">播放下一步</a-button>
             </div>
           </div>
         </header>
@@ -230,15 +245,19 @@ const toggleTimelinePanel = () => {
           {{ embeddedSummaryLabel }}
         </p>
         <div v-else class="inline-status-strip">
-          <article class="status-card primary compact-card">
-            <span class="status-label">播放概览</span>
-            <strong>{{ playbackSummary }}</strong>
-          </article>
-          <article class="status-card compact-card">
-            <span class="status-label">当前页面</span>
-            <strong>{{ activeSlide?.name ?? "未选择页面" }}</strong>
-            <small>{{ activeSlideIndex >= 0 ? `第 ${activeSlideIndex + 1} 页` : "未定位" }}</small>
-          </article>
+          <a-card :bordered="false" class="status-card primary compact-card">
+            <div class="status-card-body">
+              <span class="status-label">播放概览</span>
+              <strong>{{ playbackSummary }}</strong>
+            </div>
+          </a-card>
+          <a-card :bordered="false" class="status-card compact-card">
+            <div class="status-card-body">
+              <span class="status-label">当前页面</span>
+              <strong>{{ activeSlide?.name ?? "未选择页面" }}</strong>
+              <small>{{ activeSlideIndex >= 0 ? `第 ${activeSlideIndex + 1} 页` : "未定位" }}</small>
+            </div>
+          </a-card>
         </div>
 
         <div class="preview-stage" :style="stageStyle">
@@ -260,9 +279,9 @@ const toggleTimelinePanel = () => {
             <p class="section-kicker">Timeline</p>
             <h3>{{ isTimelineCollapsed ? "步骤" : "步骤状态" }}</h3>
           </div>
-          <button class="secondary-button compact-button" type="button" @click="toggleTimelinePanel">
+          <a-button class="compact-button" size="small" type="outline" @click="toggleTimelinePanel">
             {{ isTimelineCollapsed ? "展开" : "收起" }}
-          </button>
+          </a-button>
         </header>
 
         <ol
@@ -295,9 +314,9 @@ const toggleTimelinePanel = () => {
         <div v-else class="collapsed-side-shell">
           <span class="collapsed-count">{{ stepCount }}</span>
           <small>{{ playbackSummary }}</small>
-          <button class="secondary-button compact-button" type="button" @click="toggleTimelinePanel">
+          <a-button class="compact-button" size="small" type="outline" @click="toggleTimelinePanel">
             展开
-          </button>
+          </a-button>
         </div>
       </aside>
     </main>
@@ -403,45 +422,43 @@ const toggleTimelinePanel = () => {
 .compact-button {
   min-height: 38px;
   padding: 0 14px;
+  border-radius: var(--cw-radius-pill);
+  font-size: 14px;
+  font-weight: 600;
+  transition:
+    transform var(--cw-duration-fast) var(--cw-ease-standard),
+    box-shadow var(--cw-duration-fast) var(--cw-ease-standard);
 }
 
-.primary-button,
-.secondary-button {
+.preview-actions :deep(.arco-btn) {
   min-height: 44px;
   padding: 0 var(--cw-space-4);
   border-radius: var(--cw-radius-pill);
   font-size: 14px;
   font-weight: 600;
-  cursor: pointer;
   transition:
     transform var(--cw-duration-fast) var(--cw-ease-standard),
-    box-shadow var(--cw-duration-fast) var(--cw-ease-standard),
-    background var(--cw-duration-fast) var(--cw-ease-standard),
-    border-color var(--cw-duration-fast) var(--cw-ease-standard);
+    box-shadow var(--cw-duration-fast) var(--cw-ease-standard);
 }
 
-.primary-button {
-  border: 1px solid transparent;
-  color: #ffffff;
-  background: linear-gradient(135deg, var(--cw-color-primary), var(--cw-color-primary-2));
-}
-
-.secondary-button {
-  border: 1px solid rgba(13, 148, 136, 0.18);
-  color: var(--cw-color-text);
-  background: rgba(255, 255, 255, 0.92);
-}
-
-.primary-button:hover,
-.secondary-button:hover,
+.preview-actions :deep(.arco-btn:hover),
+.compact-button:hover,
 .slide-chip:hover {
   transform: translateY(-1px);
 }
 
 .status-card {
+  border-radius: var(--cw-radius-xl);
+  box-shadow: none;
+}
+
+.status-card :deep(.arco-card-body) {
+  padding: var(--cw-space-4);
+}
+
+.status-card-body {
   display: grid;
   gap: var(--cw-space-2);
-  padding: var(--cw-space-4);
 }
 
 .status-card.primary {
@@ -515,20 +532,12 @@ const toggleTimelinePanel = () => {
   font-size: 24px;
 }
 
-.status-pill {
-  display: inline-flex;
-  align-items: center;
-  min-height: 36px;
-  padding: 0 var(--cw-space-3);
+.title-row :deep(.arco-tag),
+.status-badges :deep(.arco-tag) {
+  min-height: 32px;
+  padding-inline: 12px;
   border-radius: var(--cw-radius-pill);
   font-size: 13px;
-  color: var(--cw-color-text);
-  background: rgba(19, 78, 74, 0.08);
-}
-
-.status-pill.accent {
-  color: var(--cw-color-primary);
-  background: rgba(13, 148, 136, 0.12);
 }
 
 .preview-inline-summary {
