@@ -21,6 +21,9 @@ import { useCoursewareEditor } from "./useCoursewareEditor";
 /** 编辑器右侧管理区的标签名。 */
 type EditorSideTab = "slide" | "node" | "layers" | "timeline";
 
+/** 标签切换控件传回值的兼容类型。 */
+type EditorSideTabValue = string | number;
+
 /** 编辑器组件的显示参数。 */
 const props = withDefaults(
   defineProps<{
@@ -317,6 +320,17 @@ const activateSideTab = (tab: EditorSideTab) => {
   isEditorSideCollapsed.value = false;
 };
 
+/** 判断当前值是否为受支持的右侧标签 key。 */
+const isEditorSideTab = (value: EditorSideTabValue): value is EditorSideTab =>
+  value === "slide" || value === "node" || value === "layers" || value === "timeline";
+
+/** 处理 Arco Tabs 标签切换。 */
+const handleSideTabChange = (key: EditorSideTabValue) => {
+  if (isEditorSideTab(key)) {
+    activateSideTab(key);
+  }
+};
+
 /** 切换左侧页面栏显隐。 */
 const toggleSlideRail = () => {
   isSlideRailCollapsed.value = !isSlideRailCollapsed.value;
@@ -475,19 +489,20 @@ const toggleEditorSide = () => {
 
         <aside class="editor-side" :class="{ 'is-collapsed': isEditorSideCollapsed }">
           <div class="side-tabs panel-shell" :class="{ 'is-collapsed': isEditorSideCollapsed }">
-            <div v-if="!isEditorSideCollapsed" class="side-tab-list">
-              <button
+            <a-tabs
+              v-if="!isEditorSideCollapsed"
+              :active-key="activeSideTab"
+              class="side-tabs-nav"
+              size="large"
+              type="capsule"
+              @change="handleSideTabChange"
+            >
+              <a-tab-pane
                 v-for="tab in sideTabs"
                 :key="tab.key"
-                class="side-tab-button"
-                :class="{ 'is-active': activeSideTab === tab.key }"
-                type="button"
-                :aria-pressed="activeSideTab === tab.key"
-                @click="activateSideTab(tab.key)"
-              >
-                {{ tab.label }}
-              </button>
-            </div>
+                :title="tab.label"
+              />
+            </a-tabs>
             <a-button
               class="secondary-button compact side-toggle-button"
               size="small"

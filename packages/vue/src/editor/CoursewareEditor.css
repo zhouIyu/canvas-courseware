@@ -180,8 +180,7 @@
   gap: var(--cw-space-3);
 }
 
-.panel-actions,
-.side-tab-list {
+.panel-actions {
   display: flex;
   align-items: center;
   gap: var(--cw-space-2);
@@ -409,14 +408,52 @@
 }
 
 .side-tabs {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: var(--cw-space-2);
 }
 
 .side-tabs.is-collapsed {
+  grid-template-columns: auto;
   justify-content: center;
+}
+
+.side-tabs-nav {
+  min-width: 0;
+}
+
+.side-tabs-nav :deep(.arco-tabs-nav) {
+  margin-bottom: 0;
+}
+
+.side-tabs-nav :deep(.arco-tabs-content) {
+  display: none;
+}
+
+.side-tabs-nav :deep(.arco-tabs-nav::before),
+.side-tabs-nav :deep(.arco-tabs-nav-ink) {
+  display: none;
+}
+
+.side-tabs-nav :deep(.arco-tabs-tab) {
+  min-height: 40px;
+  padding-inline: 14px;
+  border-radius: var(--cw-radius-pill);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.side-tabs-nav :deep(.arco-tabs-nav-capsule .arco-tabs-tab) {
+  border: 1px solid color-mix(in srgb, var(--cw-color-border) 92%, #ffffff);
+  color: var(--cw-color-muted);
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.side-tabs-nav :deep(.arco-tabs-nav-capsule .arco-tabs-tab-active) {
+  border-color: color-mix(in srgb, var(--cw-color-primary) 35%, var(--cw-color-border));
+  color: var(--cw-color-primary);
+  background: var(--cw-color-primary-soft);
 }
 
 .side-toggle-button {
@@ -430,7 +467,6 @@
   color: var(--cw-color-text);
 }
 
-.side-tab-button,
 .primary-button,
 .secondary-button,
 .danger-button {
@@ -447,20 +483,6 @@
     border-color var(--cw-duration-fast) var(--cw-ease-standard);
 }
 
-.side-tab-button {
-  flex: 1;
-  border: 1px solid color-mix(in srgb, var(--cw-color-border) 92%, #ffffff);
-  color: var(--cw-color-muted);
-  background: rgba(255, 255, 255, 0.95);
-}
-
-.side-tab-button.is-active {
-  color: var(--cw-color-primary);
-  border-color: color-mix(in srgb, var(--cw-color-primary) 35%, var(--cw-color-border));
-  background: var(--cw-color-primary-soft);
-}
-
-.side-tab-button:hover,
 .primary-button:hover,
 .secondary-button:hover,
 .danger-button:hover,
@@ -519,7 +541,7 @@
   .workspace-badges,
   .toolbar-group,
   .side-tabs,
-  .side-tab-list {
+  .side-tabs-nav {
     width: 100%;
   }
 
