@@ -393,6 +393,15 @@ const toggleEditorSide = () => {
 
       <div class="editor-layout" :class="editorLayoutClass">
         <aside class="slide-rail panel-shell" :class="{ 'is-collapsed': isSlideRailCollapsed }">
+          <button
+            class="side-corner-badge side-corner-badge-left"
+            type="button"
+            :aria-label="isSlideRailCollapsed ? '展开左侧页面栏' : '收起左侧页面栏'"
+            @click="toggleSlideRail"
+          >
+            {{ isSlideRailCollapsed ? "›" : "‹" }}
+          </button>
+
           <div class="panel-head">
             <div>
               <p class="section-kicker">Slides</p>
@@ -407,14 +416,6 @@ const toggleEditorSide = () => {
                 @click="addSlide"
               >
                 新增
-              </a-button>
-              <a-button
-                class="secondary-button compact"
-                size="small"
-                type="outline"
-                @click="toggleSlideRail"
-              >
-                {{ isSlideRailCollapsed ? "展开" : "收起" }}
               </a-button>
             </div>
           </div>
@@ -488,9 +489,17 @@ const toggleEditorSide = () => {
         </section>
 
         <aside class="editor-side" :class="{ 'is-collapsed': isEditorSideCollapsed }">
-          <div class="side-tabs panel-shell" :class="{ 'is-collapsed': isEditorSideCollapsed }">
+          <button
+            class="side-corner-badge side-corner-badge-right"
+            type="button"
+            :aria-label="isEditorSideCollapsed ? '展开右侧管理栏' : '收起右侧管理栏'"
+            @click="toggleEditorSide"
+          >
+            {{ isEditorSideCollapsed ? "‹" : "›" }}
+          </button>
+
+          <div v-if="!isEditorSideCollapsed" class="side-tabs panel-shell">
             <a-tabs
-              v-if="!isEditorSideCollapsed"
               :active-key="activeSideTab"
               class="side-tabs-nav"
               @change="handleSideTabChange"
@@ -501,27 +510,11 @@ const toggleEditorSide = () => {
                 :title="tab.label"
               />
             </a-tabs>
-            <a-button
-              class="secondary-button compact side-toggle-button"
-              size="small"
-              type="outline"
-              @click="toggleEditorSide"
-            >
-              {{ isEditorSideCollapsed ? "展开" : "收起" }}
-            </a-button>
           </div>
 
           <div v-if="isEditorSideCollapsed" class="collapsed-side-shell panel-shell">
             <span class="collapsed-side-label">{{ sideTabs.find((tab) => tab.key === activeSideTab)?.label }}</span>
             <small>右侧管理区</small>
-            <a-button
-              class="secondary-button compact"
-              size="small"
-              type="outline"
-              @click="toggleEditorSide"
-            >
-              展开
-            </a-button>
           </div>
 
           <SlideSettingsPanel

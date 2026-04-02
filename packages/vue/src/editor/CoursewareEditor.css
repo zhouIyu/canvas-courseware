@@ -165,6 +165,7 @@
   display: grid;
   gap: var(--cw-space-3);
   min-width: 0;
+  position: relative;
 }
 
 .slide-rail.is-collapsed,
@@ -192,7 +193,7 @@
 }
 
 .secondary-button.compact,
-.side-toggle-button {
+.side-corner-badge {
   border-radius: var(--cw-radius-pill);
 }
 
@@ -408,15 +409,7 @@
 }
 
 .side-tabs {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--cw-space-2);
-}
-
-.side-tabs.is-collapsed {
-  grid-template-columns: auto;
-  justify-content: center;
+  display: block;
 }
 
 .side-tabs-nav {
@@ -448,8 +441,29 @@
   font-weight: 600;
 }
 
-.side-toggle-button {
-  flex-shrink: 0;
+.side-corner-badge {
+  position: absolute;
+  top: 14px;
+  z-index: 3;
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid color-mix(in srgb, var(--cw-color-primary) 24%, var(--cw-color-border));
+  font-size: 18px;
+  line-height: 1;
+  color: var(--cw-color-primary);
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--cw-shadow-weak);
+}
+
+.side-corner-badge-left {
+  right: -14px;
+}
+
+.side-corner-badge-right {
+  left: -14px;
 }
 
 .collapsed-side-label {
@@ -478,7 +492,8 @@
 .primary-button:hover,
 .secondary-button:hover,
 .danger-button:hover,
-.collapsed-rail-button:hover {
+.collapsed-rail-button:hover,
+.side-corner-badge:hover {
   transform: translateY(-1px);
 }
 
@@ -535,9 +550,5 @@
   .side-tabs,
   .side-tabs-nav {
     width: 100%;
-  }
-
-  .side-tabs {
-    flex-wrap: wrap;
   }
 }
