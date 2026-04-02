@@ -88,9 +88,7 @@ const {
   addText,
   applyingExternalDocument,
   activateSlide,
-  clearSelection,
   editorCanvasRef,
-  removeSelected,
   removeTimelineAnimation,
   removeTimelineStep,
   reorderNode,
@@ -379,15 +377,6 @@ const toggleEditorSide = () => {
           <a-button class="primary-button" type="primary" @click="addText">文本</a-button>
           <a-button class="primary-button" type="primary" @click="addRect">矩形</a-button>
           <a-button class="primary-button" type="primary" @click="addImage">图片</a-button>
-        </div>
-
-        <div class="toolbar-group">
-          <span class="toolbar-label">页面管理</span>
-          <a-button class="secondary-button" type="outline" @click="addSlide">新增页面</a-button>
-          <a-button class="secondary-button" type="outline" @click="clearSelection">清空选择</a-button>
-          <a-button class="danger-button" status="danger" type="outline" @click="removeSelected">
-            删除选中
-          </a-button>
         </div>
       </section>
 
