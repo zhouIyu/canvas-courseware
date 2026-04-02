@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import {
-  createNodeAnimation,
   createTimelineAction,
   createTimelineStep,
-  type NodeAnimation,
   type Slide,
   type TimelineAction,
   type TimelineStep,
@@ -11,7 +9,6 @@ import {
 import { computed } from "vue";
 import {
   formatAnimationKindLabel,
-  formatEasingLabel,
   formatNodeTypeLabel,
   formatTimelineActionLabel,
 } from "../shared";
@@ -48,42 +45,6 @@ const actionTypeOptions = [
   },
 ] as const;
 
-/** 动画类型选项。 */
-const animationKindOptions = [
-  {
-    label: formatAnimationKindLabel("appear"),
-    value: "appear",
-  },
-  {
-    label: formatAnimationKindLabel("fade"),
-    value: "fade",
-  },
-  {
-    label: formatAnimationKindLabel("slide-up"),
-    value: "slide-up",
-  },
-] as const;
-
-/** 缓动函数选项。 */
-const easingOptions = [
-  {
-    label: formatEasingLabel("linear"),
-    value: "linear",
-  },
-  {
-    label: formatEasingLabel("ease-in"),
-    value: "ease-in",
-  },
-  {
-    label: formatEasingLabel("ease-out"),
-    value: "ease-out",
-  },
-  {
-    label: formatEasingLabel("ease-in-out"),
-    value: "ease-in-out",
-  },
-] as const;
-
 /** 时间轴面板的只读输入。 */
 const props = withDefaults(
   defineProps<{
@@ -104,10 +65,6 @@ const emit = defineEmits<{
   "upsert-step": [step: TimelineStep];
   /** 删除一个时间轴步骤。 */
   "remove-step": [stepId: string];
-  /** 新增或更新一个动画资源。 */
-  "upsert-animation": [animation: NodeAnimation];
-  /** 删除一个动画资源。 */
-  "remove-animation": [animationId: string];
 }>();
 
 /** 当前是否已经有激活页面。 */
@@ -236,11 +193,6 @@ function buildTimelineAction(
 /** 统一向外发出 step 更新。 */
 function emitStep(step: TimelineStep): void {
   emit("upsert-step", step);
-}
-
-/** 统一向外发出 animation 更新。 */
-function emitAnimation(animation: NodeAnimation): void {
-  emit("upsert-animation", animation);
 }
 
 /** 计算某个动作在当前表单里可选的动画列表。 */
@@ -470,74 +422,6 @@ function handleActionAnimationChange(step: TimelineStep, actionId: string, event
   });
 }
 
-/** 新增一个动画资源，默认绑定当前选中对象。 */
-function handleCreateAnimation(): void {
-  if (!props.slide || !preferredNodeId.value) {
-    return;
-  }
-
-  emitAnimation(
-    createNodeAnimation({
-      targetId: preferredNodeId.value,
-    }),
-  );
-}
-
-/** 删除一个动画资源。 */
-function handleRemoveAnimation(animationId: string): void {
-  emit("remove-animation", animationId);
-}
-
-/** 更新动画目标对象。 */
-function handleAnimationTargetChange(animation: NodeAnimation, event: Event): void {
-  emitAnimation({
-    ...animation,
-    targetId: readTextInputValue(event, animation.targetId),
-  });
-}
-
-/** 更新动画类型。 */
-function handleAnimationKindChange(animation: NodeAnimation, event: Event): void {
-  const nextKind = readTextInputValue(event, animation.kind) as NodeAnimation["kind"];
-
-  emitAnimation({
-    ...animation,
-    kind: nextKind,
-    offsetY: nextKind === "slide-up" ? animation.offsetY ?? 32 : undefined,
-  });
-}
-
-/** 更新动画时长。 */
-function handleAnimationDurationChange(animation: NodeAnimation, event: Event): void {
-  emitAnimation({
-    ...animation,
-    durationMs: readNumberInputValue(event, animation.durationMs, 0),
-  });
-}
-
-/** 更新动画延迟。 */
-function handleAnimationDelayChange(animation: NodeAnimation, event: Event): void {
-  emitAnimation({
-    ...animation,
-    delayMs: readNumberInputValue(event, animation.delayMs ?? 0, 0),
-  });
-}
-
-/** 更新动画缓动。 */
-function handleAnimationEasingChange(animation: NodeAnimation, event: Event): void {
-  emitAnimation({
-    ...animation,
-    easing: readTextInputValue(event, animation.easing ?? "ease-out") as NodeAnimation["easing"],
-  });
-}
-
-/** 更新 slide-up 动画的纵向偏移。 */
-function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): void {
-  emitAnimation({
-    ...animation,
-    offsetY: readNumberInputValue(event, animation.offsetY ?? 32, 0),
-  });
-}
 </script>
 
 <template>
@@ -545,13 +429,13 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
     <header class="panel-head">
       <h3>时间轴</h3>
       <span class="panel-count">
-        {{ hasSlide ? `${slide?.timeline.steps.length ?? 0} 步 / ${slide?.timeline.animations.length ?? 0} 动` : "未选择页面" }}
+        {{ hasSlide ? `${slide?.timeline.steps.length ?? 0} 步` : "未选择页面" }}
       </span>
     </header>
 
     <div v-if="!hasSlide" class="group-card empty-card">
       <h4>未选择页面</h4>
-      <p class="group-copy">选择页面后即可配置步骤和动画。</p>
+      <p class="group-copy">选择页面后即可配置步骤和动作。</p>
     </div>
 
     <template v-else>
@@ -708,7 +592,7 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
                         v-if="action.type === 'play-animation' && resolveAnimationOptionsForAction(action).length === 0"
                         value=""
                       >
-                        请先创建动画资源
+                        请先到组件属性中创建动画
                       </option>
                       <option
                         v-for="option in resolveAnimationOptionsForAction(action)"
@@ -726,125 +610,6 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
           </article>
         </div>
         <p v-else class="panel-empty">暂无步骤。</p>
-      </section>
-
-      <section class="group-card">
-        <div class="group-head">
-          <h4>动画</h4>
-          <button
-            class="soft-button"
-            type="button"
-            :disabled="!hasNodes"
-            @click="handleCreateAnimation"
-          >
-            新建动画
-          </button>
-        </div>
-
-        <div v-if="(slide?.timeline.animations.length ?? 0) > 0" class="animation-list">
-          <article
-            v-for="(animation, animationIndex) in slide?.timeline.animations ?? []"
-            :key="animation.id"
-            class="animation-card"
-          >
-            <header class="card-head">
-              <div class="card-title-row">
-                <span class="card-index subtle">动画 {{ animationIndex + 1 }}</span>
-              </div>
-
-              <button class="danger-button" type="button" @click="handleRemoveAnimation(animation.id)">
-                删除动画
-              </button>
-            </header>
-
-            <div class="field-grid">
-              <label class="field field-span-2">
-                <span class="field-label">对象</span>
-                <select
-                  class="field-input"
-                  :value="animation.targetId"
-                  @change="handleAnimationTargetChange(animation, $event)"
-                >
-                  <option v-for="option in nodeOptions" :key="option.value" :value="option.value">
-                    {{ option.label }} · {{ option.detail }}
-                  </option>
-                </select>
-              </label>
-
-              <label class="field">
-                <span class="field-label">类型</span>
-                <select
-                  class="field-input"
-                  :value="animation.kind"
-                  @change="handleAnimationKindChange(animation, $event)"
-                >
-                  <option
-                    v-for="option in animationKindOptions"
-                    :key="option.value"
-                    :value="option.value"
-                  >
-                    {{ option.label }}
-                  </option>
-                </select>
-              </label>
-
-              <label class="field">
-                <span class="field-label">时长(ms)</span>
-                <input
-                  class="field-input"
-                  type="number"
-                  min="0"
-                  step="10"
-                  :value="animation.durationMs"
-                  @change="handleAnimationDurationChange(animation, $event)"
-                />
-              </label>
-
-              <details class="advanced-fields field-span-2">
-                <summary>高级参数</summary>
-                <div class="advanced-grid">
-                  <label class="field">
-                    <span class="field-label">缓动</span>
-                    <select
-                      class="field-input"
-                      :value="animation.easing ?? 'ease-out'"
-                      @change="handleAnimationEasingChange(animation, $event)"
-                    >
-                      <option v-for="option in easingOptions" :key="option.value" :value="option.value">
-                        {{ option.label }}
-                      </option>
-                    </select>
-                  </label>
-
-                  <label class="field">
-                    <span class="field-label">延迟(ms)</span>
-                    <input
-                      class="field-input"
-                      type="number"
-                      min="0"
-                      step="10"
-                      :value="animation.delayMs ?? 0"
-                      @change="handleAnimationDelayChange(animation, $event)"
-                    />
-                  </label>
-
-                  <label v-if="animation.kind === 'slide-up'" class="field field-span-2">
-                    <span class="field-label">偏移Y</span>
-                    <input
-                      class="field-input"
-                      type="number"
-                      min="0"
-                      step="1"
-                      :value="animation.offsetY ?? 32"
-                      @change="handleAnimationOffsetYChange(animation, $event)"
-                    />
-                  </label>
-                </div>
-              </details>
-            </div>
-          </article>
-        </div>
-        <p v-else class="panel-empty">暂无动画资源。</p>
       </section>
     </template>
   </section>

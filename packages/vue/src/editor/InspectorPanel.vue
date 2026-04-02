@@ -1,7 +1,15 @@
 <script setup lang="ts">
-import type { CoursewareNode, NodePatch, NodeTimelineSummary } from "@canvas-courseware/core";
+import {
+  createNodeAnimation,
+  type CoursewareNode,
+  type NodeAnimation,
+  type NodePatch,
+  type NodeTimelineSummary,
+} from "@canvas-courseware/core";
 import { computed } from "vue";
 import {
+  formatAnimationKindLabel,
+  formatEasingLabel,
   formatNodeInitialVisibilityLabel,
   formatNodeTypeLabel,
   formatOpacityValue,
@@ -16,12 +24,15 @@ const props = withDefaults(
     selectedNode?: CoursewareNode | null;
     /** 当前选中的节点数量。 */
     selectedCount?: number;
+    /** 当前选中节点关联的动画资源。 */
+    selectedAnimations?: NodeAnimation[];
     /** 当前选中节点的步骤归属摘要。 */
     timelineSummary?: NodeTimelineSummary | null;
   }>(),
   {
     selectedNode: null,
     selectedCount: 0,
+    selectedAnimations: () => [],
     timelineSummary: null,
   },
 );
@@ -30,6 +41,10 @@ const props = withDefaults(
 const emit = defineEmits<{
   /** 更新当前选中节点。 */
   "update-node": [nodeId: string, patch: NodePatch];
+  /** 新增或更新当前节点关联的动画资源。 */
+  "upsert-animation": [animation: NodeAnimation];
+  /** 删除当前节点关联的动画资源。 */
+  "remove-animation": [animationId: string];
 }>();
 
 /** 文字对齐选项。 */
@@ -44,6 +59,21 @@ const objectFitOptions = [
   { label: "填满", value: "fill" },
   { label: "完整显示", value: "contain" },
   { label: "裁切铺满", value: "cover" },
+] as const;
+
+/** 动画类型选项。 */
+const animationKindOptions = [
+  { label: formatAnimationKindLabel("appear"), value: "appear" },
+  { label: formatAnimationKindLabel("fade"), value: "fade" },
+  { label: formatAnimationKindLabel("slide-up"), value: "slide-up" },
+] as const;
+
+/** 缓动函数选项。 */
+const easingOptions = [
+  { label: formatEasingLabel("linear"), value: "linear" },
+  { label: formatEasingLabel("ease-in"), value: "ease-in" },
+  { label: formatEasingLabel("ease-out"), value: "ease-out" },
+  { label: formatEasingLabel("ease-in-out"), value: "ease-in-out" },
 ] as const;
 
 /** 当前是否正处于单选编辑状态。 */
@@ -69,10 +99,15 @@ const hasFirstTimelineStep = computed(
     props.timelineSummary?.firstStepIndex !== undefined,
 );
 
+/** 当前选中节点是否已经配置动画。 */
+const hasSelectedAnimations = computed(() => props.selectedAnimations.length > 0);
+
 /** 读取文本输入框的字符串值。 */
 const readTextInputValue = (event: Event, fallback = ""): string => {
   const target = event.target;
-  return target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement
+  return target instanceof HTMLInputElement ||
+    target instanceof HTMLTextAreaElement ||
+    target instanceof HTMLSelectElement
     ? target.value
     : fallback;
 };
@@ -308,6 +343,72 @@ const handleRectRadiusChange = (event: Event) => {
     props: {
       radius: readNumberInputValue(event, props.selectedNode.props.radius ?? 0, 0),
     },
+  });
+};
+
+/** 统一发出动画更新事件。 */
+const updateAnimation = (animation: NodeAnimation) => {
+  emit("upsert-animation", animation);
+};
+
+/** 为当前选中对象新增一个默认动画。 */
+const handleCreateAnimation = () => {
+  if (!props.selectedNode) {
+    return;
+  }
+
+  updateAnimation(
+    createNodeAnimation({
+      targetId: props.selectedNode.id,
+    }),
+  );
+};
+
+/** 删除某个动画资源。 */
+const handleRemoveAnimation = (animationId: string) => {
+  emit("remove-animation", animationId);
+};
+
+/** 更新动画类型。 */
+const handleAnimationKindChange = (animation: NodeAnimation, event: Event) => {
+  const nextKind = readTextInputValue(event, animation.kind) as NodeAnimation["kind"];
+
+  updateAnimation({
+    ...animation,
+    kind: nextKind,
+    offsetY: nextKind === "slide-up" ? animation.offsetY ?? 32 : undefined,
+  });
+};
+
+/** 更新动画时长。 */
+const handleAnimationDurationChange = (animation: NodeAnimation, event: Event) => {
+  updateAnimation({
+    ...animation,
+    durationMs: readNumberInputValue(event, animation.durationMs, 0),
+  });
+};
+
+/** 更新动画延迟。 */
+const handleAnimationDelayChange = (animation: NodeAnimation, event: Event) => {
+  updateAnimation({
+    ...animation,
+    delayMs: readNumberInputValue(event, animation.delayMs ?? 0, 0),
+  });
+};
+
+/** 更新动画缓动。 */
+const handleAnimationEasingChange = (animation: NodeAnimation, event: Event) => {
+  updateAnimation({
+    ...animation,
+    easing: readTextInputValue(event, animation.easing ?? "ease-out") as NodeAnimation["easing"],
+  });
+};
+
+/** 更新 slide-up 动画的纵向偏移。 */
+const handleAnimationOffsetYChange = (animation: NodeAnimation, event: Event) => {
+  updateAnimation({
+    ...animation,
+    offsetY: readNumberInputValue(event, animation.offsetY ?? 32, 0),
   });
 };
 </script>
@@ -624,6 +725,114 @@ const handleRectRadiusChange = (event: Event) => {
           </label>
         </div>
       </div>
+
+      <div class="group-card">
+        <div class="group-head">
+          <h4>动画设置</h4>
+          <button class="soft-button" type="button" @click="handleCreateAnimation">
+            新建动画
+          </button>
+        </div>
+
+        <div v-if="hasSelectedAnimations" class="animation-list">
+          <article
+            v-for="(animation, animationIndex) in selectedAnimations"
+            :key="animation.id"
+            class="animation-card"
+          >
+            <header class="card-head">
+              <div class="card-title-row">
+                <span class="card-index">动画 {{ animationIndex + 1 }}</span>
+              </div>
+              <button
+                class="danger-button"
+                type="button"
+                @click="handleRemoveAnimation(animation.id)"
+              >
+                删除动画
+              </button>
+            </header>
+
+            <div class="field-grid">
+              <label class="field">
+                <span class="field-label">类型</span>
+                <select
+                  class="field-input"
+                  :value="animation.kind"
+                  @change="handleAnimationKindChange(animation, $event)"
+                >
+                  <option
+                    v-for="option in animationKindOptions"
+                    :key="option.value"
+                    :value="option.value"
+                  >
+                    {{ option.label }}
+                  </option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span class="field-label">时长(ms)</span>
+                <input
+                  class="field-input"
+                  type="number"
+                  min="0"
+                  step="10"
+                  :value="animation.durationMs"
+                  @change="handleAnimationDurationChange(animation, $event)"
+                />
+              </label>
+
+              <details class="advanced-fields field-span-2">
+                <summary>高级参数</summary>
+                <div class="advanced-grid">
+                  <label class="field">
+                    <span class="field-label">缓动</span>
+                    <select
+                      class="field-input"
+                      :value="animation.easing ?? 'ease-out'"
+                      @change="handleAnimationEasingChange(animation, $event)"
+                    >
+                      <option
+                        v-for="option in easingOptions"
+                        :key="option.value"
+                        :value="option.value"
+                      >
+                        {{ option.label }}
+                      </option>
+                    </select>
+                  </label>
+
+                  <label class="field">
+                    <span class="field-label">延迟(ms)</span>
+                    <input
+                      class="field-input"
+                      type="number"
+                      min="0"
+                      step="10"
+                      :value="animation.delayMs ?? 0"
+                      @change="handleAnimationDelayChange(animation, $event)"
+                    />
+                  </label>
+
+                  <label v-if="animation.kind === 'slide-up'" class="field field-span-2">
+                    <span class="field-label">偏移Y</span>
+                    <input
+                      class="field-input"
+                      type="number"
+                      min="0"
+                      step="1"
+                      :value="animation.offsetY ?? 32"
+                      @change="handleAnimationOffsetYChange(animation, $event)"
+                    />
+                  </label>
+                </div>
+              </details>
+            </div>
+          </article>
+        </div>
+        <p v-else class="group-copy">当前对象还没有动画。</p>
+      </div>
     </template>
 
     <div v-else class="group-card empty-card">
@@ -798,6 +1007,45 @@ const handleRectRadiusChange = (event: Event) => {
   color: var(--cw-color-text);
 }
 
+.animation-list {
+  display: grid;
+  gap: var(--cw-space-3);
+}
+
+.animation-card {
+  display: grid;
+  gap: var(--cw-space-3);
+  padding: 14px 16px;
+  border: 1px solid rgba(19, 78, 74, 0.08);
+  border-radius: var(--cw-radius-md);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cw-space-3);
+}
+
+.card-title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--cw-space-2);
+}
+
+.card-index {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: var(--cw-radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cw-color-primary);
+  background: rgba(22, 93, 255, 0.1);
+}
+
 .field {
   display: grid;
   gap: var(--cw-space-2);
@@ -846,6 +1094,31 @@ const handleRectRadiusChange = (event: Event) => {
   padding: 6px;
 }
 
+.advanced-fields {
+  margin: 0;
+  padding: 12px;
+  border: 1px dashed rgba(22, 93, 255, 0.24);
+  border-radius: var(--cw-radius-md);
+  background: rgba(248, 250, 252, 0.72);
+}
+
+.advanced-fields > summary {
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cw-color-muted);
+}
+
+.advanced-fields[open] > summary {
+  margin-bottom: var(--cw-space-2);
+}
+
+.advanced-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--cw-space-3);
+}
+
 .toggle-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -873,9 +1146,41 @@ const handleRectRadiusChange = (event: Event) => {
   background: rgba(240, 253, 250, 0.74);
 }
 
+.soft-button,
+.danger-button {
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: var(--cw-radius-pill);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform var(--cw-duration-fast) var(--cw-ease-standard),
+    background var(--cw-duration-fast) var(--cw-ease-standard),
+    border-color var(--cw-duration-fast) var(--cw-ease-standard);
+}
+
+.soft-button {
+  border: 1px solid rgba(22, 93, 255, 0.18);
+  color: var(--cw-color-text);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.danger-button {
+  border: 1px solid rgba(220, 38, 38, 0.16);
+  color: var(--cw-color-danger);
+  background: var(--cw-color-danger-soft);
+}
+
+.soft-button:hover,
+.danger-button:hover {
+  transform: translateY(-1px);
+}
+
 @media (max-width: 640px) {
   .field-grid,
-  .toggle-grid {
+  .toggle-grid,
+  .advanced-grid {
     grid-template-columns: 1fr;
   }
 

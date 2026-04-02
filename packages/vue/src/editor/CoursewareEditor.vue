@@ -2,15 +2,15 @@
 import type {
   CoursewareDocument,
   EditorSnapshot,
-  NodeTimelineSummary,
   NodeAnimation,
   NodePatch,
+  NodeTimelineSummary,
   ReorderPosition,
   Slide,
   TimelineStep,
 } from "@canvas-courseware/core";
 import { createSlideNodeTimelineSummaryMap } from "@canvas-courseware/core";
-import { computed, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { DEFAULT_EDITOR_HEIGHT } from "../shared";
 import InspectorPanel from "./InspectorPanel.vue";
 import LayerPanel from "./LayerPanel.vue";
@@ -78,6 +78,12 @@ const isSlideRailCollapsed = ref(false);
 
 /** 当前右侧管理栏是否已收起。 */
 const isEditorSideCollapsed = ref(false);
+
+/** 中间编辑区滚动容器的 DOM 引用。 */
+const stageViewportRef = ref<HTMLDivElement | null>(null);
+
+/** 中间编辑区当前可用宽度。 */
+const stageViewportWidth = ref(0);
 
 /** 从 composable 中解出编辑器所需的状态与操作。 */
 const {
@@ -194,6 +200,17 @@ const editorLayoutStyle = computed(() => ({
   "--cw-editor-pane-height": `${props.height}px`,
 }));
 
+/** 当前选中节点对应的动画资源列表。 */
+const selectedNodeAnimations = computed<NodeAnimation[]>(() => {
+  if (!activeSlide.value || !selectedNode.value) {
+    return [];
+  }
+
+  return activeSlide.value.timeline.animations.filter(
+    (animation) => animation.targetId === selectedNode.value?.id,
+  );
+});
+
 /** 真正传给 canvas 容器的尺寸样式。 */
 const canvasStyle = computed(() => {
   if (!activeSlide.value) {
@@ -203,6 +220,41 @@ const canvasStyle = computed(() => {
   return {
     width: `${activeSlide.value.size.width}px`,
     height: `${activeSlide.value.size.height}px`,
+  };
+});
+
+/** 根据中间区域宽度计算画布缩放比例，只缩小不放大。 */
+const canvasScale = computed(() => {
+  if (!activeSlide.value || stageViewportWidth.value <= 0) {
+    return 1;
+  }
+
+  const availableWidth = Math.max(stageViewportWidth.value - 48, 180);
+  return Math.min(1, availableWidth / activeSlide.value.size.width);
+});
+
+/** 缩放后的画布外框尺寸，保证布局高度与展示尺寸一致。 */
+const canvasFrameStyle = computed(() => {
+  if (!activeSlide.value) {
+    return {};
+  }
+
+  return {
+    width: `${activeSlide.value.size.width * canvasScale.value}px`,
+    height: `${activeSlide.value.size.height * canvasScale.value}px`,
+  };
+});
+
+/** 实际渲染画布仍保持原始尺寸，只通过 transform 缩放。 */
+const canvasSurfaceStyle = computed(() => {
+  if (!activeSlide.value) {
+    return {};
+  }
+
+  return {
+    ...canvasStyle.value,
+    transform: `scale(${canvasScale.value})`,
+    transformOrigin: "top left",
   };
 });
 
@@ -324,6 +376,32 @@ const toggleSlideRail = () => {
 const toggleEditorSide = () => {
   isEditorSideCollapsed.value = !isEditorSideCollapsed.value;
 };
+
+/** 刷新中间编辑区当前可用宽度。 */
+const updateStageViewportWidth = () => {
+  stageViewportWidth.value = stageViewportRef.value?.clientWidth ?? 0;
+};
+
+/** 监听中间区域尺寸变化，让画布缩放及时同步。 */
+let stageViewportResizeObserver: ResizeObserver | null = null;
+
+onMounted(() => {
+  updateStageViewportWidth();
+
+  if (!stageViewportRef.value) {
+    return;
+  }
+
+  stageViewportResizeObserver = new ResizeObserver(() => {
+    updateStageViewportWidth();
+  });
+  stageViewportResizeObserver.observe(stageViewportRef.value);
+});
+
+onBeforeUnmount(() => {
+  stageViewportResizeObserver?.disconnect();
+  stageViewportResizeObserver = null;
+});
 </script>
 
 <template>
@@ -423,10 +501,12 @@ const toggleEditorSide = () => {
             {{ isEditorSideCollapsed ? "‹" : "›" }}
           </button>
 
-          <div class="stage-scroll" :style="stageStyle">
+          <div ref="stageViewportRef" class="stage-scroll" :style="stageStyle">
             <div class="stage-backdrop">
-              <div v-if="activeSlide" class="stage-surface" :style="canvasStyle">
-                <canvas ref="editorCanvasRef" />
+              <div v-if="activeSlide" class="stage-scale-frame" :style="canvasFrameStyle">
+                <div class="stage-surface" :style="canvasSurfaceStyle">
+                  <canvas ref="editorCanvasRef" />
+                </div>
               </div>
               <div v-else class="empty-stage">
                 <strong>还没有可编辑的页面</strong>
@@ -461,8 +541,11 @@ const toggleEditorSide = () => {
               v-else-if="activeSideTab === 'node'"
               :selected-count="snapshot.selection.nodeIds.length"
               :selected-node="selectedNode ?? null"
+              :selected-animations="selectedNodeAnimations"
               :timeline-summary="selectedNodeTimelineSummary"
               @update-node="handleNodeUpdate"
+              @upsert-animation="handleTimelineAnimationUpsert"
+              @remove-animation="handleTimelineAnimationRemove"
             />
             <LayerPanel
               v-else-if="activeSideTab === 'layers'"
@@ -478,8 +561,6 @@ const toggleEditorSide = () => {
               :selected-node-id="selectedNodeId"
               @upsert-step="handleTimelineStepUpsert"
               @remove-step="handleTimelineStepRemove"
-              @upsert-animation="handleTimelineAnimationUpsert"
-              @remove-animation="handleTimelineAnimationRemove"
             />
           </div>
         </aside>

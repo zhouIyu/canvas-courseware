@@ -145,10 +145,11 @@
   --cw-editor-pane-height: 820px;
   display: grid;
   grid-template-columns: 176px minmax(0, 1fr) 348px;
-  gap: 0;
+  gap: 12px;
   align-items: stretch;
   min-width: 0;
-  background: #f7f9fc;
+  padding: 12px;
+  background: #f1f4f8;
 }
 
 .editor-layout > * {
@@ -186,8 +187,9 @@
   grid-template-rows: auto minmax(0, 1fr);
   align-content: stretch;
   padding: 10px 8px 12px;
-  border-right: 1px solid color-mix(in srgb, var(--cw-color-border) 92%, #ffffff);
-  background: linear-gradient(180deg, #f6f8fb 0%, #f3f5f8 100%);
+  border: 1px solid color-mix(in srgb, var(--cw-color-border) 90%, #ffffff);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #fbfcfe 0%, #f5f7fa 100%);
 }
 
 .panel-head,
@@ -333,6 +335,9 @@
   display: block;
   min-width: 0;
   position: relative;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--cw-color-border) 90%, #ffffff);
+  border-radius: 18px;
   background: linear-gradient(180deg, #eef2f6 0%, #edf1f5 100%);
 }
 
@@ -379,8 +384,13 @@
   padding: 12px 24px 26px;
 }
 
-.stage-surface {
+.stage-scale-frame {
   position: relative;
+}
+
+.stage-surface {
+  position: absolute;
+  inset: 0 auto auto 0;
   background: #ffffff;
   border: 1px solid rgba(209, 217, 224, 0.92);
   box-shadow:
@@ -515,15 +525,66 @@
 .editor-side {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
-  border-left: 1px solid color-mix(in srgb, var(--cw-color-border) 92%, #ffffff);
+  border: 1px solid color-mix(in srgb, var(--cw-color-border) 90%, #ffffff);
+  border-radius: 16px;
   background: rgba(255, 255, 255, 0.98);
 }
 
 .editor-side-body {
   min-height: 0;
+  padding: 12px 16px 16px;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
+}
+
+.editor-side-body :deep(.slide-settings-panel),
+.editor-side-body :deep(.inspector-panel),
+.editor-side-body :deep(.layer-panel),
+.editor-side-body :deep(.timeline-panel) {
+  gap: 12px;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.editor-side-body :deep(.panel-head) {
+  padding-bottom: 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--cw-color-border) 90%, #ffffff);
+}
+
+.editor-side-body :deep(.group-card),
+.editor-side-body :deep(.timeline-step-card),
+.editor-side-body :deep(.step-card),
+.editor-side-body :deep(.animation-card),
+.editor-side-body :deep(.action-card),
+.editor-side-body :deep(.layer-item),
+.editor-side-body :deep(.toggle-field) {
+  padding: 14px 0;
+  border: 0 !important;
+  border-radius: 0 !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--cw-color-border) 90%, #ffffff);
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.editor-side-body :deep(.layer-item.is-active) {
+  padding-left: 10px;
+  border-left: 2px solid var(--cw-color-primary);
+  background: transparent;
+}
+
+.editor-side-body :deep(.empty-card) {
+  background: transparent;
+}
+
+.editor-side-body :deep(.group-head),
+.editor-side-body :deep(.card-head),
+.editor-side-body :deep(.subsection-head),
+.editor-side-body :deep(.action-head) {
+  align-items: center;
 }
 
 .primary-button:hover,
@@ -547,8 +608,6 @@
   .slide-rail,
   .editor-side {
     height: auto;
-    border-inline: 0;
-    border-bottom: 1px solid color-mix(in srgb, var(--cw-color-border) 92%, #ffffff);
   }
 
   .slide-list,
