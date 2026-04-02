@@ -24,7 +24,7 @@
   display: grid;
   gap: var(--cw-space-2);
   align-items: start;
-  padding: 12px 14px;
+  padding: 10px 12px;
 }
 
 .topbar-main-row {
@@ -33,20 +33,20 @@
   align-items: center;
   justify-content: space-between;
   min-width: 0;
-  gap: var(--cw-space-3);
+  gap: var(--cw-space-2);
 }
 
 .topbar-primary-row {
   display: flex;
   align-items: center;
-  gap: var(--cw-space-3);
+  gap: var(--cw-space-2);
   min-width: 0;
   flex: 1 1 560px;
 }
 
 .back-button {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--cw-radius-pill);
   flex-shrink: 0;
 }
@@ -63,7 +63,7 @@
 }
 
 .title-input :deep(.arco-input-wrapper) {
-  min-height: 40px;
+  min-height: 36px;
   border-radius: var(--cw-radius-pill);
 }
 
@@ -76,7 +76,7 @@
 }
 
 .workspace-mode-switch :deep(.arco-radio) {
-  min-height: 36px;
+  min-height: 32px;
 }
 
 .workspace-actions {
@@ -90,17 +90,16 @@
 }
 
 .utility-button {
-  min-height: 36px;
-  padding: 0 14px;
-  font-size: 13px;
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 12px;
   border-radius: var(--cw-radius-pill);
 }
 
 .save-inline-meta {
-  display: grid;
+  display: inline-flex;
   align-items: center;
-  justify-items: start;
-  gap: 4px;
+  gap: 8px;
   margin-left: var(--cw-space-1);
   padding-left: var(--cw-space-2);
   border-left: 1px dashed color-mix(in srgb, var(--cw-color-border) 88%, #ffffff);
@@ -110,6 +109,7 @@
   font-size: 12px;
   color: var(--cw-color-muted);
   white-space: nowrap;
+  line-height: 1;
 }
 
 .io-feedback {

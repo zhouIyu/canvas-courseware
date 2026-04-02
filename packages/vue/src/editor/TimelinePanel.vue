@@ -551,23 +551,11 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
 <template>
   <section class="timeline-panel">
     <header class="panel-head">
-      <div>
-        <p class="panel-kicker">时间轴管理</p>
-        <h3>Timeline</h3>
-      </div>
-      <span class="panel-count">{{ hasSlide ? "当前页" : "未选择" }}</span>
+      <h3>时间轴</h3>
+      <span class="panel-count">
+        {{ hasSlide ? `${slide?.timeline.steps.length ?? 0} 步骤 / ${slide?.timeline.animations.length ?? 0} 动画` : "未选择页面" }}
+      </span>
     </header>
-
-    <div class="summary-grid">
-      <article class="summary-card">
-        <span class="summary-label">Steps</span>
-        <strong>{{ slide?.timeline.steps.length ?? 0 }}</strong>
-      </article>
-      <article class="summary-card">
-        <span class="summary-label">Animations</span>
-        <strong>{{ slide?.timeline.animations.length ?? 0 }}</strong>
-      </article>
-    </div>
 
     <div v-if="!hasSlide" class="group-card empty-card">
       <div class="group-head">
@@ -590,10 +578,7 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
 
       <section class="group-card">
         <div class="group-head">
-          <div>
-            <h4>步骤列表</h4>
-            <p class="group-copy compact">按当前顺序执行，支持页面点击、自动触发、对象点击和多动作组合。</p>
-          </div>
+          <h4>步骤</h4>
           <button
             class="soft-button"
             type="button"
@@ -615,7 +600,7 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
                 <span class="card-index">{{ String(stepIndex + 1).padStart(2, "0") }}</span>
                 <div class="card-copy">
                   <strong>{{ step.name }}</strong>
-                  <small>{{ resolveTriggerSummary(step.trigger) }} · {{ step.actions.length }} 个动作</small>
+                  <small>{{ resolveTriggerSummary(step.trigger) }}</small>
                 </div>
               </div>
 
@@ -667,10 +652,7 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
             </div>
 
             <div class="subsection-head">
-              <div>
-                <strong>步骤动作</strong>
-                <small>单个步骤可以同时显示、隐藏对象，或单独播放动画。</small>
-              </div>
+              <strong>动作</strong>
               <button
                 class="ghost-button"
                 type="button"
@@ -689,8 +671,7 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
               >
                 <div class="action-head">
                   <div class="action-copy">
-                    <span class="action-index">动作 {{ actionIndex + 1 }}</span>
-                    <strong>{{ formatTimelineActionLabel(action.type) }}</strong>
+                    <strong>动作 {{ actionIndex + 1 }} · {{ formatTimelineActionLabel(action.type) }}</strong>
                   </div>
                   <button
                     class="danger-text-button"
@@ -768,10 +749,7 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
 
       <section class="group-card">
         <div class="group-head">
-          <div>
-            <h4>动画资源</h4>
-            <p class="group-copy compact">`show-node` 只会显示与目标对象一致的动画资源，避免引用错位。</p>
-          </div>
+          <h4>动画</h4>
           <button
             class="soft-button"
             type="button"
@@ -793,7 +771,7 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
                 <span class="card-index subtle">{{ formatAnimationKindLabel(animation.kind) }}</span>
                 <div class="card-copy">
                   <strong>{{ resolveNodeName(animation.targetId) }}</strong>
-                  <small>{{ animation.durationMs }}ms · {{ animation.easing ?? "ease-out" }}</small>
+                  <small>{{ animation.durationMs }}ms</small>
                 </div>
               </div>
 
@@ -893,12 +871,12 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
 <style scoped>
 .timeline-panel {
   display: grid;
-  gap: var(--cw-space-4);
-  padding: var(--cw-space-5);
+  gap: var(--cw-space-3);
+  padding: var(--cw-space-4);
   border: 1px solid var(--cw-color-border);
   border-radius: var(--cw-radius-lg);
   background:
-    linear-gradient(180deg, rgba(22, 93, 255, 0.08), rgba(255, 255, 255, 0.96)),
+    linear-gradient(180deg, rgba(22, 93, 255, 0.04), rgba(255, 255, 255, 0.98)),
     var(--cw-color-surface);
   box-shadow: var(--cw-shadow-weak);
 }
@@ -914,22 +892,9 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
   gap: var(--cw-space-3);
 }
 
-.panel-kicker,
-.summary-label,
-.field-label,
-.action-index {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.4;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--cw-color-primary);
-}
-
 .panel-head h3,
 .group-head h4 {
-  margin: var(--cw-space-2) 0 0;
+  margin: 0;
 }
 
 .panel-head h3 {
@@ -937,29 +902,16 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
   line-height: 1.2;
 }
 
-.summary-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--cw-space-3);
-}
-
-.summary-card,
 .group-card,
 .step-card,
 .animation-card,
 .action-card {
   display: grid;
-  gap: var(--cw-space-3);
-  padding: 16px;
+  gap: var(--cw-space-2);
+  padding: 14px;
   border: 1px solid rgba(19, 78, 74, 0.08);
   border-radius: var(--cw-radius-md);
   background: rgba(255, 255, 255, 0.92);
-}
-
-.summary-card strong {
-  font-size: 28px;
-  line-height: 1;
-  color: var(--cw-color-text);
 }
 
 .panel-count,
@@ -987,7 +939,6 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
 
 .group-copy,
 .card-copy small,
-.subsection-head small,
 .panel-empty {
   margin: 0;
   font-size: 14px;
@@ -995,15 +946,11 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
   color: var(--cw-color-muted);
 }
 
-.group-copy.compact {
-  margin-top: 4px;
-}
-
 .step-list,
 .animation-list,
 .action-list {
   display: grid;
-  gap: var(--cw-space-3);
+  gap: var(--cw-space-2);
 }
 
 .card-title-row,
@@ -1016,20 +963,28 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
 .field-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--cw-space-3);
+  gap: var(--cw-space-2);
 }
 
 .field {
   display: grid;
-  gap: var(--cw-space-2);
+  gap: 6px;
 }
 
 .field-span-2 {
   grid-column: span 2;
 }
 
+.field-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--cw-color-muted);
+}
+
 .field-input {
-  min-height: 44px;
+  min-height: 40px;
   padding: 0 14px;
   border: 1px solid rgba(22, 93, 255, 0.16);
   border-radius: var(--cw-radius-md);
@@ -1062,10 +1017,10 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
 .ghost-button,
 .danger-button,
 .danger-text-button {
-  min-height: 44px;
-  padding: 0 var(--cw-space-4);
+  min-height: 38px;
+  padding: 0 14px;
   border-radius: var(--cw-radius-pill);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -1089,7 +1044,7 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
 }
 
 .danger-text-button {
-  min-height: 36px;
+  min-height: 32px;
   padding: 0 12px;
 }
 
@@ -1114,7 +1069,6 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
 
 @media (max-width: 768px) {
   .timeline-panel,
-  .summary-card,
   .group-card,
   .step-card,
   .animation-card,

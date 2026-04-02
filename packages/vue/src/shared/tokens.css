@@ -39,7 +39,7 @@
   --cw-ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
   --cw-ease-emphasis: cubic-bezier(0.16, 1, 0.3, 1);
   --cw-focus-ring: 0 0 0 3px rgba(22, 93, 255, 0.22);
-  --cw-editor-rail-width: 304px;
+  --cw-editor-rail-width: 248px;
   --cw-editor-side-width: 372px;
 }
 
