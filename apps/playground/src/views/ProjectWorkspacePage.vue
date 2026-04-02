@@ -20,6 +20,9 @@ type SaveStatus = "saved" | "saving" | "dirty" | "error";
 /** 导入导出反馈语义。 */
 type IoFeedbackTone = "success" | "error";
 
+/** 模式切换控件传回值的兼容类型。 */
+type WorkspaceModeToggleValue = string | number | boolean;
+
 /** 当前路由实例。 */
 const route = useRoute();
 
@@ -138,6 +141,21 @@ const saveStatusLabel = computed(() => {
     case "saved":
     default:
       return "已保存";
+  }
+});
+
+/** 保存状态对应的标签色值。 */
+const saveStatusTagColor = computed(() => {
+  switch (saveStatus.value) {
+    case "saving":
+      return "#165dff";
+    case "dirty":
+      return "#ea580c";
+    case "error":
+      return "#dc2626";
+    case "saved":
+    default:
+      return "#0d9488";
   }
 });
 
@@ -303,6 +321,13 @@ const switchWorkspaceMode = async (mode: ProjectWorkspaceMode) => {
   });
 };
 
+/** 处理模式分段控件变更。 */
+const handleWorkspaceModeChange = (nextMode: WorkspaceModeToggleValue) => {
+  if (nextMode === "edit" || nextMode === "preview") {
+    void switchWorkspaceMode(nextMode);
+  }
+};
+
 /** 跳回项目列表页。 */
 const goBackToProjects = async () => {
   await router.push({
@@ -395,9 +420,8 @@ const handleJsonImportChange = async (event: Event) => {
 };
 
 /** 顶部标题输入时同步更新项目名和文档名。 */
-const handleProjectTitleInput = (event: Event) => {
-  const target = event.target;
-  const nextTitle = target instanceof HTMLInputElement ? target.value : projectTitle.value;
+const handleProjectTitleInput = (nextValue: string | number) => {
+  const nextTitle = String(nextValue ?? "");
   projectTitle.value = nextTitle;
   syncDocumentTitle(nextTitle);
   scheduleAutoSave();
@@ -446,37 +470,43 @@ onBeforeUnmount(() => {
 
 <template>
   <main class="workspace-page">
-    <div v-if="isLoading" class="state-shell">
+    <section v-if="isLoading" class="state-shell">
+      <a-spin size="large" />
       <strong>正在加载项目...</strong>
       <p>请稍候，正在恢复本地课件数据。</p>
-    </div>
+    </section>
 
-    <div v-else-if="isProjectMissing" class="state-shell">
-      <strong>没有找到这个项目</strong>
-      <p>项目可能已被删除，或者当前链接已经失效。</p>
-      <button class="secondary-button" type="button" @click="goBackToProjects">
-        返回项目列表
-      </button>
-    </div>
+    <section v-else-if="isProjectMissing" class="state-shell">
+      <a-result status="404" subtitle="项目可能已被删除，或者当前链接已经失效。" title="没有找到这个项目">
+        <template #extra>
+          <a-button type="primary" @click="goBackToProjects">返回项目列表</a-button>
+        </template>
+      </a-result>
+    </section>
 
     <template v-else-if="documentModel">
       <header class="workspace-topbar">
         <div class="topbar-left">
           <div class="topbar-primary-row">
-            <button class="back-button" type="button" @click="goBackToProjects">项目列表</button>
+            <a-button class="back-button" type="outline" @click="goBackToProjects">项目列表</a-button>
 
             <label class="title-field">
               <span class="title-label">项目标题</span>
-              <input class="title-input" :value="projectTitle" @input="handleProjectTitleInput" />
+              <a-input
+                :model-value="projectTitle"
+                class="title-input"
+                placeholder="请输入项目标题"
+                @input="handleProjectTitleInput"
+              />
             </label>
           </div>
 
           <div class="workspace-overview">
             <div class="workspace-signals">
-              <span class="signal-pill accent">
+              <a-tag :color="workspaceMode === 'edit' ? '#0d9488' : '#165dff'" bordered>
                 {{ workspaceMode === "edit" ? "编辑模式" : "预览模式" }}
-              </span>
-              <span class="signal-pill subtle">{{ activeSlideLabel }}</span>
+              </a-tag>
+              <a-tag color="#64748b" bordered>{{ activeSlideLabel }}</a-tag>
               <span class="workspace-summary">{{ projectStatsLabel }}</span>
             </div>
             <p class="workspace-mode-copy">{{ workspaceModeDescription }}</p>
@@ -485,24 +515,15 @@ onBeforeUnmount(() => {
 
         <div class="topbar-right">
           <div class="topbar-controls">
-            <div class="topbar-center">
-              <button
-                class="mode-button"
-                :class="{ 'is-active': workspaceMode === 'preview' }"
-                type="button"
-                @click="switchWorkspaceMode('preview')"
-              >
-                预览
-              </button>
-              <button
-                class="mode-button"
-                :class="{ 'is-active': workspaceMode === 'edit' }"
-                type="button"
-                @click="switchWorkspaceMode('edit')"
-              >
-                编辑
-              </button>
-            </div>
+            <a-radio-group
+              :model-value="workspaceMode"
+              size="small"
+              type="button"
+              @change="handleWorkspaceModeChange"
+            >
+              <a-radio value="preview">预览</a-radio>
+              <a-radio value="edit">编辑</a-radio>
+            </a-radio-group>
 
             <div class="workspace-actions">
               <input
@@ -512,38 +533,30 @@ onBeforeUnmount(() => {
                 accept=".json,application/json"
                 @change="handleJsonImportChange"
               />
-              <button
-                class="secondary-button utility-button"
-                type="button"
-                @click="handleJsonImportClick"
-              >
+              <a-button class="utility-button" type="outline" @click="handleJsonImportClick">
                 导入 JSON
-              </button>
-              <button
-                class="secondary-button utility-button"
-                type="button"
-                @click="handleJsonExportClick"
-              >
+              </a-button>
+              <a-button class="utility-button" type="outline" @click="handleJsonExportClick">
                 导出 JSON
-              </button>
-              <button class="primary-button" type="button" @click="handleSaveClick">保存</button>
+              </a-button>
+              <a-button type="primary" @click="handleSaveClick">保存</a-button>
             </div>
           </div>
 
           <div class="workspace-status-row">
             <div class="save-meta">
-              <span class="save-status" :data-state="saveStatus">{{ saveStatusLabel }}</span>
+              <a-tag :color="saveStatusTagColor" bordered>{{ saveStatusLabel }}</a-tag>
               <small>{{ saveStatusHint }}</small>
             </div>
 
-            <p
+            <a-alert
               v-if="ioFeedback"
+              :show-icon="true"
+              :type="ioFeedback.tone"
               class="io-feedback"
-              :data-tone="ioFeedback.tone"
-              aria-live="polite"
             >
               {{ ioFeedback.message }}
-            </p>
+            </a-alert>
           </div>
         </div>
       </header>
@@ -569,355 +582,4 @@ onBeforeUnmount(() => {
   </main>
 </template>
 
-<style scoped>
-.workspace-page {
-  display: grid;
-  gap: var(--cw-space-4);
-  min-width: 0;
-  min-height: 100dvh;
-  padding: 20px;
-}
-
-.workspace-topbar,
-.workspace-stage,
-.state-shell {
-  min-width: 0;
-  border: 1px solid var(--cw-color-border);
-  border-radius: var(--cw-radius-xl);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.86)),
-    var(--cw-color-surface);
-  box-shadow: var(--cw-shadow-medium);
-}
-
-.workspace-topbar {
-  display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(420px, 0.95fr);
-  gap: var(--cw-space-4);
-  align-items: start;
-  padding: 14px 18px;
-}
-
-.topbar-left,
-.topbar-right {
-  display: grid;
-  min-width: 0;
-  gap: var(--cw-space-3);
-}
-
-.workspace-overview {
-  display: grid;
-  gap: 6px;
-}
-
-.topbar-primary-row {
-  display: flex;
-  align-items: center;
-  min-width: 0;
-  gap: var(--cw-space-3);
-}
-
-.topbar-center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
-  border: 1px solid rgba(19, 78, 74, 0.08);
-  border-radius: calc(var(--cw-radius-pill) + 4px);
-  background: rgba(255, 255, 255, 0.9);
-}
-
-.topbar-right {
-  display: grid;
-  gap: var(--cw-space-2);
-  justify-items: end;
-}
-
-.topbar-controls {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--cw-space-2);
-  min-width: 0;
-}
-
-.back-button,
-.mode-button,
-.primary-button,
-.secondary-button {
-  min-height: 44px;
-  padding: 0 var(--cw-space-4);
-  border-radius: var(--cw-radius-pill);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    transform var(--cw-duration-fast) var(--cw-ease-standard),
-    background var(--cw-duration-fast) var(--cw-ease-standard),
-    border-color var(--cw-duration-fast) var(--cw-ease-standard);
-}
-
-.back-button,
-.secondary-button {
-  border: 1px solid rgba(13, 148, 136, 0.18);
-  color: var(--cw-color-text);
-  background: rgba(255, 255, 255, 0.92);
-}
-
-.mode-button {
-  min-width: 108px;
-  border: 0;
-  color: var(--cw-color-muted);
-  background: transparent;
-}
-
-.mode-button.is-active {
-  color: #ffffff;
-  background: linear-gradient(135deg, #5a8cff, #2d65f2);
-}
-
-.primary-button {
-  border: 1px solid transparent;
-  color: #ffffff;
-  background: linear-gradient(135deg, var(--cw-color-primary), var(--cw-color-primary-2));
-}
-
-.back-button:hover,
-.mode-button:hover,
-.primary-button:hover,
-.secondary-button:hover {
-  transform: translateY(-1px);
-}
-
-.title-field {
-  display: grid;
-  gap: 6px;
-  min-width: 0;
-  flex: 1;
-}
-
-.title-label {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--cw-color-primary);
-}
-
-.title-input {
-  width: 100%;
-  min-height: 46px;
-  padding: 0 16px;
-  border: 1px solid rgba(19, 78, 74, 0.12);
-  border-radius: var(--cw-radius-pill);
-  font-size: 16px;
-  color: var(--cw-color-text);
-  background: #ffffff;
-}
-
-.workspace-status-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--cw-space-3);
-}
-
-.save-meta {
-  display: grid;
-  justify-items: end;
-  gap: 4px;
-}
-
-.save-status {
-  display: inline-flex;
-  align-items: center;
-  min-height: 32px;
-  padding: 0 12px;
-  border-radius: var(--cw-radius-pill);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--cw-color-text);
-  background: rgba(19, 78, 74, 0.08);
-}
-
-.save-status[data-state="saved"] {
-  color: var(--cw-color-primary);
-  background: rgba(13, 148, 136, 0.12);
-}
-
-.save-status[data-state="dirty"] {
-  color: var(--cw-color-accent);
-  background: rgba(234, 88, 12, 0.12);
-}
-
-.save-status[data-state="error"] {
-  color: var(--cw-color-danger);
-  background: rgba(220, 38, 38, 0.12);
-}
-
-.save-meta small {
-  font-size: 12px;
-  color: var(--cw-color-muted);
-}
-
-.workspace-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  min-width: 0;
-  justify-content: flex-end;
-  gap: var(--cw-space-2);
-}
-
-.workspace-signals {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--cw-space-2);
-}
-
-.signal-pill {
-  display: inline-flex;
-  align-items: center;
-  min-height: 32px;
-  padding: 0 12px;
-  border-radius: var(--cw-radius-pill);
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.4;
-  color: var(--cw-color-text);
-  background: rgba(19, 78, 74, 0.08);
-}
-
-.signal-pill.accent {
-  color: var(--cw-color-primary);
-  background: rgba(13, 148, 136, 0.12);
-}
-
-.signal-pill.subtle {
-  color: var(--cw-color-muted);
-  background: rgba(100, 116, 139, 0.12);
-}
-
-.workspace-summary {
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.5;
-  color: var(--cw-color-text);
-}
-
-.workspace-mode-copy {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--cw-color-muted);
-}
-
-.utility-button {
-  min-height: 38px;
-  padding: 0 14px;
-  font-size: 13px;
-}
-
-.io-feedback {
-  margin: 0;
-  max-width: 32ch;
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--cw-color-muted);
-}
-
-.io-feedback[data-tone="success"] {
-  color: var(--cw-color-primary);
-}
-
-.io-feedback[data-tone="error"] {
-  color: var(--cw-color-danger);
-}
-
-.visually-hidden-input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-.workspace-stage {
-  min-width: 0;
-  padding: 12px;
-}
-
-.workspace-editor,
-.workspace-preview {
-  min-width: 0;
-}
-
-.state-shell {
-  display: grid;
-  gap: var(--cw-space-3);
-  justify-items: center;
-  margin: auto 0;
-  padding: 64px 24px;
-  text-align: center;
-}
-
-.state-shell strong {
-  font-size: 22px;
-  color: var(--cw-color-text);
-}
-
-.state-shell p {
-  margin: 0;
-  font-size: 15px;
-  line-height: 1.7;
-  color: var(--cw-color-muted);
-}
-
-@media (max-width: 1180px) {
-  .workspace-topbar {
-    grid-template-columns: 1fr;
-  }
-
-  .topbar-controls,
-  .topbar-right {
-    justify-content: flex-start;
-    justify-items: start;
-  }
-
-  .workspace-status-row,
-  .save-meta {
-    justify-items: start;
-  }
-
-  .workspace-status-row {
-    justify-content: flex-start;
-  }
-}
-
-@media (max-width: 768px) {
-  .workspace-page {
-    padding: 12px;
-  }
-
-  .topbar-primary-row,
-  .topbar-controls {
-    flex-wrap: wrap;
-  }
-
-  .topbar-center,
-  .workspace-actions {
-    justify-content: flex-start;
-  }
-
-  .io-feedback {
-    text-align: left;
-  }
-}
-</style>
+<style scoped src="./ProjectWorkspacePage.css"></style>

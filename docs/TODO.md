@@ -41,6 +41,7 @@
 
 - [ ] VNext-00 基于 Arco Design Vue 重构 `apps/playground` 与 `packages/vue` 的页面壳层和通用 UI，统一布局、导航、表单、面板、弹窗与反馈组件风格
 - [x] VNext-00-M1 完成 `apps/playground` 项目列表页 Arco 化改造：接入 Arco 依赖、统一主题变量，并替换列表页中的按钮、输入、卡片、确认弹层和空状态组件
+- [x] VNext-00-M2 完成 `apps/playground` 工作台页 Arco 化改造：替换顶栏输入、模式切换、动作按钮与状态反馈组件，并拆分工作台样式到独立文件以降低页面组件复杂度
 
 ## 当前下一步
 
