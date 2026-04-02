@@ -553,27 +553,19 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
     <header class="panel-head">
       <h3>时间轴</h3>
       <span class="panel-count">
-        {{ hasSlide ? `${slide?.timeline.steps.length ?? 0} 步骤 / ${slide?.timeline.animations.length ?? 0} 动画` : "未选择页面" }}
+        {{ hasSlide ? `${slide?.timeline.steps.length ?? 0} 步 / ${slide?.timeline.animations.length ?? 0} 动` : "未选择页面" }}
       </span>
     </header>
 
     <div v-if="!hasSlide" class="group-card empty-card">
-      <div class="group-head">
-        <h4>时间轴配置</h4>
-        <span class="group-badge">待选择</span>
-      </div>
-      <p class="group-copy">先切换到一个页面，这里才会显示它的步骤列表和动画资源。</p>
+      <h4>未选择页面</h4>
+      <p class="group-copy">选择页面后即可配置步骤和动画。</p>
     </div>
 
     <template v-else>
       <div v-if="!hasNodes" class="group-card empty-card">
-        <div class="group-head">
-          <h4>还不能配置时间轴</h4>
-          <span class="group-badge warning">先放内容</span>
-        </div>
-        <p class="group-copy">
-          当前页面还没有对象。先在画布里插入文本、矩形或图片，再把它们接进播放步骤。
-        </p>
+        <h4>暂无可编排对象</h4>
+        <p class="group-copy">先添加文本、矩形或图片。</p>
       </div>
 
       <section class="group-card">
@@ -585,7 +577,7 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
             :disabled="!hasNodes"
             @click="handleCreateStep"
           >
-            新增步骤
+            新建步骤
           </button>
         </div>
 
@@ -611,12 +603,12 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
 
             <div class="field-grid">
               <label class="field field-span-2">
-                <span class="field-label">步骤名称</span>
+                <span class="field-label">名称</span>
                 <input class="field-input" :value="step.name" @input="handleStepNameInput(step, $event)" />
               </label>
 
               <label class="field">
-                <span class="field-label">触发方式</span>
+                <span class="field-label">触发</span>
                 <select class="field-input" :value="step.trigger.type" @change="handleStepTriggerTypeChange(step, $event)">
                   <option v-for="option in triggerOptions" :key="option.value" :value="option.value">
                     {{ option.label }}
@@ -625,7 +617,7 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
               </label>
 
               <label v-if="step.trigger.type === 'node-click'" class="field">
-                <span class="field-label">触发对象</span>
+                <span class="field-label">对象</span>
                 <select
                   class="field-input"
                   :value="step.trigger.targetId"
@@ -637,15 +629,14 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
                 </select>
               </label>
 
-              <label class="field">
-                <span class="field-label">自动延迟</span>
+              <label v-if="step.trigger.type === 'auto'" class="field">
+                <span class="field-label">延迟(ms)</span>
                 <input
                   class="field-input"
                   type="number"
                   min="0"
                   step="100"
-                  :disabled="step.trigger.type !== 'auto'"
-                  :value="step.trigger.type === 'auto' ? step.trigger.delayMs : 0"
+                  :value="step.trigger.delayMs"
                   @change="handleStepDelayChange(step, $event)"
                 />
               </label>
@@ -659,7 +650,7 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
                 :disabled="!hasNodes"
                 @click="handleAddAction(step)"
               >
-                新增动作
+                添加动作
               </button>
             </div>
 
@@ -671,7 +662,8 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
               >
                 <div class="action-head">
                   <div class="action-copy">
-                    <strong>动作 {{ actionIndex + 1 }} · {{ formatTimelineActionLabel(action.type) }}</strong>
+                    <strong>动作 {{ actionIndex + 1 }}</strong>
+                    <small>{{ formatTimelineActionLabel(action.type) }}</small>
                   </div>
                   <button
                     class="danger-text-button"
@@ -684,7 +676,7 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
 
                 <div class="field-grid">
                   <label class="field">
-                    <span class="field-label">动作类型</span>
+                    <span class="field-label">类型</span>
                     <select
                       class="field-input"
                       :value="action.type"
@@ -700,11 +692,10 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
                     </select>
                   </label>
 
-                  <label class="field">
-                    <span class="field-label">目标对象</span>
+                  <label v-if="action.type !== 'play-animation'" class="field">
+                    <span class="field-label">对象</span>
                     <select
                       class="field-input"
-                      :disabled="action.type === 'play-animation'"
                       :value="resolveActionTargetId(action)"
                       @change="handleActionTargetChange(step, action.id, $event)"
                     >
@@ -714,15 +705,18 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
                     </select>
                   </label>
 
-                  <label class="field field-span-2">
-                    <span class="field-label">关联动画</span>
+                  <label
+                    v-if="action.type !== 'hide-node'"
+                    class="field"
+                    :class="{ 'field-span-2': action.type === 'play-animation' }"
+                  >
+                    <span class="field-label">动画</span>
                     <select
                       class="field-input"
-                      :disabled="action.type === 'hide-node'"
                       :value="resolveActionAnimationValue(action)"
                       @change="handleActionAnimationChange(step, action.id, $event)"
                     >
-                      <option v-if="action.type === 'show-node'" value="">无动画</option>
+                      <option v-if="action.type === 'show-node'" value="">无</option>
                       <option
                         v-if="action.type === 'play-animation' && resolveAnimationOptionsForAction(action).length === 0"
                         value=""
@@ -741,10 +735,10 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
                 </div>
               </article>
             </div>
-            <p v-else class="panel-empty">当前步骤还没有动作，新增动作后它才会对预览产生效果。</p>
+            <p v-else class="panel-empty">暂无动作。</p>
           </article>
         </div>
-        <p v-else class="panel-empty">当前页面还没有步骤。新增后，预览器会按这里的顺序执行。</p>
+        <p v-else class="panel-empty">暂无步骤。</p>
       </section>
 
       <section class="group-card">
@@ -756,7 +750,7 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
             :disabled="!hasNodes"
             @click="handleCreateAnimation"
           >
-            新增动画
+            新建动画
           </button>
         </div>
 
@@ -782,7 +776,7 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
 
             <div class="field-grid">
               <label class="field field-span-2">
-                <span class="field-label">目标对象</span>
+                <span class="field-label">对象</span>
                 <select
                   class="field-input"
                   :value="animation.targetId"
@@ -795,7 +789,7 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
               </label>
 
               <label class="field">
-                <span class="field-label">动画类型</span>
+                <span class="field-label">类型</span>
                 <select
                   class="field-input"
                   :value="animation.kind"
@@ -812,20 +806,7 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
               </label>
 
               <label class="field">
-                <span class="field-label">缓动函数</span>
-                <select
-                  class="field-input"
-                  :value="animation.easing ?? 'ease-out'"
-                  @change="handleAnimationEasingChange(animation, $event)"
-                >
-                  <option v-for="option in easingOptions" :key="option.value" :value="option.value">
-                    {{ option.label }}
-                  </option>
-                </select>
-              </label>
-
-              <label class="field">
-                <span class="field-label">时长</span>
+                <span class="field-label">时长(ms)</span>
                 <input
                   class="field-input"
                   type="number"
@@ -836,33 +817,51 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
                 />
               </label>
 
-              <label class="field">
-                <span class="field-label">延迟</span>
-                <input
-                  class="field-input"
-                  type="number"
-                  min="0"
-                  step="10"
-                  :value="animation.delayMs ?? 0"
-                  @change="handleAnimationDelayChange(animation, $event)"
-                />
-              </label>
+              <details class="advanced-fields field-span-2">
+                <summary>高级参数</summary>
+                <div class="advanced-grid">
+                  <label class="field">
+                    <span class="field-label">缓动</span>
+                    <select
+                      class="field-input"
+                      :value="animation.easing ?? 'ease-out'"
+                      @change="handleAnimationEasingChange(animation, $event)"
+                    >
+                      <option v-for="option in easingOptions" :key="option.value" :value="option.value">
+                        {{ option.label }}
+                      </option>
+                    </select>
+                  </label>
 
-              <label v-if="animation.kind === 'slide-up'" class="field field-span-2">
-                <span class="field-label">上滑偏移</span>
-                <input
-                  class="field-input"
-                  type="number"
-                  min="0"
-                  step="1"
-                  :value="animation.offsetY ?? 32"
-                  @change="handleAnimationOffsetYChange(animation, $event)"
-                />
-              </label>
+                  <label class="field">
+                    <span class="field-label">延迟(ms)</span>
+                    <input
+                      class="field-input"
+                      type="number"
+                      min="0"
+                      step="10"
+                      :value="animation.delayMs ?? 0"
+                      @change="handleAnimationDelayChange(animation, $event)"
+                    />
+                  </label>
+
+                  <label v-if="animation.kind === 'slide-up'" class="field field-span-2">
+                    <span class="field-label">偏移Y</span>
+                    <input
+                      class="field-input"
+                      type="number"
+                      min="0"
+                      step="1"
+                      :value="animation.offsetY ?? 32"
+                      @change="handleAnimationOffsetYChange(animation, $event)"
+                    />
+                  </label>
+                </div>
+              </details>
             </div>
           </article>
         </div>
-        <p v-else class="panel-empty">当前页面还没有动画资源。你可以先新建动画，再把它挂到步骤动作上。</p>
+        <p v-else class="panel-empty">暂无动画资源。</p>
       </section>
     </template>
   </section>
@@ -969,6 +968,31 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
 .field {
   display: grid;
   gap: 6px;
+}
+
+.advanced-fields {
+  margin: 0;
+  padding: 12px;
+  border: 1px dashed rgba(22, 93, 255, 0.24);
+  border-radius: var(--cw-radius-md);
+  background: rgba(248, 250, 252, 0.72);
+}
+
+.advanced-fields > summary {
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cw-color-muted);
+}
+
+.advanced-fields[open] > summary {
+  margin-bottom: var(--cw-space-2);
+}
+
+.advanced-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--cw-space-2);
 }
 
 .field-span-2 {
@@ -1078,6 +1102,10 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
 
   .summary-grid,
   .field-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .advanced-grid {
     grid-template-columns: 1fr;
   }
 
