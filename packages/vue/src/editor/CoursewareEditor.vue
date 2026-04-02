@@ -11,7 +11,7 @@ import type {
 } from "@canvas-courseware/core";
 import { createSlideNodeTimelineSummaryMap } from "@canvas-courseware/core";
 import { computed, ref, watch } from "vue";
-import { DEFAULT_EDITOR_HEIGHT, formatSelectionLabel } from "../shared";
+import { DEFAULT_EDITOR_HEIGHT } from "../shared";
 import InspectorPanel from "./InspectorPanel.vue";
 import LayerPanel from "./LayerPanel.vue";
 import SlideSettingsPanel from "./SlideSettingsPanel.vue";
@@ -184,11 +184,6 @@ watch(
   { immediate: true },
 );
 
-/** 当前激活页在整个文档中的索引。 */
-const activeSlideIndex = computed(() =>
-  snapshot.value.document.slides.findIndex((slide) => slide.id === snapshot.value.activeSlideId),
-);
-
 /** 外层工作区的高度样式。 */
 const stageStyle = computed(() => ({
   minHeight: `${props.height}px`,
@@ -205,20 +200,6 @@ const canvasStyle = computed(() => {
     height: `${activeSlide.value.size.height}px`,
   };
 });
-
-/** 当前选中信息的摘要文案。 */
-const selectionLabel = computed(() =>
-  formatSelectionLabel(snapshot.value.selection.nodeIds.length),
-);
-
-/** 当前页面的步骤数量摘要。 */
-const stepSummary = computed(() => `${activeSlide.value?.timeline.steps.length ?? 0} 个步骤`);
-
-/** 当前页面的节点数量摘要。 */
-const nodeSummary = computed(() => `${activeSlide.value?.nodes.length ?? 0} 个对象`);
-
-/** 当前页面对象数和步骤数的合并摘要。 */
-const workspaceSummaryLabel = computed(() => `${nodeSummary.value} · ${stepSummary.value}`);
 
 /** 当前三栏布局的动态 class。 */
 const editorLayoutClass = computed(() => ({
@@ -371,6 +352,7 @@ const toggleEditorSide = () => {
 
     <main class="editor-workbench">
       <section class="toolbar-shell panel-shell">
+        <span class="toolbar-caption">插入</span>
         <div class="toolbar-group">
           <a-button class="primary-button" type="primary" @click="addText">文本</a-button>
           <a-button class="primary-button" type="primary" @click="addRect">矩形</a-button>
@@ -380,20 +362,15 @@ const toggleEditorSide = () => {
 
       <div class="editor-layout" :class="editorLayoutClass">
         <aside v-show="!isSlideRailCollapsed" class="slide-rail panel-shell">
-          <div class="panel-head">
-            <div>
-              <h3>页面列表</h3>
-            </div>
-            <div class="panel-actions">
-              <a-button
-                class="secondary-button compact"
-                size="small"
-                type="outline"
-                @click="addSlide"
-              >
-                新增
-              </a-button>
-            </div>
+          <div class="rail-toolbar">
+            <a-button
+              class="secondary-button rail-create-button"
+              size="small"
+              type="outline"
+              @click="addSlide"
+            >
+              + 新建页面
+            </a-button>
           </div>
 
           <div class="slide-list">
@@ -419,8 +396,6 @@ const toggleEditorSide = () => {
                   <i />
                 </span>
               </div>
-
-              <strong>{{ slide.name }}</strong>
             </button>
           </div>
         </aside>
@@ -442,23 +417,6 @@ const toggleEditorSide = () => {
           >
             {{ isEditorSideCollapsed ? "‹" : "›" }}
           </button>
-
-          <header class="workspace-head">
-            <div>
-              <h3>
-                第 {{ activeSlideIndex + 1 > 0 ? activeSlideIndex + 1 : 0 }} 页
-                <span v-if="activeSlide">· {{ activeSlide.name }}</span>
-              </h3>
-            </div>
-
-            <div class="workspace-badges" :class="{ 'is-embedded': isEmbedded }">
-              <span class="badge">{{ selectionLabel }}</span>
-              <span class="badge subtle">
-                {{ isEmbedded ? workspaceSummaryLabel : nodeSummary }}
-              </span>
-              <span v-if="!isEmbedded" class="badge subtle">{{ stepSummary }}</span>
-            </div>
-          </header>
 
           <div class="stage-scroll" :style="stageStyle">
             <div class="stage-backdrop">
