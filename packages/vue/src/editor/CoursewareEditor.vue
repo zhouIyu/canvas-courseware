@@ -346,7 +346,7 @@ const toggleEditorSide = () => {
   <section class="editor-shell" :class="{ 'is-embedded': isEmbedded }">
     <header v-if="showHeader" class="editor-topbar">
       <div class="editor-heading">
-        <p class="section-kicker">Editor Workbench</p>
+        <p class="section-kicker">编辑工作台</p>
         <div class="title-row">
           <h2>{{ title }}</h2>
           <span class="mode-pill">编辑模式</span>
@@ -358,15 +358,15 @@ const toggleEditorSide = () => {
 
       <div class="stat-grid">
         <article class="stat-card">
-          <span class="stat-label">Slides</span>
+          <span class="stat-label">页面</span>
           <strong>{{ stats.slideCount }}</strong>
         </article>
         <article class="stat-card">
-          <span class="stat-label">Nodes</span>
+          <span class="stat-label">对象</span>
           <strong>{{ stats.nodeCount }}</strong>
         </article>
         <article class="stat-card">
-          <span class="stat-label">Timeline</span>
+          <span class="stat-label">时间轴</span>
           <strong>{{ stats.stepCount }}</strong>
         </article>
       </div>
@@ -392,24 +392,14 @@ const toggleEditorSide = () => {
       </section>
 
       <div class="editor-layout" :class="editorLayoutClass">
-        <aside class="slide-rail panel-shell" :class="{ 'is-collapsed': isSlideRailCollapsed }">
-          <button
-            class="side-corner-badge side-corner-badge-left"
-            type="button"
-            :aria-label="isSlideRailCollapsed ? '展开左侧页面栏' : '收起左侧页面栏'"
-            @click="toggleSlideRail"
-          >
-            {{ isSlideRailCollapsed ? "›" : "‹" }}
-          </button>
-
+        <aside v-show="!isSlideRailCollapsed" class="slide-rail panel-shell">
           <div class="panel-head">
             <div>
-              <p class="section-kicker">Slides</p>
-              <h3>{{ isSlideRailCollapsed ? "页面" : "页面列表" }}</h3>
+              <p class="section-kicker">页面</p>
+              <h3>页面列表</h3>
             </div>
             <div class="panel-actions">
               <a-button
-                v-if="!isSlideRailCollapsed"
                 class="secondary-button compact"
                 size="small"
                 type="outline"
@@ -420,7 +410,7 @@ const toggleEditorSide = () => {
             </div>
           </div>
 
-          <div v-if="!isSlideRailCollapsed" class="slide-list">
+          <div class="slide-list">
             <button
               v-for="(slide, index) in snapshot.document.slides"
               :key="slide.id"
@@ -449,17 +439,29 @@ const toggleEditorSide = () => {
               <small>{{ slide.timeline.steps.length }} 个播放步骤</small>
             </button>
           </div>
-          <div v-else class="collapsed-rail-summary">
-            <span class="collapsed-count">{{ snapshot.document.slides.length }}</span>
-            <small>页</small>
-            <button class="collapsed-rail-button" type="button" @click="addSlide">+</button>
-          </div>
         </aside>
 
         <section class="workspace-shell panel-shell">
+          <button
+            class="stage-side-badge stage-side-badge-left"
+            type="button"
+            :aria-label="isSlideRailCollapsed ? '展开左侧页面栏' : '收起左侧页面栏'"
+            @click="toggleSlideRail"
+          >
+            {{ isSlideRailCollapsed ? "›" : "‹" }}
+          </button>
+          <button
+            class="stage-side-badge stage-side-badge-right"
+            type="button"
+            :aria-label="isEditorSideCollapsed ? '展开右侧管理栏' : '收起右侧管理栏'"
+            @click="toggleEditorSide"
+          >
+            {{ isEditorSideCollapsed ? "‹" : "›" }}
+          </button>
+
           <header class="workspace-head">
             <div>
-              <p class="section-kicker">Canvas Stage</p>
+              <p class="section-kicker">画布</p>
               <h3>
                 第 {{ activeSlideIndex + 1 > 0 ? activeSlideIndex + 1 : 0 }} 页
                 <span v-if="activeSlide">· {{ activeSlide.name }}</span>
@@ -488,17 +490,8 @@ const toggleEditorSide = () => {
           </div>
         </section>
 
-        <aside class="editor-side" :class="{ 'is-collapsed': isEditorSideCollapsed }">
-          <button
-            class="side-corner-badge side-corner-badge-right"
-            type="button"
-            :aria-label="isEditorSideCollapsed ? '展开右侧管理栏' : '收起右侧管理栏'"
-            @click="toggleEditorSide"
-          >
-            {{ isEditorSideCollapsed ? "‹" : "›" }}
-          </button>
-
-          <div v-if="!isEditorSideCollapsed" class="side-tabs panel-shell">
+        <aside v-show="!isEditorSideCollapsed" class="editor-side">
+          <div class="side-tabs panel-shell">
             <a-tabs
               :active-key="activeSideTab"
               class="side-tabs-nav"
@@ -512,13 +505,8 @@ const toggleEditorSide = () => {
             </a-tabs>
           </div>
 
-          <div v-if="isEditorSideCollapsed" class="collapsed-side-shell panel-shell">
-            <span class="collapsed-side-label">{{ sideTabs.find((tab) => tab.key === activeSideTab)?.label }}</span>
-            <small>右侧管理区</small>
-          </div>
-
           <SlideSettingsPanel
-            v-else-if="activeSideTab === 'slide'"
+            v-if="activeSideTab === 'slide'"
             :slide="activeSlide ?? null"
             @update-slide="handleSlideUpdate"
           />
