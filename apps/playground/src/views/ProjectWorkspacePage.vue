@@ -2,7 +2,7 @@
 import type { CoursewareDocument, EditorSnapshot } from "@canvas-courseware/core";
 import { CoursewareEditor, CoursewarePreview } from "@canvas-courseware/vue";
 import { IconLeft } from "@arco-design/web-vue/es/icon";
-import { computed, onBeforeUnmount, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
   downloadCoursewareJson,
@@ -43,6 +43,9 @@ const editorSnapshot = ref<EditorSnapshot | null>(null);
 /** JSON 导入输入框引用。 */
 const jsonImportInputRef = ref<HTMLInputElement | null>(null);
 
+/** 工作区内容容器引用，用来计算可用高度。 */
+const workspaceStageRef = ref<HTMLElement | null>(null);
+
 /** 当前是否正在加载项目数据。 */
 const isLoading = ref(true);
 
@@ -69,6 +72,9 @@ const ioFeedback = ref<{
 /** 自动保存计时器。 */
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
 
+/** 当前工作区可分配给编辑器/预览器的净高度。 */
+const workspaceViewportHeight = ref(0);
+
 /** 当前项目 id。 */
 const projectId = computed(() => String(route.params.projectId ?? ""));
 
@@ -81,6 +87,11 @@ const workspaceMode = computed<ProjectWorkspaceMode>(() => {
 /** 当前预览应跟随的 slide。 */
 const activeSlideId = computed(() =>
   editorSnapshot.value?.activeSlideId ?? documentModel.value?.slides[0]?.id ?? null,
+);
+
+/** 统一传给编辑器和预览器的工作区高度。 */
+const workspaceContentHeight = computed(() =>
+  workspaceViewportHeight.value > 0 ? workspaceViewportHeight.value : undefined,
 );
 
 /** 当前保存状态的用户可读标签。 */
@@ -386,6 +397,23 @@ const handleSnapshotChange = (snapshot: EditorSnapshot) => {
   editorSnapshot.value = snapshot;
 };
 
+/** 刷新当前工作区可用高度，扣除容器内边距后再传给内部壳层。 */
+const updateWorkspaceViewportHeight = () => {
+  const element = workspaceStageRef.value;
+  if (!element) {
+    workspaceViewportHeight.value = 0;
+    return;
+  }
+
+  const styles = window.getComputedStyle(element);
+  const verticalPadding =
+    Number.parseFloat(styles.paddingTop) + Number.parseFloat(styles.paddingBottom);
+  workspaceViewportHeight.value = Math.max(element.clientHeight - verticalPadding, 0);
+};
+
+/** 监听工作区高度变化，保证视口高度分配始终正确。 */
+let workspaceStageResizeObserver: ResizeObserver | null = null;
+
 /** 项目 id 或模式变化时，刷新页面状态。 */
 watch(
   () => route.query.mode,
@@ -419,6 +447,21 @@ watch(
 /** 页面销毁时清理自动保存计时器。 */
 onBeforeUnmount(() => {
   clearSaveTimer();
+  workspaceStageResizeObserver?.disconnect();
+  workspaceStageResizeObserver = null;
+});
+
+onMounted(() => {
+  updateWorkspaceViewportHeight();
+
+  if (!workspaceStageRef.value) {
+    return;
+  }
+
+  workspaceStageResizeObserver = new ResizeObserver(() => {
+    updateWorkspaceViewportHeight();
+  });
+  workspaceStageResizeObserver.observe(workspaceStageRef.value);
 });
 </script>
 
@@ -507,10 +550,11 @@ onBeforeUnmount(() => {
         </a-alert>
       </header>
 
-      <section class="workspace-stage">
+      <section ref="workspaceStageRef" class="workspace-stage">
         <CoursewareEditor
           v-show="workspaceMode === 'edit'"
           v-model="documentModel"
+          :height="workspaceContentHeight"
           :show-header="false"
           class="workspace-editor"
           @snapshot-change="handleSnapshotChange"
@@ -519,6 +563,7 @@ onBeforeUnmount(() => {
         <CoursewarePreview
           v-show="workspaceMode === 'preview'"
           :document="documentModel"
+          :height="workspaceContentHeight"
           :show-header="false"
           :slide-id="activeSlideId"
           class="workspace-preview"

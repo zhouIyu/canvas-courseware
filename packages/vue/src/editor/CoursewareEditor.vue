@@ -79,11 +79,17 @@ const isSlideRailCollapsed = ref(false);
 /** 当前右侧管理栏是否已收起。 */
 const isEditorSideCollapsed = ref(false);
 
+/** 工具条容器引用，用来计算剩余可用高度。 */
+const toolbarShellRef = ref<HTMLElement | null>(null);
+
 /** 中间编辑区滚动容器的 DOM 引用。 */
 const stageViewportRef = ref<HTMLDivElement | null>(null);
 
 /** 中间编辑区当前可用宽度。 */
 const stageViewportWidth = ref(0);
+
+/** 当前工具条实际高度。 */
+const toolbarHeight = ref(0);
 
 /** 从 composable 中解出编辑器所需的状态与操作。 */
 const {
@@ -192,13 +198,22 @@ watch(
 
 /** 外层工作区的高度样式。 */
 const stageStyle = computed(() => ({
-  minHeight: `${props.height}px`,
+  minHeight: `${paneHeight.value}px`,
 }));
 
 /** 三栏区复用同一份参考高度，让左右侧栏保持固定高度。 */
 const editorLayoutStyle = computed(() => ({
-  "--cw-editor-pane-height": `${props.height}px`,
+  "--cw-editor-pane-height": `${paneHeight.value}px`,
 }));
+
+/** 内嵌工作台模式下固定组件总高度，避免把页面继续撑高。 */
+const editorShellStyle = computed(() =>
+  isEmbedded.value
+    ? {
+        height: `${props.height}px`,
+      }
+    : {},
+);
 
 /** 当前选中节点对应的动画资源列表。 */
 const selectedNodeAnimations = computed<NodeAnimation[]>(() => {
@@ -257,6 +272,9 @@ const canvasSurfaceStyle = computed(() => {
     transformOrigin: "top left",
   };
 });
+
+/** 三栏区真正可用的高度，扣掉工具条后再分给左右侧栏和中间区。 */
+const paneHeight = computed(() => Math.max(props.height - toolbarHeight.value, 320));
 
 /** 当前三栏布局的动态 class。 */
 const editorLayoutClass = computed(() => ({
@@ -382,11 +400,25 @@ const updateStageViewportWidth = () => {
   stageViewportWidth.value = stageViewportRef.value?.clientWidth ?? 0;
 };
 
+/** 读取当前工具条的真实高度。 */
+const updateToolbarHeight = () => {
+  toolbarHeight.value = toolbarShellRef.value?.offsetHeight ?? 0;
+};
+
 /** 监听中间区域尺寸变化，让画布缩放及时同步。 */
 let stageViewportResizeObserver: ResizeObserver | null = null;
+let toolbarResizeObserver: ResizeObserver | null = null;
 
 onMounted(() => {
+  updateToolbarHeight();
   updateStageViewportWidth();
+
+  if (toolbarShellRef.value) {
+    toolbarResizeObserver = new ResizeObserver(() => {
+      updateToolbarHeight();
+    });
+    toolbarResizeObserver.observe(toolbarShellRef.value);
+  }
 
   if (!stageViewportRef.value) {
     return;
@@ -399,13 +431,15 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  toolbarResizeObserver?.disconnect();
+  toolbarResizeObserver = null;
   stageViewportResizeObserver?.disconnect();
   stageViewportResizeObserver = null;
 });
 </script>
 
 <template>
-  <section class="editor-shell" :class="{ 'is-embedded': isEmbedded }">
+  <section class="editor-shell" :class="{ 'is-embedded': isEmbedded }" :style="editorShellStyle">
     <header v-if="showHeader" class="editor-topbar">
       <div class="editor-heading">
         <div class="title-row">
@@ -434,7 +468,7 @@ onBeforeUnmount(() => {
     </header>
 
     <main class="editor-workbench">
-      <section class="toolbar-shell panel-shell">
+      <section ref="toolbarShellRef" class="toolbar-shell panel-shell">
         <span class="toolbar-caption">插入</span>
         <div class="toolbar-group">
           <a-button class="primary-button" type="primary" @click="addText">文本</a-button>

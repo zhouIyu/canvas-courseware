@@ -1,12 +1,15 @@
 .workspace-page {
   display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   gap: 0;
+  height: 100dvh;
   width: 100%;
   min-width: 0;
   min-height: 100dvh;
   max-width: none;
   margin: 0;
   padding: 0;
+  overflow: hidden;
   background: linear-gradient(180deg, #ffffff 0%, #f6f8fb 42%, #eef2f6 100%);
 }
 
@@ -147,13 +150,16 @@
 }
 
 .workspace-stage {
+  min-height: 0;
   min-width: 0;
   padding: 12px 14px 14px;
+  overflow: hidden;
   background: transparent;
 }
 
 .workspace-editor,
 .workspace-preview {
+  height: 100%;
   min-width: 0;
 }
 

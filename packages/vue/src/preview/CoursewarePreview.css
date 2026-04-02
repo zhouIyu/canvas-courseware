@@ -1,7 +1,9 @@
 .preview-shell {
   display: grid;
+  height: 100%;
   gap: var(--cw-space-4);
   min-width: 0;
+  min-height: 0;
   color: var(--cw-color-text);
 }
 
@@ -13,7 +15,9 @@
   display: grid;
   grid-template-columns: var(--cw-editor-rail-width) minmax(0, 1fr) var(--cw-editor-side-width);
   gap: var(--cw-space-4);
+  height: 100%;
   min-width: 0;
+  min-height: 0;
   align-items: start;
 }
 
@@ -141,13 +145,23 @@
 .timeline-shell,
 .slide-shell {
   min-width: 0;
+  min-height: 0;
   padding: var(--cw-space-4);
+}
+
+.preview-stage-shell {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  overflow: hidden;
 }
 
 .preview-rail,
 .preview-side {
   display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   gap: var(--cw-space-3);
+  min-height: 0;
+  overflow: hidden;
 }
 
 .preview-rail.is-collapsed,
@@ -217,8 +231,9 @@
 
 .preview-stage {
   overflow-x: auto;
-  overflow-y: visible;
+  overflow-y: auto;
   max-width: 100%;
+  min-height: 0;
   border-radius: var(--cw-radius-lg);
   background: linear-gradient(180deg, rgba(22, 93, 255, 0.12), rgba(232, 243, 255, 0.86));
 }
@@ -244,6 +259,8 @@
 .slide-chip-list {
   display: grid;
   gap: var(--cw-space-2);
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .steps-list {

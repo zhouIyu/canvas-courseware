@@ -141,6 +141,15 @@ const activeSlideIndex = computed(() => {
 /** 当前是否以内嵌工作台模式渲染。 */
 const isEmbedded = computed(() => !props.showHeader);
 
+/** 内嵌模式下固定预览器总高度，避免把页面继续撑高。 */
+const previewShellStyle = computed(() =>
+  isEmbedded.value
+    ? {
+        height: `${props.height}px`,
+      }
+    : {},
+);
+
 /** 内嵌模式下的简要播放摘要。 */
 const embeddedSummaryLabel = computed(() => {
   const activeSlideName = activeSlide.value?.name ?? "未选择页面";
@@ -171,7 +180,7 @@ const toggleTimelinePanel = () => {
 </script>
 
 <template>
-  <section class="preview-shell" :class="{ 'is-embedded': isEmbedded }">
+  <section class="preview-shell" :class="{ 'is-embedded': isEmbedded }" :style="previewShellStyle">
     <header v-if="showHeader" class="preview-topbar">
       <div class="preview-heading">
         <div class="title-row">
