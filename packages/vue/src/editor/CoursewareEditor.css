@@ -142,6 +142,7 @@
 }
 
 .editor-layout {
+  --cw-editor-pane-height: 820px;
   display: grid;
   grid-template-columns: 176px minmax(0, 1fr) 348px;
   gap: 0;
@@ -176,11 +177,14 @@
 .editor-side {
   display: grid;
   gap: 0;
+  height: var(--cw-editor-pane-height);
   min-width: 0;
+  overflow: hidden;
 }
 
 .slide-rail {
-  align-content: start;
+  grid-template-rows: auto minmax(0, 1fr);
+  align-content: stretch;
   padding: 10px 8px 12px;
   border-right: 1px solid color-mix(in srgb, var(--cw-color-border) 92%, #ffffff);
   background: linear-gradient(180deg, #f6f8fb 0%, #f3f5f8 100%);
@@ -224,6 +228,11 @@
   display: grid;
   gap: 8px;
   align-content: start;
+  min-height: 0;
+  padding-right: 4px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .slide-card {
@@ -510,6 +519,13 @@
   background: rgba(255, 255, 255, 0.98);
 }
 
+.editor-side-body {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
 .primary-button:hover,
 .secondary-button:hover,
 .danger-button:hover,
@@ -530,8 +546,14 @@
 
   .slide-rail,
   .editor-side {
+    height: auto;
     border-inline: 0;
     border-bottom: 1px solid color-mix(in srgb, var(--cw-color-border) 92%, #ffffff);
+  }
+
+  .slide-list,
+  .editor-side-body {
+    overflow: visible;
   }
 
   .editor-side {

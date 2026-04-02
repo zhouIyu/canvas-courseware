@@ -189,6 +189,11 @@ const stageStyle = computed(() => ({
   minHeight: `${props.height}px`,
 }));
 
+/** 三栏区复用同一份参考高度，让左右侧栏保持固定高度。 */
+const editorLayoutStyle = computed(() => ({
+  "--cw-editor-pane-height": `${props.height}px`,
+}));
+
 /** 真正传给 canvas 容器的尺寸样式。 */
 const canvasStyle = computed(() => {
   if (!activeSlide.value) {
@@ -360,7 +365,7 @@ const toggleEditorSide = () => {
         </div>
       </section>
 
-      <div class="editor-layout" :class="editorLayoutClass">
+      <div class="editor-layout" :class="editorLayoutClass" :style="editorLayoutStyle">
         <aside v-show="!isSlideRailCollapsed" class="slide-rail panel-shell">
           <div class="rail-toolbar">
             <a-button
@@ -446,35 +451,37 @@ const toggleEditorSide = () => {
             </a-tabs>
           </div>
 
-          <SlideSettingsPanel
-            v-if="activeSideTab === 'slide'"
-            :slide="activeSlide ?? null"
-            @update-slide="handleSlideUpdate"
-          />
-          <InspectorPanel
-            v-else-if="activeSideTab === 'node'"
-            :selected-count="snapshot.selection.nodeIds.length"
-            :selected-node="selectedNode ?? null"
-            :timeline-summary="selectedNodeTimelineSummary"
-            @update-node="handleNodeUpdate"
-          />
-          <LayerPanel
-            v-else-if="activeSideTab === 'layers'"
-            :nodes="activeSlide?.nodes ?? []"
-            :node-timeline-summary-map="nodeTimelineSummaryMap"
-            :selected-node-ids="snapshot.selection.nodeIds"
-            @select="handleLayerSelect"
-            @reorder="handleLayerReorder"
-          />
-          <TimelinePanel
-            v-else
-            :slide="activeSlide ?? null"
-            :selected-node-id="selectedNodeId"
-            @upsert-step="handleTimelineStepUpsert"
-            @remove-step="handleTimelineStepRemove"
-            @upsert-animation="handleTimelineAnimationUpsert"
-            @remove-animation="handleTimelineAnimationRemove"
-          />
+          <div class="editor-side-body">
+            <SlideSettingsPanel
+              v-if="activeSideTab === 'slide'"
+              :slide="activeSlide ?? null"
+              @update-slide="handleSlideUpdate"
+            />
+            <InspectorPanel
+              v-else-if="activeSideTab === 'node'"
+              :selected-count="snapshot.selection.nodeIds.length"
+              :selected-node="selectedNode ?? null"
+              :timeline-summary="selectedNodeTimelineSummary"
+              @update-node="handleNodeUpdate"
+            />
+            <LayerPanel
+              v-else-if="activeSideTab === 'layers'"
+              :nodes="activeSlide?.nodes ?? []"
+              :node-timeline-summary-map="nodeTimelineSummaryMap"
+              :selected-node-ids="snapshot.selection.nodeIds"
+              @select="handleLayerSelect"
+              @reorder="handleLayerReorder"
+            />
+            <TimelinePanel
+              v-else
+              :slide="activeSlide ?? null"
+              :selected-node-id="selectedNodeId"
+              @upsert-step="handleTimelineStepUpsert"
+              @remove-step="handleTimelineStepRemove"
+              @upsert-animation="handleTimelineAnimationUpsert"
+              @remove-animation="handleTimelineAnimationRemove"
+            />
+          </div>
         </aside>
       </div>
     </main>
