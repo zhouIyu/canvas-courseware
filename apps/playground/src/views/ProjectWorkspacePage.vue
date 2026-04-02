@@ -439,7 +439,7 @@ onBeforeUnmount(() => {
 
     <template v-else-if="documentModel">
       <header class="workspace-topbar">
-        <div class="topbar-left">
+        <div class="topbar-main-row">
           <div class="topbar-primary-row">
             <a-button class="back-button" type="outline" @click="goBackToProjects">项目列表</a-button>
 
@@ -453,9 +453,7 @@ onBeforeUnmount(() => {
               />
             </label>
           </div>
-        </div>
 
-        <div class="topbar-right">
           <div class="topbar-controls">
             <a-radio-group
               :model-value="workspaceMode"
@@ -484,22 +482,22 @@ onBeforeUnmount(() => {
               <a-button type="primary" @click="handleSaveClick">保存</a-button>
             </div>
           </div>
+        </div>
 
-          <div class="workspace-status-row">
-            <div class="save-meta">
-              <a-tag :color="saveStatusTagColor" bordered>{{ saveStatusLabel }}</a-tag>
-              <small>{{ saveStatusHint }}</small>
-            </div>
-
-            <a-alert
-              v-if="ioFeedback"
-              :show-icon="true"
-              :type="ioFeedback.tone"
-              class="io-feedback"
-            >
-              {{ ioFeedback.message }}
-            </a-alert>
+        <div class="workspace-status-row">
+          <div class="save-meta">
+            <a-tag :color="saveStatusTagColor" bordered>{{ saveStatusLabel }}</a-tag>
+            <small>{{ saveStatusHint }}</small>
           </div>
+
+          <a-alert
+            v-if="ioFeedback"
+            :show-icon="true"
+            :type="ioFeedback.tone"
+            class="io-feedback"
+          >
+            {{ ioFeedback.message }}
+          </a-alert>
         </div>
       </header>
 

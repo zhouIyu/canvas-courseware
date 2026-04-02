@@ -22,33 +22,35 @@
 
 .workspace-topbar {
   display: grid;
-  grid-template-columns: minmax(0, 1.55fr) minmax(420px, 1fr);
-  gap: var(--cw-space-5);
+  gap: var(--cw-space-3);
   align-items: start;
-  padding: 18px;
+  padding: 14px 16px;
 }
 
-.topbar-left,
-.topbar-right {
-  display: grid;
+.topbar-main-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
   min-width: 0;
   gap: var(--cw-space-3);
 }
 
 .topbar-primary-row {
   display: flex;
-  align-items: center;
+  align-items: end;
   gap: var(--cw-space-3);
   min-width: 0;
+  flex: 1 1 440px;
 }
 
 .back-button {
   border-radius: var(--cw-radius-pill);
+  flex-shrink: 0;
 }
 
 .title-field {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
   flex: 1;
 }
@@ -66,24 +68,16 @@
 }
 
 .title-input :deep(.arco-input-wrapper) {
-  min-height: 44px;
+  min-height: 40px;
   border-radius: var(--cw-radius-pill);
-}
-
-.topbar-right {
-  align-content: start;
-  justify-items: stretch;
-  padding: 12px 14px;
-  border: 1px solid color-mix(in srgb, var(--cw-color-border) 88%, #ffffff);
-  border-radius: var(--cw-radius-md);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 248, 250, 0.9));
 }
 
 .topbar-controls {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
+  align-items: flex-end;
+  justify-content: flex-end;
+  flex: 1 1 520px;
   gap: var(--cw-space-3);
   min-width: 0;
 }
@@ -111,12 +105,16 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--cw-space-3);
+  justify-content: flex-end;
+  gap: var(--cw-space-2);
+  min-height: 36px;
+  padding-top: var(--cw-space-2);
+  border-top: 1px dashed color-mix(in srgb, var(--cw-color-border) 88%, #ffffff);
 }
 
 .save-meta {
   display: grid;
+  justify-items: end;
   gap: 4px;
 }
 
@@ -186,17 +184,17 @@
 }
 
 @media (max-width: 1240px) {
-  .workspace-topbar {
-    grid-template-columns: 1fr;
-  }
-
-  .topbar-right {
-    padding: 10px 12px;
-  }
-
   .topbar-controls,
   .workspace-actions {
     justify-content: flex-start;
+  }
+
+  .workspace-status-row {
+    justify-content: flex-start;
+  }
+
+  .save-meta {
+    justify-items: start;
   }
 }
 
@@ -216,9 +214,10 @@
   }
 
   .workspace-topbar {
-    padding: 14px;
+    padding: 12px;
   }
 
+  .topbar-main-row,
   .topbar-primary-row,
   .topbar-controls,
   .workspace-actions {
@@ -227,6 +226,10 @@
 
   .title-field,
   .workspace-actions {
+    width: 100%;
+  }
+
+  .back-button {
     width: 100%;
   }
 
