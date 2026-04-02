@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { CoursewareDocument, EditorSnapshot } from "@canvas-courseware/core";
 import { CoursewareEditor, CoursewarePreview } from "@canvas-courseware/vue";
+import { IconLeft } from "@arco-design/web-vue/es/icon";
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
@@ -441,7 +442,17 @@ onBeforeUnmount(() => {
       <header class="workspace-topbar">
         <div class="topbar-main-row">
           <div class="topbar-primary-row">
-            <a-button class="back-button" type="outline" @click="goBackToProjects">项目列表</a-button>
+            <a-button
+              class="back-button"
+              aria-label="返回项目列表"
+              shape="circle"
+              type="outline"
+              @click="goBackToProjects"
+            >
+              <template #icon>
+                <IconLeft />
+              </template>
+            </a-button>
 
             <label class="title-field">
               <span class="title-label">项目标题</span>
@@ -452,10 +463,8 @@ onBeforeUnmount(() => {
                 @input="handleProjectTitleInput"
               />
             </label>
-          </div>
-
-          <div class="topbar-controls">
             <a-radio-group
+              class="workspace-mode-switch"
               :model-value="workspaceMode"
               size="small"
               type="button"
@@ -480,25 +489,22 @@ onBeforeUnmount(() => {
                 导出 JSON
               </a-button>
               <a-button type="primary" @click="handleSaveClick">保存</a-button>
+              <div class="save-inline-meta">
+                <a-tag :color="saveStatusTagColor" bordered>{{ saveStatusLabel }}</a-tag>
+                <small>{{ saveStatusHint }}</small>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="workspace-status-row">
-          <div class="save-meta">
-            <a-tag :color="saveStatusTagColor" bordered>{{ saveStatusLabel }}</a-tag>
-            <small>{{ saveStatusHint }}</small>
-          </div>
-
-          <a-alert
-            v-if="ioFeedback"
-            :show-icon="true"
-            :type="ioFeedback.tone"
-            class="io-feedback"
-          >
-            {{ ioFeedback.message }}
-          </a-alert>
-        </div>
+        <a-alert
+          v-if="ioFeedback"
+          :show-icon="true"
+          :type="ioFeedback.tone"
+          class="io-feedback"
+        >
+          {{ ioFeedback.message }}
+        </a-alert>
       </header>
 
       <section class="workspace-stage">
