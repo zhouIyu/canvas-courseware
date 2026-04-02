@@ -25,6 +25,11 @@ const NODE_META_KEY = "__coursewareNodeMeta";
  * 这里保留一个很短的兜底窗口，避免编辑侧面板被误清空。
  */
 const SELECTION_RETENTION_WINDOW_MS = 180;
+/**
+ * 略微放大画布的目标命中容差，帮助缩放控制点在自动化和真实鼠标操作里更容易命中。
+ * 这里保持一个很小的数值，避免把普通点击误识别成对象操作。
+ */
+const EDITOR_TARGET_FIND_TOLERANCE = 6;
 
 interface FabricNodeMeta {
   nodeId: string;
@@ -115,6 +120,7 @@ export class FabricEditorAdapter {
       preserveObjectStacking: true,
       selection: true,
       backgroundColor: "#FFFFFF",
+      targetFindTolerance: EDITOR_TARGET_FIND_TOLERANCE,
     });
 
     this.registerCanvasEvents(this.canvas);
@@ -344,30 +350,41 @@ export class FabricEditorAdapter {
     const action = (event.action ?? event.transform?.action ?? "").toLowerCase();
     const nextGeometry = readObjectGeometry(target);
     const previousNode = findNode(this.controller.getSnapshot(), this.currentSlideId, meta.nodeId);
+    const didResize =
+      !previousNode ||
+      previousNode.width !== nextGeometry.width ||
+      previousNode.height !== nextGeometry.height;
+    const didRotate = !previousNode || previousNode.rotation !== nextGeometry.rotation;
+    const didTranslate = !previousNode || previousNode.x !== nextGeometry.x || previousNode.y !== nextGeometry.y;
     this.retainSelection(meta.nodeId);
 
-    if (action.includes("scale") || action.includes("resize") || action.includes("skew")) {
-      if (
-        !previousNode ||
-        previousNode.x !== nextGeometry.x ||
-        previousNode.y !== nextGeometry.y ||
-        previousNode.width !== nextGeometry.width ||
-        previousNode.height !== nextGeometry.height
-      ) {
-        this.controller.handleAdapterEvent({
-          type: "adapter.node.resized",
-          slideId: this.currentSlideId,
-          nodeId: meta.nodeId,
-          patch: nextGeometry,
-        });
-      }
+    /**
+     * 缩放结束后的事件 action 在不同对象和命中路径下并不总是稳定带上 `scale/resize`。
+     * 这里优先根据几何尺寸是否真的变化来判断“是否发生了缩放”，
+     * 避免对象已经被拉伸，但因为 action 为空而错过尺寸落盘。
+     */
+    if (
+      didResize &&
+      (
+        action.includes("scale") ||
+        action.includes("resize") ||
+        action.includes("skew") ||
+        !action
+      )
+    ) {
+      this.controller.handleAdapterEvent({
+        type: "adapter.node.resized",
+        slideId: this.currentSlideId,
+        nodeId: meta.nodeId,
+        patch: nextGeometry,
+      });
       this.syncRetainedSelection();
       this.scheduleSelectionRestore(meta.nodeId);
       return;
     }
 
     if (action.includes("rotate")) {
-      if (!previousNode || previousNode.rotation !== nextGeometry.rotation) {
+      if (didRotate) {
         this.controller.handleAdapterEvent({
           type: "adapter.node.rotated",
           slideId: this.currentSlideId,
@@ -380,7 +397,7 @@ export class FabricEditorAdapter {
       return;
     }
 
-    if (!previousNode || previousNode.x !== nextGeometry.x || previousNode.y !== nextGeometry.y) {
+    if (didTranslate) {
       this.controller.handleAdapterEvent({
         type: "adapter.node.translated",
         slideId: this.currentSlideId,

@@ -1,7 +1,9 @@
 import {
+  Control,
   FabricImage,
   Rect,
   Textbox,
+  controlsUtils,
   type FabricObject,
 } from "fabric";
 import {
@@ -11,6 +13,15 @@ import {
   type RectNode,
   type TextNode,
 } from "@canvas-courseware/core";
+
+/** 编辑态控制点的可视尺寸，适当放大以改善缩放控制点的可点击性。 */
+const EDITOR_CONTROL_CORNER_SIZE = 16;
+
+/** 编辑态控制点的触摸/命中尺寸，进一步扩大右下角等控制点的命中区域。 */
+const EDITOR_CONTROL_TOUCH_SIZE = 28;
+
+/** 编辑态控制框外围补白，用于扩大控制点附近的可操作区域。 */
+const EDITOR_CONTROL_PADDING = 8;
 
 /** Fabric 适配层内部统一使用的对象类型。 */
 export type FabricRenderableObject = FabricObject & {
@@ -81,11 +92,24 @@ export function createFabricTextObject(
     fontWeight: node.props.fontWeight,
     lineHeight: node.props.lineHeight ?? 1.5,
     textAlign: node.props.textAlign,
-    editable: options.interactive ? !node.locked : false,
+    /**
+     * 当前产品把文本内容编辑统一收口到右侧属性面板，
+     * 避免 Textbox/IText 自身的点击进入编辑态行为干扰选中、拖拽与缩放控制点。
+     */
+    editable: false,
     ...createNodeInteractionOptions(node, options),
     originX: "left",
     originY: "top",
   }) as FabricRenderableObject;
+
+  /**
+   * Fabric 的 Textbox 默认更偏向“左右改宽度”，底部角点并不会稳定触发宽度调整。
+   * 为了满足当前编辑器对“右下角也能缩放文本框”的一致性交互预期，
+   * 这里在编辑态下覆写文本对象控制点，让四个角都能进入宽度调整链路。
+   */
+  if (options.interactive) {
+    applyTextboxEditorControls(object);
+  }
 
   return finalizeFabricObject(object, node, options);
 }
@@ -191,6 +215,14 @@ function createNodeInteractionOptions(
       hasControls: !node.locked,
       lockMovementX: node.locked,
       lockMovementY: node.locked,
+      /**
+       * 放大编辑态控制点与命中区域，降低缩放控制点“看得见但点不中”的概率。
+       * 这不会改变文档模型，只影响编辑画布中的交互可达性。
+       */
+      cornerSize: EDITOR_CONTROL_CORNER_SIZE,
+      touchCornerSize: EDITOR_CONTROL_TOUCH_SIZE,
+      padding: EDITOR_CONTROL_PADDING,
+      transparentCorners: false,
     };
   }
 
@@ -215,4 +247,43 @@ function finalizeFabricObject(
   options.finalizeObject?.(object, node);
   object.setCoords?.();
   return object;
+}
+
+/**
+ * 为编辑态 Textbox 覆写控制点交互。
+ * 文本框本质上只支持“改宽度后自动重排高度”，因此这里把四个角都收敛到宽度调整，
+ * 让用户从右下角、右上角等常见缩放手势也能稳定生效。
+ */
+function applyTextboxEditorControls(object: FabricRenderableObject): void {
+  const textboxObject = object as FabricRenderableObject & {
+    controls?: Record<string, Control>;
+    setControlsVisibility?: (options: Record<string, boolean>) => void;
+  };
+
+  if (!textboxObject.controls) {
+    return;
+  }
+
+  const createWidthResizeControl = (x: number, y: number) =>
+    new Control({
+      x,
+      y,
+      actionHandler: controlsUtils.changeWidth,
+      cursorStyleHandler: controlsUtils.scaleSkewCursorStyleHandler,
+    });
+
+  textboxObject.controls.ml = createWidthResizeControl(-0.5, 0);
+  textboxObject.controls.mr = createWidthResizeControl(0.5, 0);
+  textboxObject.controls.tl = createWidthResizeControl(-0.5, -0.5);
+  textboxObject.controls.tr = createWidthResizeControl(0.5, -0.5);
+  textboxObject.controls.bl = createWidthResizeControl(-0.5, 0.5);
+  textboxObject.controls.br = createWidthResizeControl(0.5, 0.5);
+
+  /**
+   * 文本框不支持独立垂直缩放，隐藏上下中点避免用户误以为可以单独拉高/压扁文本。
+   */
+  textboxObject.setControlsVisibility?.({
+    mt: false,
+    mb: false,
+  });
 }
