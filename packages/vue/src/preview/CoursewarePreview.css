@@ -54,23 +54,11 @@
   padding: var(--cw-space-4);
 }
 
-.section-kicker,
-.status-label {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.4;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--cw-color-primary);
-}
-
 .title-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--cw-space-3);
-  margin-top: var(--cw-space-2);
 }
 
 .title-row h2,

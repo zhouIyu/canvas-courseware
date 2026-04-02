@@ -344,7 +344,6 @@ const toggleEditorSide = () => {
   <section class="editor-shell" :class="{ 'is-embedded': isEmbedded }">
     <header v-if="showHeader" class="editor-topbar">
       <div class="editor-heading">
-        <p class="section-kicker">编辑工作台</p>
         <div class="title-row">
           <h2>{{ title }}</h2>
           <span class="mode-pill">编辑模式</span>
@@ -373,7 +372,6 @@ const toggleEditorSide = () => {
     <main class="editor-workbench">
       <section class="toolbar-shell panel-shell">
         <div class="toolbar-group">
-          <span class="toolbar-label">基础组件</span>
           <a-button class="primary-button" type="primary" @click="addText">文本</a-button>
           <a-button class="primary-button" type="primary" @click="addRect">矩形</a-button>
           <a-button class="primary-button" type="primary" @click="addImage">图片</a-button>
@@ -384,7 +382,6 @@ const toggleEditorSide = () => {
         <aside v-show="!isSlideRailCollapsed" class="slide-rail panel-shell">
           <div class="panel-head">
             <div>
-              <p class="section-kicker">页面</p>
               <h3>页面列表</h3>
             </div>
             <div class="panel-actions">
@@ -448,7 +445,6 @@ const toggleEditorSide = () => {
 
           <header class="workspace-head">
             <div>
-              <p class="section-kicker">画布</p>
               <h3>
                 第 {{ activeSlideIndex + 1 > 0 ? activeSlideIndex + 1 : 0 }} 页
                 <span v-if="activeSlide">· {{ activeSlide.name }}</span>

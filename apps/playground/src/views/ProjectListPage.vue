@@ -92,7 +92,6 @@ onMounted(() => {
   <main class="project-list-page">
     <section class="hero-shell">
       <div class="hero-copy">
-        <p class="hero-kicker">Canvas Courseware</p>
         <h1>面向真实创作流程的课件项目工作台</h1>
         <p class="hero-text">
           从项目列表进入课件工作台，在同一套产品壳层里完成编辑、预览和保存，不再停留在开发联调视角。
@@ -108,7 +107,6 @@ onMounted(() => {
     <section class="library-shell">
       <header class="section-head">
         <div class="section-copy">
-          <p class="section-kicker">Project Library</p>
           <h2>项目列表</h2>
         </div>
 
@@ -192,19 +190,9 @@ onMounted(() => {
   padding: 32px;
 }
 
-.hero-kicker,
-.section-kicker {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--cw-color-primary);
-}
-
 .hero-copy h1,
 .section-copy h2 {
-  margin: 14px 0 0;
+  margin: 0;
   line-height: 1.08;
 }
 

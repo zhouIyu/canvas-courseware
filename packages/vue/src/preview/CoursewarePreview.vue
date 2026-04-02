@@ -174,7 +174,6 @@ const toggleTimelinePanel = () => {
   <section class="preview-shell" :class="{ 'is-embedded': isEmbedded }">
     <header v-if="showHeader" class="preview-topbar">
       <div class="preview-heading">
-        <p class="section-kicker">Preview Workbench</p>
         <div class="title-row">
           <h2>{{ title }}</h2>
           <a-tag :color="playbackStatusTagColor" bordered>{{ playbackStatusLabel }}</a-tag>
@@ -189,7 +188,6 @@ const toggleTimelinePanel = () => {
       <aside class="preview-rail slide-shell" :class="{ 'is-collapsed': isSlideRailCollapsed }">
         <header class="section-head compact">
           <div>
-            <p class="section-kicker">Slides</p>
             <h3>{{ isSlideRailCollapsed ? "页面" : "快速切换" }}</h3>
           </div>
           <a-button class="compact-button" size="small" type="outline" @click="toggleSlideRail">
@@ -224,7 +222,6 @@ const toggleTimelinePanel = () => {
       <section class="preview-stage-shell">
         <header class="section-head stage-head">
           <div>
-            <p class="section-kicker">Canvas Preview</p>
             <h3>当前画布</h3>
           </div>
           <div class="stage-head-actions">
@@ -247,13 +244,11 @@ const toggleTimelinePanel = () => {
         <div v-else class="inline-status-strip">
           <a-card :bordered="false" class="status-card primary compact-card">
             <div class="status-card-body">
-              <span class="status-label">播放概览</span>
               <strong>{{ playbackSummary }}</strong>
             </div>
           </a-card>
           <a-card :bordered="false" class="status-card compact-card">
             <div class="status-card-body">
-              <span class="status-label">当前页面</span>
               <strong>{{ activeSlide?.name ?? "未选择页面" }}</strong>
               <small>{{ activeSlideIndex >= 0 ? `第 ${activeSlideIndex + 1} 页` : "未定位" }}</small>
             </div>
@@ -276,7 +271,6 @@ const toggleTimelinePanel = () => {
       <aside class="preview-side timeline-shell" :class="{ 'is-collapsed': isTimelineCollapsed }">
         <header class="section-head compact">
           <div>
-            <p class="section-kicker">Timeline</p>
             <h3>{{ isTimelineCollapsed ? "步骤" : "步骤状态" }}</h3>
           </div>
           <a-button class="compact-button" size="small" type="outline" @click="toggleTimelinePanel">

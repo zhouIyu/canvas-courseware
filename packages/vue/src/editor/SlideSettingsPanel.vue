@@ -102,7 +102,6 @@ const handleSlideBackgroundChange = (event: Event) => {
   <section class="slide-settings-panel">
     <header class="panel-head">
       <div>
-        <p class="panel-kicker">页面管理</p>
         <h3>页面设置</h3>
       </div>
       <span class="panel-count">{{ slide ? "当前页" : "未选择" }}</span>
@@ -186,18 +185,8 @@ const handleSlideBackgroundChange = (event: Event) => {
   gap: var(--cw-space-4);
 }
 
-.panel-kicker {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.4;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--cw-color-primary);
-}
-
 .panel-head h3 {
-  margin: var(--cw-space-2) 0 0;
+  margin: 0;
   font-size: 22px;
   line-height: 1.2;
 }

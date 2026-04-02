@@ -455,8 +455,8 @@ onBeforeUnmount(() => {
             </a-button>
 
             <label class="title-field">
-              <span class="title-label">项目标题</span>
               <a-input
+                aria-label="项目标题"
                 :model-value="projectTitle"
                 class="title-input"
                 placeholder="请输入项目标题"

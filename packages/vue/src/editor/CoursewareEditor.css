@@ -27,8 +27,6 @@
   padding: 20px;
 }
 
-.section-kicker,
-.toolbar-label,
 .slide-index {
   margin: 0;
   font-size: 12px;
@@ -44,7 +42,6 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--cw-space-3);
-  margin-top: var(--cw-space-2);
 }
 
 .title-row h2,
