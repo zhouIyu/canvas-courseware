@@ -77,62 +77,9 @@ const workspaceMode = computed<ProjectWorkspaceMode>(() => {
   return rawMode === "preview" ? "preview" : "edit";
 });
 
-/** 当前项目统计信息。 */
-const projectStats = computed(() => {
-  const document = documentModel.value;
-  if (!document) {
-    return {
-      slideCount: 0,
-      nodeCount: 0,
-      stepCount: 0,
-    };
-  }
-
-  return {
-    slideCount: document.slides.length,
-    nodeCount: document.slides.reduce((sum, slide) => sum + slide.nodes.length, 0),
-    stepCount: document.slides.reduce((sum, slide) => sum + slide.timeline.steps.length, 0),
-  };
-});
-
-/** 当前项目规模的聚合摘要。 */
-const projectStatsLabel = computed(
-  () =>
-    `${projectStats.value.slideCount} 页 · ${projectStats.value.nodeCount} 个对象 · ${projectStats.value.stepCount} 个步骤`,
-);
-
 /** 当前预览应跟随的 slide。 */
 const activeSlideId = computed(() =>
   editorSnapshot.value?.activeSlideId ?? documentModel.value?.slides[0]?.id ?? null,
-);
-
-/** 当前激活页面的序号摘要。 */
-const activeSlideLabel = computed(() => {
-  const document = documentModel.value;
-  const slideId = activeSlideId.value;
-
-  if (!document || !slideId) {
-    return "未定位页面";
-  }
-
-  const activeIndex = document.slides.findIndex((slide) => slide.id === slideId);
-  if (activeIndex === -1) {
-    return "未定位页面";
-  }
-
-  return `第 ${activeIndex + 1} 页`;
-});
-
-/** 当前工作模式的辅助说明。 */
-const workspaceModeDescription = computed(() =>
-  workspaceMode.value === "edit"
-    ? "聚焦排版、图层和时间轴配置"
-    : "聚焦播放顺序与逐步预览效果",
-);
-
-/** 当前工作模式标签色值。 */
-const workspaceModeTagColor = computed(() =>
-  workspaceMode.value === "edit" ? "#165dff" : "#722ed1",
 );
 
 /** 当前保存状态的用户可读标签。 */
@@ -505,32 +452,6 @@ onBeforeUnmount(() => {
                 @input="handleProjectTitleInput"
               />
             </label>
-          </div>
-
-          <div class="workspace-overview">
-            <div class="workspace-signals">
-              <a-tag :color="workspaceModeTagColor" bordered>
-                {{ workspaceMode === "edit" ? "编辑模式" : "预览模式" }}
-              </a-tag>
-              <a-tag color="#64748b" bordered>{{ activeSlideLabel }}</a-tag>
-              <span class="workspace-summary">{{ projectStatsLabel }}</span>
-            </div>
-            <p class="workspace-mode-copy">{{ workspaceModeDescription }}</p>
-          </div>
-
-          <div class="workspace-metrics" aria-label="项目规模概览">
-            <a-card :bordered="false" class="metric-card">
-              <span class="metric-label">页面</span>
-              <strong>{{ projectStats.slideCount }}</strong>
-            </a-card>
-            <a-card :bordered="false" class="metric-card">
-              <span class="metric-label">对象</span>
-              <strong>{{ projectStats.nodeCount }}</strong>
-            </a-card>
-            <a-card :bordered="false" class="metric-card">
-              <span class="metric-label">步骤</span>
-              <strong>{{ projectStats.stepCount }}</strong>
-            </a-card>
           </div>
         </div>
 

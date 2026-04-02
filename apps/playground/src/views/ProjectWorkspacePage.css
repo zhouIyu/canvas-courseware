@@ -53,8 +53,7 @@
   flex: 1;
 }
 
-.title-label,
-.metric-label {
+.title-label {
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -69,63 +68,6 @@
 .title-input :deep(.arco-input-wrapper) {
   min-height: 44px;
   border-radius: var(--cw-radius-pill);
-}
-
-.workspace-overview {
-  display: grid;
-  gap: 8px;
-  padding: 12px 14px;
-  border: 1px solid color-mix(in srgb, var(--cw-color-primary) 16%, transparent);
-  border-radius: var(--cw-radius-md);
-  background: linear-gradient(135deg, var(--cw-color-primary-soft), rgba(255, 255, 255, 0.96));
-}
-
-.workspace-signals {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--cw-space-2);
-}
-
-.workspace-summary {
-  display: inline-flex;
-  align-items: center;
-  min-height: 28px;
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.5;
-  color: var(--cw-color-text);
-}
-
-.workspace-mode-copy {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.6;
-  color: var(--cw-color-muted);
-}
-
-.workspace-metrics {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--cw-space-2);
-}
-
-.metric-card {
-  border: 1px solid color-mix(in srgb, var(--cw-color-border) 88%, #ffffff);
-  border-radius: var(--cw-radius-md);
-  background: linear-gradient(180deg, rgba(247, 248, 250, 0.96), rgba(255, 255, 255, 0.98));
-}
-
-.metric-card :deep(.arco-card-body) {
-  display: grid;
-  gap: 6px;
-  padding: 12px 14px;
-}
-
-.metric-card strong {
-  font-size: 28px;
-  line-height: 1;
-  color: var(--cw-color-text);
 }
 
 .topbar-right {
@@ -259,10 +201,6 @@
 }
 
 @media (max-width: 900px) {
-  .workspace-metrics {
-    grid-template-columns: 1fr;
-  }
-
   .workspace-status-row {
     align-items: flex-start;
   }
