@@ -431,29 +431,21 @@
   display: none;
 }
 
-.side-tabs-nav :deep(.arco-tabs-nav::before),
-.side-tabs-nav :deep(.arco-tabs-nav-ink) {
-  display: none;
-}
-
 .side-tabs-nav :deep(.arco-tabs-tab) {
-  min-height: 40px;
-  padding-inline: 14px;
-  border-radius: var(--cw-radius-pill);
+  min-height: 36px;
+  padding-inline: 10px;
   font-size: 14px;
-  font-weight: 600;
-}
-
-.side-tabs-nav :deep(.arco-tabs-nav-capsule .arco-tabs-tab) {
-  border: 1px solid color-mix(in srgb, var(--cw-color-border) 92%, #ffffff);
+  font-weight: 500;
   color: var(--cw-color-muted);
-  background: rgba(255, 255, 255, 0.96);
 }
 
-.side-tabs-nav :deep(.arco-tabs-nav-capsule .arco-tabs-tab-active) {
-  border-color: color-mix(in srgb, var(--cw-color-primary) 35%, var(--cw-color-border));
+.side-tabs-nav :deep(.arco-tabs-tab:hover) {
   color: var(--cw-color-primary);
-  background: var(--cw-color-primary-soft);
+}
+
+.side-tabs-nav :deep(.arco-tabs-tab-active) {
+  color: var(--cw-color-primary);
+  font-weight: 600;
 }
 
 .side-toggle-button {

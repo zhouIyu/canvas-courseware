@@ -493,8 +493,6 @@ const toggleEditorSide = () => {
               v-if="!isEditorSideCollapsed"
               :active-key="activeSideTab"
               class="side-tabs-nav"
-              size="large"
-              type="capsule"
               @change="handleSideTabChange"
             >
               <a-tab-pane
