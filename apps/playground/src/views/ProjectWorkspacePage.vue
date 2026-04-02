@@ -10,6 +10,7 @@ import {
 } from "../projects/courseware-json";
 import { projectRepository } from "../projects/project-repository";
 import type { ProjectRecord, ProjectWorkspaceMode } from "../projects/types";
+import "./ProjectWorkspacePage.css";
 
 /** 自动保存延时，单位毫秒。 */
 const AUTO_SAVE_DELAY_MS = 800;
@@ -581,5 +582,3 @@ onBeforeUnmount(() => {
     </template>
   </main>
 </template>
-
-<style scoped src="./ProjectWorkspacePage.css"></style>
