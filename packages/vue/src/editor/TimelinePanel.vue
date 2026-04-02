@@ -898,7 +898,7 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
   border: 1px solid var(--cw-color-border);
   border-radius: var(--cw-radius-lg);
   background:
-    linear-gradient(180deg, rgba(13, 148, 136, 0.08), rgba(255, 255, 255, 0.96)),
+    linear-gradient(180deg, rgba(22, 93, 255, 0.08), rgba(255, 255, 255, 0.96)),
     var(--cw-color-surface);
   box-shadow: var(--cw-shadow-weak);
 }
@@ -977,7 +977,7 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
 
 .card-index.subtle {
   color: var(--cw-color-primary);
-  background: rgba(13, 148, 136, 0.12);
+  background: rgba(22, 93, 255, 0.12);
 }
 
 .group-badge.warning {
@@ -1031,7 +1031,7 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
 .field-input {
   min-height: 44px;
   padding: 0 14px;
-  border: 1px solid rgba(13, 148, 136, 0.16);
+  border: 1px solid rgba(22, 93, 255, 0.16);
   border-radius: var(--cw-radius-md);
   font-size: 14px;
   color: var(--cw-color-text);
@@ -1048,8 +1048,8 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
 .ghost-button:focus-visible,
 .danger-button:focus-visible,
 .danger-text-button:focus-visible {
-  border-color: rgba(13, 148, 136, 0.4);
-  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.14);
+  border-color: rgba(22, 93, 255, 0.4);
+  box-shadow: 0 0 0 3px rgba(22, 93, 255, 0.14);
 }
 
 .field-input:disabled {
@@ -1076,7 +1076,7 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
 
 .soft-button,
 .ghost-button {
-  border: 1px solid rgba(13, 148, 136, 0.18);
+  border: 1px solid rgba(22, 93, 255, 0.18);
   color: var(--cw-color-text);
   background: rgba(255, 255, 255, 0.92);
 }

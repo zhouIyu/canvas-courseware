@@ -195,7 +195,7 @@ const resolveStepReferenceLabels = (nodeId: string): string[] =>
   border: 1px solid var(--cw-color-border);
   border-radius: var(--cw-radius-lg);
   background:
-    linear-gradient(180deg, rgba(20, 184, 166, 0.08), rgba(255, 255, 255, 0.96)),
+    linear-gradient(180deg, rgba(22, 93, 255, 0.08), rgba(255, 255, 255, 0.96)),
     var(--cw-color-surface);
   box-shadow: var(--cw-shadow-weak);
 }
@@ -231,7 +231,7 @@ const resolveStepReferenceLabels = (nodeId: string): string[] =>
   border-radius: var(--cw-radius-pill);
   font-size: 13px;
   color: var(--cw-color-primary);
-  background: rgba(20, 184, 166, 0.12);
+  background: rgba(22, 93, 255, 0.12);
 }
 
 .panel-copy,
@@ -268,13 +268,13 @@ const resolveStepReferenceLabels = (nodeId: string): string[] =>
 
 .layer-item:hover {
   transform: translateY(-1px);
-  border-color: rgba(20, 184, 166, 0.28);
+  border-color: rgba(22, 93, 255, 0.28);
 }
 
 .layer-item.is-active {
-  border-color: rgba(13, 148, 136, 0.42);
-  background: rgba(20, 184, 166, 0.08);
-  box-shadow: inset 0 0 0 1px rgba(20, 184, 166, 0.22);
+  border-color: rgba(22, 93, 255, 0.42);
+  background: rgba(22, 93, 255, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(22, 93, 255, 0.22);
 }
 
 .layer-topline {
@@ -293,7 +293,7 @@ const resolveStepReferenceLabels = (nodeId: string): string[] =>
   font-size: 12px;
   font-weight: 600;
   color: var(--cw-color-primary);
-  background: rgba(13, 148, 136, 0.1);
+  background: rgba(22, 93, 255, 0.1);
 }
 
 .layer-item strong {
@@ -322,7 +322,7 @@ const resolveStepReferenceLabels = (nodeId: string): string[] =>
 
 .timeline-chip.accent {
   color: var(--cw-color-primary);
-  background: rgba(13, 148, 136, 0.12);
+  background: rgba(22, 93, 255, 0.12);
 }
 
 .timeline-chip.subtle {
@@ -339,7 +339,7 @@ const resolveStepReferenceLabels = (nodeId: string): string[] =>
 .layer-action-button {
   min-height: 44px;
   padding: 0 var(--cw-space-4);
-  border: 1px solid rgba(13, 148, 136, 0.18);
+  border: 1px solid rgba(22, 93, 255, 0.18);
   border-radius: var(--cw-radius-pill);
   color: var(--cw-color-text);
   cursor: pointer;
@@ -352,8 +352,8 @@ const resolveStepReferenceLabels = (nodeId: string): string[] =>
 
 .layer-action-button:hover:enabled {
   transform: translateY(-1px);
-  border-color: rgba(13, 148, 136, 0.34);
-  background: rgba(20, 184, 166, 0.08);
+  border-color: rgba(22, 93, 255, 0.34);
+  background: rgba(22, 93, 255, 0.08);
 }
 
 .layer-action-button:disabled {

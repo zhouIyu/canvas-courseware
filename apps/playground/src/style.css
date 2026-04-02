@@ -1,33 +1,33 @@
 :root {
-  --color-primary-1: #ecfeff;
-  --color-primary-2: #cffafe;
-  --color-primary-3: #a5f3fc;
-  --color-primary-4: #67e8f9;
-  --color-primary-5: #22d3ee;
-  --color-primary-6: #0d9488;
-  --color-primary-7: #0f766e;
-  --color-primary-8: #115e59;
-  --color-primary-9: #134e4a;
-  --color-primary-10: #042f2e;
-  --color-warning-6: #ea580c;
-  --color-danger-6: #dc2626;
-  --color-text-1: #134e4a;
-  --color-text-2: #1f766f;
-  --color-text-3: #64748b;
-  --color-neutral-2: #d1fae5;
-  --color-neutral-3: #99f6e4;
-  --color-neutral-4: #6ee7d8;
-  --color-fill-2: rgba(16, 185, 129, 0.08);
-  --color-fill-3: rgba(20, 184, 166, 0.12);
-  --color-fill-4: rgba(13, 148, 136, 0.2);
-  --color-bg-1: #f0fdfa;
+  --color-primary-1: #e8f3ff;
+  --color-primary-2: #bedaff;
+  --color-primary-3: #94bfff;
+  --color-primary-4: #6aa1ff;
+  --color-primary-5: #4080ff;
+  --color-primary-6: #165dff;
+  --color-primary-7: #1145d9;
+  --color-primary-8: #0d31b3;
+  --color-primary-9: #091f8c;
+  --color-primary-10: #051166;
+  --color-warning-6: #ff7d00;
+  --color-danger-6: #f53f3f;
+  --color-text-1: #1d2129;
+  --color-text-2: #4e5969;
+  --color-text-3: #86909c;
+  --color-neutral-2: #f2f3f5;
+  --color-neutral-3: #e5e6eb;
+  --color-neutral-4: #c9cdd4;
+  --color-fill-2: rgba(22, 93, 255, 0.08);
+  --color-fill-3: rgba(22, 93, 255, 0.12);
+  --color-fill-4: rgba(22, 93, 255, 0.2);
+  --color-bg-1: #f7f8fa;
   --color-bg-2: #ffffff;
-  --color-bg-3: #f8fffd;
-  --color-bg-4: #f4fefa;
-  --color-bg-5: #ecfdf5;
-  --border-radius-small: 12px;
-  --border-radius-medium: 16px;
-  --border-radius-large: 24px;
+  --color-bg-3: #f2f3f5;
+  --color-bg-4: #e5e6eb;
+  --color-bg-5: #f5f6f7;
+  --border-radius-small: 10px;
+  --border-radius-medium: 14px;
+  --border-radius-large: 20px;
   --font-size-body-3: 15px;
 }
 
@@ -44,9 +44,9 @@ body {
   font-family: var(--cw-font-sans);
   color: var(--cw-color-text);
   background:
-    radial-gradient(circle at top left, rgba(20, 184, 166, 0.12), transparent 28%),
-    radial-gradient(circle at 85% 15%, rgba(234, 88, 12, 0.12), transparent 24%),
-    linear-gradient(180deg, rgba(240, 253, 250, 0.92), rgba(236, 253, 245, 0.98)),
+    radial-gradient(circle at 8% -10%, rgba(64, 128, 255, 0.2), transparent 34%),
+    radial-gradient(circle at 92% 0%, rgba(255, 125, 0, 0.14), transparent 28%),
+    linear-gradient(180deg, rgba(247, 248, 250, 0.96), rgba(242, 243, 245, 0.98)),
     var(--cw-color-bg);
 }
 
@@ -56,9 +56,9 @@ body::before {
   inset: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.56) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.52) 1px, transparent 1px);
-  background-size: 32px 32px;
+    linear-gradient(rgba(255, 255, 255, 0.6) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.56) 1px, transparent 1px);
+  background-size: 28px 28px;
   mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.72), transparent);
 }
 

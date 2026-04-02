@@ -362,16 +362,18 @@ const toggleEditorSide = () => {
       <section class="toolbar-shell panel-shell">
         <div class="toolbar-group">
           <span class="toolbar-label">基础组件</span>
-          <button class="primary-button" type="button" @click="addText">文本</button>
-          <button class="primary-button" type="button" @click="addRect">矩形</button>
-          <button class="primary-button" type="button" @click="addImage">图片</button>
+          <a-button class="primary-button" type="primary" @click="addText">文本</a-button>
+          <a-button class="primary-button" type="primary" @click="addRect">矩形</a-button>
+          <a-button class="primary-button" type="primary" @click="addImage">图片</a-button>
         </div>
 
         <div class="toolbar-group">
           <span class="toolbar-label">页面管理</span>
-          <button class="secondary-button" type="button" @click="addSlide">新增页面</button>
-          <button class="secondary-button" type="button" @click="clearSelection">清空选择</button>
-          <button class="danger-button" type="button" @click="removeSelected">删除选中</button>
+          <a-button class="secondary-button" type="outline" @click="addSlide">新增页面</a-button>
+          <a-button class="secondary-button" type="outline" @click="clearSelection">清空选择</a-button>
+          <a-button class="danger-button" status="danger" type="outline" @click="removeSelected">
+            删除选中
+          </a-button>
         </div>
       </section>
 
@@ -383,21 +385,23 @@ const toggleEditorSide = () => {
               <h3>{{ isSlideRailCollapsed ? "页面" : "页面列表" }}</h3>
             </div>
             <div class="panel-actions">
-              <button
+              <a-button
                 v-if="!isSlideRailCollapsed"
                 class="secondary-button compact"
-                type="button"
+                size="small"
+                type="outline"
                 @click="addSlide"
               >
                 新增
-              </button>
-              <button
+              </a-button>
+              <a-button
                 class="secondary-button compact"
-                type="button"
+                size="small"
+                type="outline"
                 @click="toggleSlideRail"
               >
                 {{ isSlideRailCollapsed ? "展开" : "收起" }}
-              </button>
+              </a-button>
             </div>
           </div>
 
@@ -484,21 +488,27 @@ const toggleEditorSide = () => {
                 {{ tab.label }}
               </button>
             </div>
-            <button
+            <a-button
               class="secondary-button compact side-toggle-button"
-              type="button"
+              size="small"
+              type="outline"
               @click="toggleEditorSide"
             >
               {{ isEditorSideCollapsed ? "展开" : "收起" }}
-            </button>
+            </a-button>
           </div>
 
           <div v-if="isEditorSideCollapsed" class="collapsed-side-shell panel-shell">
             <span class="collapsed-side-label">{{ sideTabs.find((tab) => tab.key === activeSideTab)?.label }}</span>
             <small>右侧管理区</small>
-            <button class="secondary-button compact" type="button" @click="toggleEditorSide">
+            <a-button
+              class="secondary-button compact"
+              size="small"
+              type="outline"
+              @click="toggleEditorSide"
+            >
               展开
-            </button>
+            </a-button>
           </div>
 
           <SlideSettingsPanel
@@ -536,555 +546,4 @@ const toggleEditorSide = () => {
   </section>
 </template>
 
-<style scoped>
-.editor-shell {
-  display: grid;
-  gap: var(--cw-space-5);
-  min-width: 0;
-  color: var(--cw-color-text);
-}
-
-.editor-shell.is-embedded {
-  gap: var(--cw-space-4);
-}
-
-.panel-shell,
-.editor-topbar {
-  border: 1px solid var(--cw-color-border);
-  border-radius: var(--cw-radius-xl);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.84)),
-    var(--cw-color-surface);
-  box-shadow: var(--cw-shadow-medium);
-}
-
-.editor-topbar {
-  display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 420px);
-  gap: var(--cw-space-5);
-  align-items: end;
-  padding: 28px;
-}
-
-.section-kicker,
-.toolbar-label,
-.slide-index {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.4;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--cw-color-primary);
-}
-
-.title-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--cw-space-3);
-  margin-top: var(--cw-space-2);
-}
-
-.title-row h2,
-.panel-head h3,
-.workspace-head h3 {
-  margin: 0;
-  font-size: clamp(28px, 3.4vw, 42px);
-  line-height: 1.1;
-}
-
-.editor-copy {
-  max-width: 62ch;
-  margin: var(--cw-space-3) 0 0;
-  font-size: 15px;
-  line-height: 1.7;
-  color: var(--cw-color-muted);
-}
-
-.mode-pill {
-  display: inline-flex;
-  align-items: center;
-  min-height: 36px;
-  padding: 0 var(--cw-space-3);
-  border-radius: var(--cw-radius-pill);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--cw-color-primary);
-  background: rgba(13, 148, 136, 0.12);
-}
-
-.stat-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--cw-space-3);
-}
-
-.stat-card {
-  display: grid;
-  gap: var(--cw-space-2);
-  padding: 18px;
-  border: 1px solid rgba(19, 78, 74, 0.08);
-  border-radius: var(--cw-radius-md);
-  background:
-    linear-gradient(180deg, rgba(20, 184, 166, 0.1), rgba(255, 255, 255, 0.96)),
-    var(--cw-color-surface);
-}
-
-.stat-label {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--cw-color-muted);
-}
-
-.stat-card strong {
-  font-size: clamp(28px, 2.4vw, 36px);
-  line-height: 1;
-}
-
-.editor-workbench {
-  display: grid;
-  gap: var(--cw-space-4);
-  min-width: 0;
-}
-
-.toolbar-shell {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--cw-space-4);
-  padding: var(--cw-space-5);
-}
-
-.toolbar-group {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--cw-space-2);
-}
-
-.editor-layout {
-  display: grid;
-  grid-template-columns:
-    var(--cw-editor-rail-width)
-    minmax(0, 1fr)
-    var(--cw-editor-side-width);
-  gap: var(--cw-space-5);
-  align-items: start;
-  min-width: 0;
-}
-
-.editor-layout > * {
-  min-width: 0;
-}
-
-.editor-layout.is-left-collapsed {
-  grid-template-columns: 88px minmax(0, 1fr) var(--cw-editor-side-width);
-}
-
-.editor-layout.is-right-collapsed {
-  grid-template-columns: var(--cw-editor-rail-width) minmax(0, 1fr) 96px;
-}
-
-.editor-layout.is-left-collapsed.is-right-collapsed {
-  grid-template-columns: 88px minmax(0, 1fr) 96px;
-}
-
-.slide-rail,
-.workspace-shell,
-.side-tabs {
-  padding: var(--cw-space-5);
-}
-
-.slide-rail,
-.editor-side {
-  display: grid;
-  gap: var(--cw-space-4);
-  min-width: 0;
-}
-
-.slide-rail.is-collapsed,
-.editor-side.is-collapsed {
-  align-content: start;
-}
-
-.panel-head,
-.workspace-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--cw-space-4);
-}
-
-.panel-actions,
-.side-tab-list {
-  display: flex;
-  align-items: center;
-  gap: var(--cw-space-2);
-}
-
-.panel-head h3,
-.workspace-head h3 {
-  font-size: 24px;
-}
-
-.slide-list {
-  display: grid;
-  gap: var(--cw-space-3);
-}
-
-.collapsed-rail-summary,
-.collapsed-side-shell {
-  display: grid;
-  gap: var(--cw-space-3);
-  justify-items: center;
-  padding: var(--cw-space-4);
-  border: 1px dashed rgba(13, 148, 136, 0.22);
-  border-radius: var(--cw-radius-lg);
-  text-align: center;
-  background: rgba(255, 255, 255, 0.86);
-}
-
-.collapsed-count {
-  font-size: 28px;
-  font-weight: 700;
-  line-height: 1;
-  color: var(--cw-color-primary);
-}
-
-.collapsed-rail-summary small,
-.collapsed-side-shell small {
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--cw-color-muted);
-}
-
-.collapsed-rail-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border: 1px solid rgba(13, 148, 136, 0.18);
-  border-radius: var(--cw-radius-pill);
-  font-size: 24px;
-  line-height: 1;
-  color: var(--cw-color-primary);
-  cursor: pointer;
-  background: rgba(255, 255, 255, 0.92);
-}
-
-.slide-card {
-  display: grid;
-  gap: var(--cw-space-2);
-  width: 100%;
-  padding: 16px;
-  border: 1px solid rgba(19, 78, 74, 0.08);
-  border-radius: var(--cw-radius-md);
-  text-align: left;
-  cursor: pointer;
-  color: var(--cw-color-text);
-  background: rgba(255, 255, 255, 0.92);
-  transition:
-    transform var(--cw-duration-fast) var(--cw-ease-standard),
-    border-color var(--cw-duration-fast) var(--cw-ease-standard),
-    background var(--cw-duration-fast) var(--cw-ease-standard),
-    box-shadow var(--cw-duration-fast) var(--cw-ease-standard);
-}
-
-.slide-card:hover {
-  transform: translateY(-1px);
-  border-color: rgba(13, 148, 136, 0.28);
-}
-
-.slide-card.is-active {
-  border-color: rgba(13, 148, 136, 0.42);
-  background:
-    linear-gradient(180deg, rgba(20, 184, 166, 0.12), rgba(255, 255, 255, 0.96)),
-    var(--cw-color-surface);
-  box-shadow: inset 0 0 0 1px rgba(20, 184, 166, 0.18);
-}
-
-.slide-card-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--cw-space-2);
-}
-
-.slide-thumbnail {
-  display: grid;
-  gap: 10px;
-  justify-items: center;
-  min-height: 92px;
-  padding: 16px 14px;
-  border: 1px dashed rgba(19, 78, 74, 0.16);
-  border-radius: var(--cw-radius-md);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.68);
-}
-
-.thumb-line {
-  display: block;
-  height: 8px;
-  border-radius: var(--cw-radius-pill);
-  background: rgba(82, 112, 168, 0.78);
-}
-
-.thumb-line.long {
-  width: 72px;
-}
-
-.thumb-line.short {
-  width: 48px;
-  opacity: 0.62;
-}
-
-.thumb-dots {
-  display: flex;
-  gap: 6px;
-}
-
-.thumb-dots i {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(82, 112, 168, 0.7);
-}
-
-.slide-node-count,
-.slide-card small {
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--cw-color-muted);
-}
-
-.slide-card strong {
-  font-size: 16px;
-  line-height: 1.5;
-}
-
-.workspace-shell {
-  display: grid;
-  gap: var(--cw-space-4);
-  min-width: 0;
-}
-
-.workspace-badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--cw-space-2);
-}
-
-.workspace-badges.is-embedded {
-  gap: 6px;
-}
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  min-height: 36px;
-  padding: 0 var(--cw-space-3);
-  border-radius: var(--cw-radius-pill);
-  font-size: 13px;
-  color: var(--cw-color-primary);
-  background: rgba(13, 148, 136, 0.12);
-}
-
-.badge.subtle {
-  color: var(--cw-color-muted);
-  background: rgba(100, 116, 139, 0.12);
-}
-
-.stage-scroll {
-  overflow-x: auto;
-  overflow-y: visible;
-  max-width: 100%;
-  padding: var(--cw-space-3);
-  border-radius: var(--cw-radius-lg);
-  background:
-    linear-gradient(180deg, rgba(153, 246, 228, 0.55), rgba(240, 253, 250, 0.96)),
-    var(--cw-color-stage);
-}
-
-.stage-backdrop {
-  display: grid;
-  place-items: center;
-  width: max-content;
-  min-width: 100%;
-  min-height: 100%;
-  padding: var(--cw-space-5);
-}
-
-.stage-surface {
-  position: relative;
-  box-shadow: var(--cw-shadow-strong);
-}
-
-.stage-surface canvas {
-  display: block;
-}
-
-.empty-stage {
-  display: grid;
-  gap: var(--cw-space-2);
-  justify-items: center;
-  max-width: 28rem;
-  padding: var(--cw-space-6);
-  border: 1px dashed rgba(13, 148, 136, 0.24);
-  border-radius: var(--cw-radius-lg);
-  color: var(--cw-color-muted);
-  background: rgba(255, 255, 255, 0.82);
-  text-align: center;
-}
-
-.empty-stage strong {
-  font-size: 18px;
-  color: var(--cw-color-text);
-}
-
-.side-tabs {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--cw-space-2);
-}
-
-.side-tabs.is-collapsed {
-  justify-content: center;
-}
-
-.side-toggle-button {
-  flex-shrink: 0;
-}
-
-.collapsed-side-label {
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.5;
-  color: var(--cw-color-text);
-}
-
-.side-tab-button,
-.primary-button,
-.secondary-button,
-.danger-button {
-  min-height: 44px;
-  padding: 0 var(--cw-space-4);
-  border-radius: var(--cw-radius-pill);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    transform var(--cw-duration-fast) var(--cw-ease-standard),
-    box-shadow var(--cw-duration-fast) var(--cw-ease-standard),
-    background var(--cw-duration-fast) var(--cw-ease-standard),
-    border-color var(--cw-duration-fast) var(--cw-ease-standard);
-}
-
-.side-tab-button {
-  flex: 1;
-  border: 1px solid rgba(13, 148, 136, 0.1);
-  color: var(--cw-color-muted);
-  background: rgba(255, 255, 255, 0.92);
-}
-
-.side-tab-button.is-active {
-  color: var(--cw-color-primary);
-  border-color: rgba(13, 148, 136, 0.28);
-  background: rgba(13, 148, 136, 0.08);
-}
-
-.primary-button {
-  border: 1px solid transparent;
-  color: #ffffff;
-  background: linear-gradient(135deg, var(--cw-color-primary), var(--cw-color-primary-2));
-}
-
-.secondary-button {
-  border: 1px solid rgba(13, 148, 136, 0.18);
-  color: var(--cw-color-text);
-  background: rgba(255, 255, 255, 0.92);
-}
-
-.secondary-button.compact {
-  min-height: 38px;
-  padding: 0 14px;
-}
-
-.danger-button {
-  border: 1px solid rgba(220, 38, 38, 0.16);
-  color: var(--cw-color-danger);
-  background: var(--cw-color-danger-soft);
-}
-
-.side-tab-button:hover,
-.primary-button:hover,
-.secondary-button:hover,
-.danger-button:hover {
-  transform: translateY(-1px);
-}
-
-.editor-shell.is-embedded .toolbar-shell,
-.editor-shell.is-embedded .slide-rail,
-.editor-shell.is-embedded .workspace-shell,
-.editor-shell.is-embedded .side-tabs {
-  padding: var(--cw-space-4);
-}
-
-@media (max-width: 1240px) {
-  .editor-layout {
-    grid-template-columns: var(--cw-editor-rail-width) minmax(0, 1fr);
-  }
-
-  .editor-side {
-    grid-column: 1 / -1;
-  }
-
-  .editor-layout.is-left-collapsed {
-    grid-template-columns: 88px minmax(0, 1fr);
-  }
-
-  .editor-layout.is-right-collapsed,
-  .editor-layout.is-left-collapsed.is-right-collapsed {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-@media (max-width: 1100px) {
-  .editor-topbar,
-  .editor-layout,
-  .stat-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .toolbar-shell,
-  .workspace-head,
-  .panel-head {
-    align-items: flex-start;
-  }
-}
-
-@media (max-width: 768px) {
-  .toolbar-shell,
-  .slide-rail,
-  .workspace-shell,
-  .side-tabs {
-    padding: var(--cw-space-4);
-  }
-
-  .workspace-badges,
-  .toolbar-group,
-  .side-tabs,
-  .side-tab-list {
-    width: 100%;
-  }
-
-  .side-tabs {
-    flex-wrap: wrap;
-  }
-}
-</style>
+<style scoped src="./CoursewareEditor.css"></style>

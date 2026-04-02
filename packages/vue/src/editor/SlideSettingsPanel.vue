@@ -174,7 +174,7 @@ const handleSlideBackgroundChange = (event: Event) => {
   border: 1px solid var(--cw-color-border);
   border-radius: var(--cw-radius-lg);
   background:
-    linear-gradient(180deg, rgba(13, 148, 136, 0.05), rgba(255, 255, 255, 0.96)),
+    linear-gradient(180deg, rgba(22, 93, 255, 0.05), rgba(255, 255, 255, 0.96)),
     var(--cw-color-surface);
   box-shadow: var(--cw-shadow-weak);
 }
@@ -279,11 +279,11 @@ const handleSlideBackgroundChange = (event: Event) => {
 }
 
 .field-input:hover {
-  border-color: rgba(13, 148, 136, 0.28);
+  border-color: rgba(22, 93, 255, 0.28);
 }
 
 .field-input:focus {
-  border-color: rgba(13, 148, 136, 0.36);
+  border-color: rgba(22, 93, 255, 0.36);
 }
 
 .color-input {

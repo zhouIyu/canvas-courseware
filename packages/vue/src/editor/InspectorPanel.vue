@@ -686,7 +686,7 @@ const handleRectRadiusChange = (event: Event) => {
 
 .group-badge.accent {
   color: var(--cw-color-primary);
-  background: rgba(13, 148, 136, 0.1);
+  background: rgba(22, 93, 255, 0.1);
 }
 
 .group-badge.warning {
@@ -750,7 +750,7 @@ const handleRectRadiusChange = (event: Event) => {
 
 .timeline-chip.accent {
   color: var(--cw-color-primary);
-  background: rgba(13, 148, 136, 0.12);
+  background: rgba(22, 93, 255, 0.12);
 }
 
 .timeline-chip.subtle {
@@ -828,11 +828,11 @@ const handleRectRadiusChange = (event: Event) => {
 }
 
 .field-input:hover {
-  border-color: rgba(13, 148, 136, 0.28);
+  border-color: rgba(22, 93, 255, 0.28);
 }
 
 .field-input:focus {
-  border-color: rgba(13, 148, 136, 0.36);
+  border-color: rgba(22, 93, 255, 0.36);
 }
 
 .field-textarea {

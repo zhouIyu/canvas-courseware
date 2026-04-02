@@ -317,7 +317,7 @@ onMounted(() => {
 
 .empty-state {
   padding: 56px 24px;
-  border: 1px dashed rgba(13, 148, 136, 0.2);
+  border: 1px dashed rgba(22, 93, 255, 0.2);
   border-radius: var(--cw-radius-lg);
   background: rgba(255, 255, 255, 0.8);
 }

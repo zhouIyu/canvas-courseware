@@ -130,6 +130,11 @@ const workspaceModeDescription = computed(() =>
     : "聚焦播放顺序与逐步预览效果",
 );
 
+/** 当前工作模式标签色值。 */
+const workspaceModeTagColor = computed(() =>
+  workspaceMode.value === "edit" ? "#165dff" : "#722ed1",
+);
+
 /** 当前保存状态的用户可读标签。 */
 const saveStatusLabel = computed(() => {
   switch (saveStatus.value) {
@@ -151,12 +156,12 @@ const saveStatusTagColor = computed(() => {
     case "saving":
       return "#165dff";
     case "dirty":
-      return "#ea580c";
+      return "#ff7d00";
     case "error":
-      return "#dc2626";
+      return "#f53f3f";
     case "saved":
     default:
-      return "#0d9488";
+      return "#00b42a";
   }
 });
 
@@ -504,13 +509,28 @@ onBeforeUnmount(() => {
 
           <div class="workspace-overview">
             <div class="workspace-signals">
-              <a-tag :color="workspaceMode === 'edit' ? '#0d9488' : '#165dff'" bordered>
+              <a-tag :color="workspaceModeTagColor" bordered>
                 {{ workspaceMode === "edit" ? "编辑模式" : "预览模式" }}
               </a-tag>
               <a-tag color="#64748b" bordered>{{ activeSlideLabel }}</a-tag>
               <span class="workspace-summary">{{ projectStatsLabel }}</span>
             </div>
             <p class="workspace-mode-copy">{{ workspaceModeDescription }}</p>
+          </div>
+
+          <div class="workspace-metrics" aria-label="项目规模概览">
+            <a-card :bordered="false" class="metric-card">
+              <span class="metric-label">页面</span>
+              <strong>{{ projectStats.slideCount }}</strong>
+            </a-card>
+            <a-card :bordered="false" class="metric-card">
+              <span class="metric-label">对象</span>
+              <strong>{{ projectStats.nodeCount }}</strong>
+            </a-card>
+            <a-card :bordered="false" class="metric-card">
+              <span class="metric-label">步骤</span>
+              <strong>{{ projectStats.stepCount }}</strong>
+            </a-card>
           </div>
         </div>
 
@@ -522,8 +542,8 @@ onBeforeUnmount(() => {
               type="button"
               @change="handleWorkspaceModeChange"
             >
-              <a-radio value="preview">预览</a-radio>
               <a-radio value="edit">编辑</a-radio>
+              <a-radio value="preview">预览</a-radio>
             </a-radio-group>
 
             <div class="workspace-actions">
