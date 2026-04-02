@@ -5,7 +5,6 @@ import {
   createTimelineStep,
   type NodeAnimation,
   type Slide,
-  type StepTrigger,
   type TimelineAction,
   type TimelineStep,
 } from "@canvas-courseware/core";
@@ -15,7 +14,6 @@ import {
   formatEasingLabel,
   formatNodeTypeLabel,
   formatTimelineActionLabel,
-  formatTriggerLabel,
 } from "../shared";
 
 /** 时间轴步骤触发方式选项。 */
@@ -166,15 +164,6 @@ const readNumberInputValue = (event: Event, fallback: number, minimum = 0): numb
 function resolveNodeName(nodeId: string): string {
   const node = props.slide?.nodes.find((item) => item.id === nodeId);
   return node?.name ?? "未匹配对象";
-}
-
-/** 生成一步 trigger 的紧凑说明，便于卡片标题行直接展示。 */
-function resolveTriggerSummary(trigger: StepTrigger): string {
-  if (trigger.type === "node-click") {
-    return `${formatTriggerLabel(trigger.type)} · ${resolveNodeName(trigger.targetId)}`;
-  }
-
-  return formatTriggerLabel(trigger.type);
 }
 
 /** 返回当前页面的第一条动画 id，供动作切换时兜底使用。 */
@@ -344,7 +333,10 @@ function handleStepNameInput(step: TimelineStep, event: Event): void {
 
 /** 更新步骤触发方式，并在 auto 时补默认延迟。 */
 function handleStepTriggerTypeChange(step: TimelineStep, event: Event): void {
-  const nextTriggerType = readTextInputValue(event, step.trigger.type) as StepTrigger["type"];
+  const nextTriggerType = readTextInputValue(
+    event,
+    step.trigger.type,
+  ) as TimelineStep["trigger"]["type"];
 
   emitStep({
     ...step,
@@ -589,11 +581,7 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
           >
             <header class="card-head">
               <div class="card-title-row">
-                <span class="card-index">{{ String(stepIndex + 1).padStart(2, "0") }}</span>
-                <div class="card-copy">
-                  <strong>{{ step.name }}</strong>
-                  <small>{{ resolveTriggerSummary(step.trigger) }}</small>
-                </div>
+                <span class="card-index">步骤 {{ String(stepIndex + 1).padStart(2, "0") }}</span>
               </div>
 
               <button class="danger-button" type="button" @click="handleRemoveStep(step.id)">
@@ -663,7 +651,6 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
                 <div class="action-head">
                   <div class="action-copy">
                     <strong>动作 {{ actionIndex + 1 }}</strong>
-                    <small>{{ formatTimelineActionLabel(action.type) }}</small>
                   </div>
                   <button
                     class="danger-text-button"
@@ -756,17 +743,13 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
 
         <div v-if="(slide?.timeline.animations.length ?? 0) > 0" class="animation-list">
           <article
-            v-for="animation in slide?.timeline.animations ?? []"
+            v-for="(animation, animationIndex) in slide?.timeline.animations ?? []"
             :key="animation.id"
             class="animation-card"
           >
             <header class="card-head">
               <div class="card-title-row">
-                <span class="card-index subtle">{{ formatAnimationKindLabel(animation.kind) }}</span>
-                <div class="card-copy">
-                  <strong>{{ resolveNodeName(animation.targetId) }}</strong>
-                  <small>{{ animation.durationMs }}ms</small>
-                </div>
+                <span class="card-index subtle">动画 {{ animationIndex + 1 }}</span>
               </div>
 
               <button class="danger-button" type="button" @click="handleRemoveAnimation(animation.id)">
@@ -914,7 +897,6 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
 }
 
 .panel-count,
-.group-badge,
 .card-index {
   display: inline-flex;
   align-items: center;
@@ -931,13 +913,7 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
   background: rgba(22, 93, 255, 0.12);
 }
 
-.group-badge.warning {
-  color: var(--cw-color-accent);
-  background: rgba(234, 88, 12, 0.12);
-}
-
 .group-copy,
-.card-copy small,
 .panel-empty {
   margin: 0;
   font-size: 14px;
@@ -953,7 +929,6 @@ function handleAnimationOffsetYChange(animation: NodeAnimation, event: Event): v
 }
 
 .card-title-row,
-.card-copy,
 .action-copy {
   display: grid;
   gap: var(--cw-space-2);
