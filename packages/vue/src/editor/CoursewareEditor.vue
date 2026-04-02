@@ -411,7 +411,6 @@ const toggleEditorSide = () => {
             >
               <div class="slide-card-top">
                 <span class="slide-index">{{ String(index + 1).padStart(2, "0") }}</span>
-                <span class="slide-node-count">{{ slide.nodes.length }} 个对象</span>
               </div>
 
               <div class="slide-thumbnail" :style="{ background: slide.background.fill }">
@@ -425,7 +424,6 @@ const toggleEditorSide = () => {
               </div>
 
               <strong>{{ slide.name }}</strong>
-              <small>{{ slide.timeline.steps.length }} 个播放步骤</small>
             </button>
           </div>
         </aside>

@@ -227,7 +227,7 @@
 .slide-card-top {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: var(--cw-space-2);
 }
 
@@ -269,13 +269,6 @@
   height: 8px;
   border-radius: 50%;
   background: color-mix(in srgb, var(--cw-color-primary) 70%, #ffffff);
-}
-
-.slide-node-count,
-.slide-card small {
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--cw-color-muted);
 }
 
 .slide-card strong {
