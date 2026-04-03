@@ -593,6 +593,7 @@ const handleAnimationOffsetYChange = (
             <a-select
               class="field-input"
               :model-value="selectedNode.props.textAlign"
+              popup-container="body"
               @change="handleTextAlignChange"
             >
               <a-option
@@ -682,6 +683,7 @@ const handleAnimationOffsetYChange = (
             <a-select
               class="field-input"
               :model-value="selectedNode.props.objectFit ?? 'cover'"
+              popup-container="body"
               @change="handleImageObjectFitChange"
             >
               <a-option
@@ -728,6 +730,7 @@ const handleAnimationOffsetYChange = (
                 <a-select
                   class="field-input"
                   :model-value="animation.kind"
+                  popup-container="body"
                   @change="handleAnimationKindChange(animation, $event)"
                 >
                   <a-option
@@ -758,6 +761,7 @@ const handleAnimationOffsetYChange = (
                     <a-select
                       class="field-input"
                       :model-value="animation.easing ?? 'ease-out'"
+                      popup-container="body"
                       @change="handleAnimationEasingChange(animation, $event)"
                     >
                       <a-option
@@ -1043,23 +1047,6 @@ const handleAnimationOffsetYChange = (
 .field-input:deep(.arco-color-picker-trigger) {
   width: 100%;
   min-height: 44px;
-  border-radius: var(--cw-radius-sm);
-}
-
-.field-input:deep(.arco-input-wrapper:hover),
-.field-input:deep(.arco-select-view:hover),
-.field-input:deep(.arco-input-number:hover),
-.field-input:deep(.arco-textarea-wrapper:hover),
-.field-input:deep(.arco-color-picker-trigger:hover) {
-  border-color: rgba(22, 93, 255, 0.28);
-}
-
-.field-input:deep(.arco-input-wrapper.arco-input-focus),
-.field-input:deep(.arco-select-view.arco-select-view-focus),
-.field-input:deep(.arco-input-number-focus),
-.field-input:deep(.arco-textarea-wrapper-focus),
-.field-input:deep(.arco-color-picker-trigger-active) {
-  border-color: rgba(22, 93, 255, 0.36);
 }
 
 .field-textarea {
@@ -1109,9 +1096,6 @@ const handleAnimationOffsetYChange = (
   justify-content: space-between;
   min-height: 48px;
   padding: 0 14px;
-  border: 1px solid rgba(19, 78, 74, 0.08);
-  border-radius: var(--cw-radius-sm);
-  background: rgba(240, 253, 250, 0.72);
 }
 
 .field-toggle {
@@ -1125,32 +1109,7 @@ const handleAnimationOffsetYChange = (
 .soft-button,
 .danger-button {
   min-height: 34px;
-  padding: 0 14px;
-  border-radius: var(--cw-radius-pill);
   font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    transform var(--cw-duration-fast) var(--cw-ease-standard),
-    background var(--cw-duration-fast) var(--cw-ease-standard),
-    border-color var(--cw-duration-fast) var(--cw-ease-standard);
-}
-
-.soft-button {
-  border: 1px solid rgba(22, 93, 255, 0.18);
-  color: var(--cw-color-text);
-  background: rgba(255, 255, 255, 0.92);
-}
-
-.danger-button {
-  border: 1px solid rgba(220, 38, 38, 0.16);
-  color: var(--cw-color-danger);
-  background: var(--cw-color-danger-soft);
-}
-
-.soft-button:hover,
-.danger-button:hover {
-  transform: translateY(-1px);
 }
 
 @media (max-width: 640px) {

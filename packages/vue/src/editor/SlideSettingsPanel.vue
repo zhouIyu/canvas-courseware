@@ -244,26 +244,10 @@ const handleSlideBackgroundChange = (value: string | undefined) => {
 }
 
 .field-input:deep(.arco-input-wrapper),
-.field-input:deep(.arco-select-view),
 .field-input:deep(.arco-input-number),
 .field-input:deep(.arco-color-picker-trigger) {
   width: 100%;
   min-height: 44px;
-  border-radius: var(--cw-radius-sm);
-}
-
-.field-input:deep(.arco-input-wrapper:hover),
-.field-input:deep(.arco-select-view:hover),
-.field-input:deep(.arco-input-number:hover),
-.field-input:deep(.arco-color-picker-trigger:hover) {
-  border-color: rgba(22, 93, 255, 0.28);
-}
-
-.field-input:deep(.arco-input-wrapper.arco-input-focus),
-.field-input:deep(.arco-select-view.arco-select-view-focus),
-.field-input:deep(.arco-input-number-focus),
-.field-input:deep(.arco-color-picker-trigger-active) {
-  border-color: rgba(22, 93, 255, 0.36);
 }
 
 .empty-card {

@@ -190,8 +190,6 @@ watch(
       activeSideTab.value = "layers";
       return;
     }
-
-    activeSideTab.value = "slide";
   },
   { immediate: true },
 );

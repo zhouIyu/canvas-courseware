@@ -508,7 +508,7 @@ function handleActionAnimationChange(
 
               <label class="field">
                 <span class="field-label">触发</span>
-                <a-select class="field-input" :model-value="step.trigger.type" @change="handleStepTriggerTypeChange(step, $event)">
+                <a-select class="field-input" :model-value="step.trigger.type" popup-container="body" @change="handleStepTriggerTypeChange(step, $event)">
                   <a-option v-for="option in triggerOptions" :key="option.value" :value="option.value">
                     {{ option.label }}
                   </a-option>
@@ -520,6 +520,7 @@ function handleActionAnimationChange(
                 <a-select
                   class="field-input"
                   :model-value="step.trigger.targetId"
+                  popup-container="body"
                   @change="handleStepTriggerTargetChange(step, $event)"
                 >
                   <a-option v-for="option in nodeOptions" :key="option.value" :value="option.value">
@@ -544,6 +545,7 @@ function handleActionAnimationChange(
               <a-button
                 class="ghost-button"
                 type="outline"
+                size="small"
                 :disabled="!hasNodes"
                 @click="handleAddAction(step)"
               >
@@ -577,6 +579,7 @@ function handleActionAnimationChange(
                     <a-select
                       class="field-input"
                       :model-value="action.type"
+                      popup-container="body"
                       @change="handleActionTypeChange(step, action.id, $event)"
                     >
                       <a-option
@@ -594,6 +597,7 @@ function handleActionAnimationChange(
                     <a-select
                       class="field-input"
                       :model-value="resolveActionTargetId(action)"
+                      popup-container="body"
                       @change="handleActionTargetChange(step, action.id, $event)"
                     >
                       <a-option v-for="option in nodeOptions" :key="option.value" :value="option.value">
@@ -611,6 +615,7 @@ function handleActionAnimationChange(
                     <a-select
                       class="field-input"
                       :model-value="resolveActionAnimationValue(action)"
+                      popup-container="body"
                       @change="handleActionAnimationChange(step, action.id, $event)"
                     >
                       <a-option v-if="action.type === 'show-node'" value="">无</a-option>
@@ -774,32 +779,6 @@ function handleActionAnimationChange(
 .field-input:deep(.arco-input-number) {
   width: 100%;
   min-height: 40px;
-  border-radius: var(--cw-radius-md);
-}
-
-.field-input:deep(.arco-input-wrapper.arco-input-focus),
-.field-input:deep(.arco-select-view.arco-select-view-focus),
-.field-input:deep(.arco-input-number-focus),
-.soft-button:focus-visible,
-.ghost-button:focus-visible,
-.danger-button:focus-visible,
-.danger-text-button:focus-visible {
-  border-color: rgba(22, 93, 255, 0.4);
-  box-shadow: 0 0 0 3px rgba(22, 93, 255, 0.14);
-}
-
-.field-input:deep(.arco-input-wrapper:hover),
-.field-input:deep(.arco-select-view:hover),
-.field-input:deep(.arco-input-number:hover) {
-  border-color: rgba(22, 93, 255, 0.28);
-}
-
-.field-input:deep(.arco-input-wrapper-disabled),
-.field-input:deep(.arco-select-view-disabled),
-.field-input:deep(.arco-input-number-disabled) {
-  color: var(--cw-color-muted);
-  cursor: not-allowed;
-  background: rgba(148, 163, 184, 0.08);
 }
 
 .soft-button,
@@ -807,49 +786,11 @@ function handleActionAnimationChange(
 .danger-button,
 .danger-text-button {
   min-height: 38px;
-  padding: 0 14px;
-  border-radius: var(--cw-radius-pill);
   font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    transform var(--cw-duration-fast) var(--cw-ease-standard),
-    background var(--cw-duration-fast) var(--cw-ease-standard),
-    border-color var(--cw-duration-fast) var(--cw-ease-standard);
-}
-
-.soft-button,
-.ghost-button {
-  border: 1px solid rgba(22, 93, 255, 0.18);
-  color: var(--cw-color-text);
-  background: rgba(255, 255, 255, 0.92);
-}
-
-.danger-button,
-.danger-text-button {
-  border: 1px solid rgba(220, 38, 38, 0.16);
-  color: var(--cw-color-danger);
-  background: var(--cw-color-danger-soft);
 }
 
 .danger-text-button {
   min-height: 32px;
-  padding: 0 12px;
-}
-
-.soft-button:hover:enabled,
-.ghost-button:hover:enabled,
-.danger-button:hover:enabled,
-.danger-text-button:hover:enabled {
-  transform: translateY(-1px);
-}
-
-.soft-button:disabled,
-.ghost-button:disabled,
-.danger-button:disabled,
-.danger-text-button:disabled {
-  opacity: 0.42;
-  cursor: not-allowed;
 }
 
 .empty-card {

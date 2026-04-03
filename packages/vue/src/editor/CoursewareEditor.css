@@ -142,8 +142,7 @@
 }
 
 .toolbar-group :is(.primary-button, .secondary-button, .danger-button) {
-  border-radius: 10px;
-  font-weight: 600;
+  min-height: 36px;
 }
 
 .editor-layout {
@@ -519,34 +518,6 @@
   right: 10px;
 }
 
-.primary-button,
-.secondary-button,
-.danger-button {
-  min-height: 36px;
-  padding: 0 12px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    transform var(--cw-duration-fast) var(--cw-ease-standard),
-    box-shadow var(--cw-duration-fast) var(--cw-ease-standard),
-    background var(--cw-duration-fast) var(--cw-ease-standard),
-    border-color var(--cw-duration-fast) var(--cw-ease-standard);
-}
-
-.toolbar-group .primary-button {
-  color: var(--cw-color-text) !important;
-  border-color: transparent !important;
-  background: transparent !important;
-  box-shadow: none !important;
-}
-
-.toolbar-group .primary-button:hover {
-  color: var(--cw-color-primary) !important;
-  background: rgba(22, 93, 255, 0.08) !important;
-}
-
 .editor-side {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
@@ -669,9 +640,6 @@
   align-items: center;
 }
 
-.primary-button:hover,
-.secondary-button:hover,
-.danger-button:hover,
 .stage-side-badge:hover {
   transform: translateY(-1px);
 }
