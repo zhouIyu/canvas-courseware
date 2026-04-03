@@ -148,7 +148,7 @@
 .editor-layout {
   --cw-editor-pane-height: 820px;
   --cw-slide-rail-width: 176px;
-  --cw-editor-side-width: 376px;
+  --cw-editor-side-width: 360px;
   display: grid;
   grid-template-columns: var(--cw-slide-rail-width) minmax(0, 1fr) var(--cw-editor-side-width);
   gap: 12px;
