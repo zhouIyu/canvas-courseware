@@ -88,6 +88,12 @@ const toolbarShellRef = ref<HTMLElement | null>(null);
 /** 中间编辑区滚动容器的 DOM 引用。 */
 const stageViewportRef = ref<HTMLDivElement | null>(null);
 
+/** 中间编辑区当前可用尺寸。 */
+const stageViewportSize = ref({
+  width: 0,
+  height: 0,
+});
+
 /** 当前工具条实际高度。 */
 const toolbarHeight = ref(0);
 
@@ -248,8 +254,25 @@ const canvasStyle = computed(() => {
   };
 });
 
-/** 编辑态保持原始画布尺寸，超出中区时交给滚动容器处理。 */
-const canvasScale = computed(() => 1);
+/** 根据中间区域宽高等比缩放画布，保证始终完整显示且不放大。 */
+const canvasScale = computed(() => {
+  if (
+    !activeSlide.value ||
+    stageViewportSize.value.width <= 0 ||
+    stageViewportSize.value.height <= 0
+  ) {
+    return 1;
+  }
+
+  /** 预留滚动容器与画布包裹层的水平留白，保证边缘不贴死。 */
+  const availableWidth = Math.max(stageViewportSize.value.width - 88, 180);
+  /** 预留上下留白，保证缩放后画布仍完整可见。 */
+  const availableHeight = Math.max(stageViewportSize.value.height - 80, 160);
+  const widthScale = availableWidth / activeSlide.value.size.width;
+  const heightScale = availableHeight / activeSlide.value.size.height;
+
+  return Math.min(1, widthScale, heightScale);
+});
 
 /** 缩放后的画布外框尺寸，保证布局高度与展示尺寸一致。 */
 const canvasFrameStyle = computed(() => {
@@ -428,11 +451,21 @@ const updateToolbarHeight = () => {
   toolbarHeight.value = toolbarShellRef.value?.offsetHeight ?? 0;
 };
 
-/** 监听工具条尺寸变化，让三栏高度及时同步。 */
+/** 读取中间编辑区当前可用尺寸，用于画布等比缩放。 */
+const updateStageViewportSize = () => {
+  stageViewportSize.value = {
+    width: stageViewportRef.value?.clientWidth ?? 0,
+    height: stageViewportRef.value?.clientHeight ?? 0,
+  };
+};
+
+/** 监听工具条和编辑区尺寸变化，让布局与画布缩放及时同步。 */
 let toolbarResizeObserver: ResizeObserver | null = null;
+let stageViewportResizeObserver: ResizeObserver | null = null;
 
 onMounted(() => {
   updateToolbarHeight();
+  updateStageViewportSize();
 
   if (toolbarShellRef.value) {
     toolbarResizeObserver = new ResizeObserver(() => {
@@ -440,11 +473,20 @@ onMounted(() => {
     });
     toolbarResizeObserver.observe(toolbarShellRef.value);
   }
+
+  if (stageViewportRef.value) {
+    stageViewportResizeObserver = new ResizeObserver(() => {
+      updateStageViewportSize();
+    });
+    stageViewportResizeObserver.observe(stageViewportRef.value);
+  }
 });
 
 onBeforeUnmount(() => {
   toolbarResizeObserver?.disconnect();
   toolbarResizeObserver = null;
+  stageViewportResizeObserver?.disconnect();
+  stageViewportResizeObserver = null;
 });
 </script>
 
