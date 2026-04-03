@@ -311,15 +311,30 @@ onBeforeUnmount(() => {
           <a-button
             v-for="(slide, index) in state.document?.slides ?? []"
             :key="slide.id"
-            class="slide-chip"
+            class="preview-slide-card"
             :class="{ 'is-active': slide.id === state.slideId }"
             type="text"
             :aria-pressed="slide.id === state.slideId"
             @click="activateSlide(slide.id)"
           >
-            <span>{{ String(index + 1).padStart(2, '0') }}</span>
-            <strong>{{ slide.name }}</strong>
-            <small>{{ slide.timeline.steps.length }} 个步骤</small>
+            <div class="preview-slide-card-top">
+              <span class="preview-slide-index">{{ String(index + 1).padStart(2, '0') }}</span>
+            </div>
+            <div class="preview-slide-card-main">
+              <div class="preview-slide-thumbnail" :style="{ background: slide.background.fill }">
+                <span class="preview-thumb-line long" />
+                <span class="preview-thumb-line short" />
+                <span class="preview-thumb-dots">
+                  <i />
+                  <i />
+                  <i />
+                </span>
+              </div>
+              <div class="preview-slide-meta">
+                <strong>{{ slide.name }}</strong>
+                <small>{{ slide.timeline.steps.length }} 个步骤</small>
+              </div>
+            </div>
           </a-button>
         </div>
         <div v-else class="collapsed-side-shell">
@@ -375,17 +390,19 @@ onBeforeUnmount(() => {
           <li
             v-for="(step, index) in activeSlide?.timeline.steps ?? []"
             :key="step.id"
-            class="step-card"
+            class="preview-step-card"
             :class="{
               'is-done': index < state.stepIndex,
               'is-current': index === state.stepIndex,
             }"
           >
-            <div class="step-index">{{ String(index + 1).padStart(2, '0') }}</div>
+            <div class="preview-step-marker">
+              <div class="step-index">{{ String(index + 1).padStart(2, '0') }}</div>
+            </div>
             <div class="step-copy">
               <div class="step-row">
                 <strong>{{ step.name }}</strong>
-                <span>{{ formatTriggerLabel(step.trigger.type) }}</span>
+                <span class="step-trigger">{{ formatTriggerLabel(step.trigger.type) }}</span>
               </div>
               <small>{{ step.actions.length }} 个动作</small>
             </div>
