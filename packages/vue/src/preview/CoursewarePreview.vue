@@ -188,20 +188,44 @@ const toggleTimelinePanel = () => {
           <a-tag :color="playbackStatusTagColor" bordered>{{ playbackStatusLabel }}</a-tag>
         </div>
         <p class="preview-copy">
-          预览器只消费同一份通用 JSON，并把页面点击、自动触发、对象点击等 step 状态翻译成可理解的播放反馈。
+          {{ playbackSummary }} · {{ nextTriggerLabel }} · {{ activeSlide?.name ?? "未选择页面" }}
         </p>
+      </div>
+      <div class="preview-topbar-actions">
+        <div class="status-badges topbar-badges">
+          <a-tag bordered>{{ stepPositionLabel }}</a-tag>
+          <a-tag bordered>{{ stageSizeLabel }}</a-tag>
+        </div>
+        <div class="preview-actions">
+          <a-button class="preview-text-button" type="text" @click="resetPreview">重置播放</a-button>
+          <a-button type="primary" @click="playNextStep">播放下一步</a-button>
+        </div>
       </div>
     </header>
 
     <main class="preview-layout" :class="previewLayoutClass">
+      <a-button
+        class="preview-side-badge preview-side-badge-left"
+        type="text"
+        :aria-label="isSlideRailCollapsed ? '展开左侧页面栏' : '收起左侧页面栏'"
+        @click="toggleSlideRail"
+      >
+        {{ isSlideRailCollapsed ? "›" : "‹" }}
+      </a-button>
+      <a-button
+        class="preview-side-badge preview-side-badge-right"
+        type="text"
+        :aria-label="isTimelineCollapsed ? '展开右侧步骤栏' : '收起右侧步骤栏'"
+        @click="toggleTimelinePanel"
+      >
+        {{ isTimelineCollapsed ? "‹" : "›" }}
+      </a-button>
+
       <aside class="preview-rail slide-shell" :class="{ 'is-collapsed': isSlideRailCollapsed }">
         <header class="section-head compact">
           <div>
             <h3>{{ isSlideRailCollapsed ? "页面" : "快速切换" }}</h3>
           </div>
-          <a-button class="compact-button" size="small" type="outline" @click="toggleSlideRail">
-            {{ isSlideRailCollapsed ? "展开" : "收起" }}
-          </a-button>
         </header>
 
         <div v-if="!isSlideRailCollapsed" class="slide-chip-list">
@@ -222,9 +246,6 @@ const toggleTimelinePanel = () => {
         <div v-else class="collapsed-side-shell">
           <span class="collapsed-count">{{ state.document?.slides.length ?? 0 }}</span>
           <small>{{ activeSlideIndex >= 0 ? `当前第 ${activeSlideIndex + 1} 页` : "未选择页面" }}</small>
-          <a-button class="compact-button" size="small" type="outline" @click="toggleSlideRail">
-            展开
-          </a-button>
         </div>
       </aside>
 
@@ -237,12 +258,7 @@ const toggleTimelinePanel = () => {
             <div class="status-badges">
               <a-tag :color="playbackStatusTagColor" bordered>{{ playbackStatusLabel }}</a-tag>
               <a-tag bordered>{{ stepPositionLabel }}</a-tag>
-              <a-tag v-if="!isEmbedded" bordered>{{ nextTriggerLabel }}</a-tag>
-              <a-tag v-if="!isEmbedded" bordered>{{ stageSizeLabel }}</a-tag>
-            </div>
-            <div class="preview-actions">
-              <a-button type="outline" @click="resetPreview">重置播放</a-button>
-              <a-button type="primary" @click="playNextStep">播放下一步</a-button>
+              <a-tag bordered>{{ nextTriggerLabel }}</a-tag>
             </div>
           </div>
         </header>
@@ -250,19 +266,6 @@ const toggleTimelinePanel = () => {
         <p v-if="isEmbedded" class="preview-inline-summary">
           {{ embeddedSummaryLabel }}
         </p>
-        <div v-else class="inline-status-strip">
-          <a-card :bordered="false" class="status-card primary compact-card">
-            <div class="status-card-body">
-              <strong>{{ playbackSummary }}</strong>
-            </div>
-          </a-card>
-          <a-card :bordered="false" class="status-card compact-card">
-            <div class="status-card-body">
-              <strong>{{ activeSlide?.name ?? "未选择页面" }}</strong>
-              <small>{{ activeSlideIndex >= 0 ? `第 ${activeSlideIndex + 1} 页` : "未定位" }}</small>
-            </div>
-          </a-card>
-        </div>
 
         <div class="preview-stage" :style="stageStyle">
           <div class="preview-stage-scroll">
@@ -282,9 +285,6 @@ const toggleTimelinePanel = () => {
           <div>
             <h3>{{ isTimelineCollapsed ? "步骤" : "步骤状态" }}</h3>
           </div>
-          <a-button class="compact-button" size="small" type="outline" @click="toggleTimelinePanel">
-            {{ isTimelineCollapsed ? "展开" : "收起" }}
-          </a-button>
         </header>
 
         <ol
@@ -317,9 +317,6 @@ const toggleTimelinePanel = () => {
         <div v-else class="collapsed-side-shell">
           <span class="collapsed-count">{{ stepCount }}</span>
           <small>{{ playbackSummary }}</small>
-          <a-button class="compact-button" size="small" type="outline" @click="toggleTimelinePanel">
-            展开
-          </a-button>
         </div>
       </aside>
     </main>
