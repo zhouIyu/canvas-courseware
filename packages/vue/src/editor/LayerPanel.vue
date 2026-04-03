@@ -100,12 +100,12 @@ const resolveNodeMetaLine = (node: CoursewareNode): string =>
     </p>
 
     <div v-if="nodes.length > 0" class="layer-list">
-      <button
+      <a-button
         v-for="node in nodes"
         :key="node.id"
         class="layer-item"
         :class="{ 'is-active': selectedNodeIds.includes(node.id) }"
-        type="button"
+        type="text"
         :aria-pressed="selectedNodeIds.includes(node.id)"
         @click="handleSelect(node.id)"
       >
@@ -120,43 +120,43 @@ const resolveNodeMetaLine = (node: CoursewareNode): string =>
             {{ formatNodeTimelineSummaryLabel(resolveNodeTimelineSummary(node.id)) }}
           </span>
         </div>
-      </button>
+      </a-button>
     </div>
     <p v-else class="panel-empty">当前页面还没有内容，先从上方工具栏插入一个对象。</p>
 
     <div class="layer-actions">
-      <button
+      <a-button
         class="layer-action-button"
-        type="button"
+        type="outline"
         :disabled="!canMoveFront"
         @click="handleReorder('front')"
       >
         置顶
-      </button>
-      <button
+      </a-button>
+      <a-button
         class="layer-action-button"
-        type="button"
+        type="outline"
         :disabled="!canMoveForward"
         @click="handleReorder('forward')"
       >
         上移
-      </button>
-      <button
+      </a-button>
+      <a-button
         class="layer-action-button"
-        type="button"
+        type="outline"
         :disabled="!canMoveBackward"
         @click="handleReorder('backward')"
       >
         下移
-      </button>
-      <button
+      </a-button>
+      <a-button
         class="layer-action-button"
-        type="button"
+        type="outline"
         :disabled="!canMoveBack"
         @click="handleReorder('back')"
       >
         置底
-      </button>
+      </a-button>
     </div>
   </section>
 </template>
@@ -193,6 +193,7 @@ const resolveNodeMetaLine = (node: CoursewareNode): string =>
   display: grid;
   gap: 8px;
   width: 100%;
+  height: auto;
   padding: 14px;
   border: 1px solid rgba(15, 23, 42, 0.12);
   border-radius: 12px;
@@ -243,6 +244,12 @@ const resolveNodeMetaLine = (node: CoursewareNode): string =>
   color: var(--cw-color-text);
 }
 
+.layer-item:deep(.arco-btn-content) {
+  display: grid;
+  width: 100%;
+  gap: 8px;
+}
+
 .layer-meta-line {
   display: block;
   font-size: 12px;
@@ -283,11 +290,9 @@ const resolveNodeMetaLine = (node: CoursewareNode): string =>
 .layer-action-button {
   min-height: 44px;
   padding: 0 var(--cw-space-4);
-  border: 1px solid rgba(22, 93, 255, 0.18);
   border-radius: var(--cw-radius-pill);
   color: var(--cw-color-text);
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.9);
   transition:
     transform var(--cw-duration-fast) var(--cw-ease-standard),
     border-color var(--cw-duration-fast) var(--cw-ease-standard),

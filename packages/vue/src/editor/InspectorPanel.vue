@@ -103,8 +103,16 @@ const hasFirstTimelineStep = computed(
 const hasSelectedAnimations = computed(() => props.selectedAnimations.length > 0);
 
 /** 读取文本输入框的字符串值。 */
-const readTextInputValue = (event: Event, fallback = ""): string => {
-  const target = event.target;
+const readTextInputValue = (value: unknown, fallback = ""): string => {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (typeof value === "number") {
+    return String(value);
+  }
+
+  const target = value instanceof Event ? value.target : null;
   return target instanceof HTMLInputElement ||
     target instanceof HTMLTextAreaElement ||
     target instanceof HTMLSelectElement
@@ -113,8 +121,12 @@ const readTextInputValue = (event: Event, fallback = ""): string => {
 };
 
 /** 读取勾选框的布尔值。 */
-const readCheckedValue = (event: Event, fallback = false): boolean => {
-  const target = event.target;
+const readCheckedValue = (value: unknown, fallback = false): boolean => {
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  const target = value instanceof Event ? value.target : null;
   return target instanceof HTMLInputElement ? target.checked : fallback;
 };
 
@@ -123,14 +135,16 @@ const readCheckedValue = (event: Event, fallback = false): boolean => {
  * 对于宽高、字号等字段，还会执行最小值保护，避免非法负数。
  */
 const readNumberInputValue = (
-  event: Event,
+  value: unknown,
   fallback: number,
   minimum = Number.NEGATIVE_INFINITY,
 ) => {
-  const target = event.target;
   const parsed =
-    target instanceof HTMLInputElement || target instanceof HTMLSelectElement
-      ? Number(target.value)
+    typeof value === "number" || typeof value === "string"
+      ? Number(value)
+      : value instanceof Event &&
+          (value.target instanceof HTMLInputElement || value.target instanceof HTMLSelectElement)
+        ? Number(value.target.value)
       : Number.NaN;
 
   if (Number.isNaN(parsed)) {
@@ -150,20 +164,20 @@ const updateNode = (patch: NodePatch) => {
 };
 
 /** 更新节点名称。 */
-const handleNodeNameInput = (event: Event) => {
+const handleNodeNameInput = (value: string | number | undefined) => {
   if (!props.selectedNode) {
     return;
   }
 
   updateNode({
-    name: readTextInputValue(event, props.selectedNode.name),
+    name: readTextInputValue(value, props.selectedNode.name),
   });
 };
 
 /** 更新节点基础数值属性。 */
 const handleNodeBaseNumberChange = (
   field: "x" | "y" | "width" | "height" | "rotation",
-  event: Event,
+  value: number | string | undefined,
 ) => {
   if (!props.selectedNode) {
     return;
@@ -171,80 +185,83 @@ const handleNodeBaseNumberChange = (
 
   const minimum = field === "width" || field === "height" ? 1 : Number.NEGATIVE_INFINITY;
   updateNode({
-    [field]: readNumberInputValue(event, props.selectedNode[field], minimum),
+    [field]: readNumberInputValue(value, props.selectedNode[field], minimum),
   });
 };
 
 /** 更新节点透明度。 */
-const handleNodeOpacityChange = (event: Event) => {
+const handleNodeOpacityChange = (value: number | string | undefined) => {
   if (!props.selectedNode) {
     return;
   }
 
   updateNode({
-    opacity: readNumberInputValue(event, nodeOpacityPercent.value, 0) / 100,
+    opacity: readNumberInputValue(value, nodeOpacityPercent.value, 0) / 100,
   });
 };
 
 /** 更新节点的布尔状态。 */
-const handleNodeToggle = (field: "visible" | "locked", event: Event) => {
+const handleNodeToggle = (
+  field: "visible" | "locked",
+  value: string | number | boolean,
+) => {
   if (!props.selectedNode) {
     return;
   }
 
   updateNode({
-    [field]: readCheckedValue(event, props.selectedNode[field]),
+    [field]: readCheckedValue(value, props.selectedNode[field]),
   });
 };
 
 /** 更新文本内容。 */
-const handleTextContentInput = (event: Event) => {
+const handleTextContentInput = (value: string | number | undefined) => {
   if (props.selectedNode?.type !== "text") {
     return;
   }
 
   updateNode({
     props: {
-      text: readTextInputValue(event, props.selectedNode.props.text),
+      text: readTextInputValue(value, props.selectedNode.props.text),
     },
   });
 };
 
 /** 更新文本字号。 */
-const handleTextFontSizeChange = (event: Event) => {
+const handleTextFontSizeChange = (value: number | string | undefined) => {
   if (props.selectedNode?.type !== "text") {
     return;
   }
 
   updateNode({
     props: {
-      fontSize: readNumberInputValue(event, props.selectedNode.props.fontSize, 10),
+      fontSize: readNumberInputValue(value, props.selectedNode.props.fontSize, 10),
     },
   });
 };
 
 /** 更新文本颜色。 */
-const handleTextColorChange = (event: Event) => {
+const handleTextColorChange = (value: string | undefined) => {
   if (props.selectedNode?.type !== "text") {
     return;
   }
 
   updateNode({
     props: {
-      color: readTextInputValue(event, props.selectedNode.props.color),
+      color: readTextInputValue(value, props.selectedNode.props.color),
     },
   });
 };
 
 /** 更新文本对齐方式。 */
-const handleTextAlignChange = (event: Event) => {
+const handleTextAlignChange = (value: string | number | boolean | undefined) => {
   if (props.selectedNode?.type !== "text") {
     return;
   }
 
   updateNode({
     props: {
-      textAlign: readTextInputValue(event, props.selectedNode.props.textAlign ?? "left") as
+      textAlign: readTextInputValue(value, props.selectedNode.props.textAlign ?? "left") as
         | "left"
         | "center"
         | "right",
@@ -253,40 +270,40 @@ const handleTextAlignChange = (event: Event) => {
 };
 
 /** 更新图片地址。 */
-const handleImageSourceInput = (event: Event) => {
+const handleImageSourceInput = (value: string | number | undefined) => {
   if (props.selectedNode?.type !== "image") {
     return;
   }
 
   updateNode({
     props: {
-      src: readTextInputValue(event, props.selectedNode.props.src),
+      src: readTextInputValue(value, props.selectedNode.props.src),
     },
   });
 };
 
 /** 更新图片替代文本。 */
-const handleImageAltInput = (event: Event) => {
+const handleImageAltInput = (value: string | number | undefined) => {
   if (props.selectedNode?.type !== "image") {
     return;
   }
 
   updateNode({
     props: {
-      alt: readTextInputValue(event, props.selectedNode.props.alt ?? ""),
+      alt: readTextInputValue(value, props.selectedNode.props.alt ?? ""),
     },
   });
 };
 
 /** 更新图片适配方式。 */
-const handleImageObjectFitChange = (event: Event) => {
+const handleImageObjectFitChange = (value: string | number | boolean | undefined) => {
   if (props.selectedNode?.type !== "image") {
     return;
   }
 
   updateNode({
     props: {
-      objectFit: readTextInputValue(event, props.selectedNode.props.objectFit ?? "cover") as
+      objectFit: readTextInputValue(value, props.selectedNode.props.objectFit ?? "cover") as
         | "fill"
         | "contain"
         | "cover",
@@ -295,53 +312,53 @@ const handleImageObjectFitChange = (event: Event) => {
 };
 
 /** 更新矩形填充色。 */
-const handleRectFillChange = (event: Event) => {
+const handleRectFillChange = (value: string | undefined) => {
   if (props.selectedNode?.type !== "rect") {
     return;
   }
 
   updateNode({
     props: {
-      fill: readTextInputValue(event, props.selectedNode.props.fill),
+      fill: readTextInputValue(value, props.selectedNode.props.fill),
     },
   });
 };
 
 /** 更新矩形描边色。 */
-const handleRectStrokeChange = (event: Event) => {
+const handleRectStrokeChange = (value: string | undefined) => {
   if (props.selectedNode?.type !== "rect") {
     return;
   }
 
   updateNode({
     props: {
-      stroke: readTextInputValue(event, props.selectedNode.props.stroke ?? "#0D9488"),
+      stroke: readTextInputValue(value, props.selectedNode.props.stroke ?? "#0D9488"),
     },
   });
 };
 
 /** 更新矩形描边宽度。 */
-const handleRectStrokeWidthChange = (event: Event) => {
+const handleRectStrokeWidthChange = (value: number | string | undefined) => {
   if (props.selectedNode?.type !== "rect") {
     return;
   }
 
   updateNode({
     props: {
-      strokeWidth: readNumberInputValue(event, props.selectedNode.props.strokeWidth ?? 0, 0),
+      strokeWidth: readNumberInputValue(value, props.selectedNode.props.strokeWidth ?? 0, 0),
     },
   });
 };
 
 /** 更新矩形圆角。 */
-const handleRectRadiusChange = (event: Event) => {
+const handleRectRadiusChange = (value: number | string | undefined) => {
   if (props.selectedNode?.type !== "rect") {
     return;
   }
 
   updateNode({
     props: {
-      radius: readNumberInputValue(event, props.selectedNode.props.radius ?? 0, 0),
+      radius: readNumberInputValue(value, props.selectedNode.props.radius ?? 0, 0),
     },
   });
 };
@@ -370,8 +387,11 @@ const handleRemoveAnimation = (animationId: string) => {
 };
 
 /** 更新动画类型。 */
-const handleAnimationKindChange = (animation: NodeAnimation, event: Event) => {
-  const nextKind = readTextInputValue(event, animation.kind) as NodeAnimation["kind"];
+const handleAnimationKindChange = (
+  animation: NodeAnimation,
+  value: string | number | boolean | undefined,
+) => {
+  const nextKind = readTextInputValue(value, animation.kind) as NodeAnimation["kind"];
 
   updateAnimation({
     ...animation,
@@ -381,34 +401,46 @@ const handleAnimationKindChange = (animation: NodeAnimation, event: Event) => {
 };
 
 /** 更新动画时长。 */
-const handleAnimationDurationChange = (animation: NodeAnimation, event: Event) => {
+const handleAnimationDurationChange = (
+  animation: NodeAnimation,
+  value: number | string | undefined,
+) => {
   updateAnimation({
     ...animation,
-    durationMs: readNumberInputValue(event, animation.durationMs, 0),
+    durationMs: readNumberInputValue(value, animation.durationMs, 0),
   });
 };
 
 /** 更新动画延迟。 */
-const handleAnimationDelayChange = (animation: NodeAnimation, event: Event) => {
+const handleAnimationDelayChange = (
+  animation: NodeAnimation,
+  value: number | string | undefined,
+) => {
   updateAnimation({
     ...animation,
-    delayMs: readNumberInputValue(event, animation.delayMs ?? 0, 0),
+    delayMs: readNumberInputValue(value, animation.delayMs ?? 0, 0),
   });
 };
 
 /** 更新动画缓动。 */
-const handleAnimationEasingChange = (animation: NodeAnimation, event: Event) => {
+const handleAnimationEasingChange = (
+  animation: NodeAnimation,
+  value: string | number | boolean | undefined,
+) => {
   updateAnimation({
     ...animation,
-    easing: readTextInputValue(event, animation.easing ?? "ease-out") as NodeAnimation["easing"],
+    easing: readTextInputValue(value, animation.easing ?? "ease-out") as NodeAnimation["easing"],
   });
 };
 
 /** 更新 slide-up 动画的纵向偏移。 */
-const handleAnimationOffsetYChange = (animation: NodeAnimation, event: Event) => {
+const handleAnimationOffsetYChange = (
+  animation: NodeAnimation,
+  value: number | string | undefined,
+) => {
   updateAnimation({
     ...animation,
-    offsetY: readNumberInputValue(event, animation.offsetY ?? 32, 0),
+    offsetY: readNumberInputValue(value, animation.offsetY ?? 32, 0),
   });
 };
 </script>
@@ -435,75 +467,63 @@ const handleAnimationOffsetYChange = (animation: NodeAnimation, event: Event) =>
         <div class="field-grid">
           <label class="field field-span-2">
             <span class="field-label">节点名称</span>
-            <input class="field-input" :value="selectedNode.name" @input="handleNodeNameInput" />
+            <a-input class="field-input" :model-value="selectedNode.name" @input="handleNodeNameInput" />
           </label>
 
           <label class="field">
             <span class="field-label">X</span>
-            <input
+            <a-input-number
               class="field-input"
-              type="number"
-              step="1"
-              :value="selectedNode.x"
+              :model-value="selectedNode.x"
               @change="handleNodeBaseNumberChange('x', $event)"
             />
           </label>
 
           <label class="field">
             <span class="field-label">Y</span>
-            <input
+            <a-input-number
               class="field-input"
-              type="number"
-              step="1"
-              :value="selectedNode.y"
+              :model-value="selectedNode.y"
               @change="handleNodeBaseNumberChange('y', $event)"
             />
           </label>
 
           <label class="field">
             <span class="field-label">宽度</span>
-            <input
+            <a-input-number
               class="field-input"
-              type="number"
               min="1"
-              step="1"
-              :value="selectedNode.width"
+              :model-value="selectedNode.width"
               @change="handleNodeBaseNumberChange('width', $event)"
             />
           </label>
 
           <label class="field">
             <span class="field-label">高度</span>
-            <input
+            <a-input-number
               class="field-input"
-              type="number"
               min="1"
-              step="1"
-              :value="selectedNode.height"
+              :model-value="selectedNode.height"
               @change="handleNodeBaseNumberChange('height', $event)"
             />
           </label>
 
           <label class="field">
             <span class="field-label">旋转</span>
-            <input
+            <a-input-number
               class="field-input"
-              type="number"
-              step="1"
-              :value="selectedNode.rotation"
+              :model-value="selectedNode.rotation"
               @change="handleNodeBaseNumberChange('rotation', $event)"
             />
           </label>
 
           <label class="field">
             <span class="field-label">透明度</span>
-            <input
+            <a-input-number
               class="field-input"
-              type="number"
               min="0"
               max="100"
-              step="1"
-              :value="nodeOpacityPercent"
+              :model-value="nodeOpacityPercent"
               @change="handleNodeOpacityChange"
             />
           </label>
@@ -512,20 +532,18 @@ const handleAnimationOffsetYChange = (animation: NodeAnimation, event: Event) =>
         <div class="toggle-grid">
           <label class="toggle-field">
             <span class="field-label">可见</span>
-            <input
+            <a-switch
               class="field-toggle"
-              type="checkbox"
-              :checked="selectedNode.visible"
+              :model-value="selectedNode.visible"
               @change="handleNodeToggle('visible', $event)"
             />
           </label>
 
           <label class="toggle-field">
             <span class="field-label">锁定</span>
-            <input
+            <a-switch
               class="field-toggle"
-              type="checkbox"
-              :checked="selectedNode.locked"
+              :model-value="selectedNode.locked"
               @change="handleNodeToggle('locked', $event)"
             />
           </label>
@@ -543,50 +561,48 @@ const handleAnimationOffsetYChange = (animation: NodeAnimation, event: Event) =>
         <div class="field-grid">
           <label class="field field-span-2">
             <span class="field-label">内容</span>
-            <textarea
+            <a-textarea
               class="field-input field-textarea"
-              :value="selectedNode.props.text"
+              :model-value="selectedNode.props.text"
               @input="handleTextContentInput"
             />
           </label>
 
           <label class="field">
             <span class="field-label">字号</span>
-            <input
+            <a-input-number
               class="field-input"
-              type="number"
               min="10"
-              step="1"
-              :value="selectedNode.props.fontSize"
+              :model-value="selectedNode.props.fontSize"
               @change="handleTextFontSizeChange"
             />
           </label>
 
           <label class="field">
             <span class="field-label">颜色</span>
-            <input
+            <a-color-picker
               class="field-input color-input"
-              type="color"
-              :value="selectedNode.props.color"
-              @input="handleTextColorChange"
+              :model-value="selectedNode.props.color"
+              show-text
+              @change="handleTextColorChange"
             />
           </label>
 
           <label class="field field-span-2">
             <span class="field-label">对齐方式</span>
-            <select
+            <a-select
               class="field-input"
-              :value="selectedNode.props.textAlign"
+              :model-value="selectedNode.props.textAlign"
               @change="handleTextAlignChange"
             >
-              <option
+              <a-option
                 v-for="option in textAlignOptions"
                 :key="option.value"
                 :value="option.value"
               >
                 {{ option.label }}
-              </option>
-            </select>
+              </a-option>
+            </a-select>
           </label>
         </div>
       </div>
@@ -600,44 +616,40 @@ const handleAnimationOffsetYChange = (animation: NodeAnimation, event: Event) =>
         <div class="field-grid">
           <label class="field">
             <span class="field-label">填充色</span>
-            <input
+            <a-color-picker
               class="field-input color-input"
-              type="color"
-              :value="selectedNode.props.fill"
-              @input="handleRectFillChange"
+              :model-value="selectedNode.props.fill"
+              show-text
+              @change="handleRectFillChange"
             />
           </label>
 
           <label class="field">
             <span class="field-label">描边色</span>
-            <input
+            <a-color-picker
               class="field-input color-input"
-              type="color"
-              :value="selectedNode.props.stroke ?? '#0D9488'"
-              @input="handleRectStrokeChange"
+              :model-value="selectedNode.props.stroke ?? '#0D9488'"
+              show-text
+              @change="handleRectStrokeChange"
             />
           </label>
 
           <label class="field">
             <span class="field-label">描边宽度</span>
-            <input
+            <a-input-number
               class="field-input"
-              type="number"
               min="0"
-              step="1"
-              :value="selectedNode.props.strokeWidth ?? 0"
+              :model-value="selectedNode.props.strokeWidth ?? 0"
               @change="handleRectStrokeWidthChange"
             />
           </label>
 
           <label class="field">
             <span class="field-label">圆角</span>
-            <input
+            <a-input-number
               class="field-input"
-              type="number"
               min="0"
-              step="1"
-              :value="selectedNode.props.radius ?? 0"
+              :model-value="selectedNode.props.radius ?? 0"
               @change="handleRectRadiusChange"
             />
           </label>
@@ -653,33 +665,33 @@ const handleAnimationOffsetYChange = (animation: NodeAnimation, event: Event) =>
         <div class="field-grid">
           <label class="field field-span-2">
             <span class="field-label">图片地址</span>
-            <input class="field-input" :value="selectedNode.props.src" @input="handleImageSourceInput" />
+            <a-input class="field-input" :model-value="selectedNode.props.src" @input="handleImageSourceInput" />
           </label>
 
           <label class="field field-span-2">
             <span class="field-label">替代文本</span>
-            <input
+            <a-input
               class="field-input"
-              :value="selectedNode.props.alt ?? ''"
+              :model-value="selectedNode.props.alt ?? ''"
               @input="handleImageAltInput"
             />
           </label>
 
           <label class="field field-span-2">
             <span class="field-label">适配方式</span>
-            <select
+            <a-select
               class="field-input"
-              :value="selectedNode.props.objectFit ?? 'cover'"
+              :model-value="selectedNode.props.objectFit ?? 'cover'"
               @change="handleImageObjectFitChange"
             >
-              <option
+              <a-option
                 v-for="option in objectFitOptions"
                 :key="option.value"
                 :value="option.value"
               >
                 {{ option.label }}
-              </option>
-            </select>
+              </a-option>
+            </a-select>
           </label>
         </div>
       </div>
@@ -687,9 +699,7 @@ const handleAnimationOffsetYChange = (animation: NodeAnimation, event: Event) =>
       <div class="group-card">
         <div class="group-head">
           <h4>动画设置</h4>
-          <button class="soft-button" type="button" @click="handleCreateAnimation">
-            新建动画
-          </button>
+          <a-button class="soft-button" type="outline" @click="handleCreateAnimation">新建动画</a-button>
         </div>
 
         <div v-if="hasSelectedAnimations" class="animation-list">
@@ -702,90 +712,86 @@ const handleAnimationOffsetYChange = (animation: NodeAnimation, event: Event) =>
               <div class="card-title-row">
                 <span class="card-index">动画 {{ animationIndex + 1 }}</span>
               </div>
-              <button
+              <a-button
                 class="danger-button"
-                type="button"
+                status="danger"
+                type="outline"
                 @click="handleRemoveAnimation(animation.id)"
               >
                 删除动画
-              </button>
+              </a-button>
             </header>
 
             <div class="field-grid">
               <label class="field">
                 <span class="field-label">类型</span>
-                <select
+                <a-select
                   class="field-input"
-                  :value="animation.kind"
+                  :model-value="animation.kind"
                   @change="handleAnimationKindChange(animation, $event)"
                 >
-                  <option
+                  <a-option
                     v-for="option in animationKindOptions"
                     :key="option.value"
                     :value="option.value"
                   >
                     {{ option.label }}
-                  </option>
-                </select>
+                  </a-option>
+                </a-select>
               </label>
 
               <label class="field">
                 <span class="field-label">时长(ms)</span>
-                <input
+                <a-input-number
                   class="field-input"
-                  type="number"
                   min="0"
-                  step="10"
-                  :value="animation.durationMs"
+                  :model-value="animation.durationMs"
                   @change="handleAnimationDurationChange(animation, $event)"
                 />
               </label>
 
-              <details class="advanced-fields field-span-2">
-                <summary>高级参数</summary>
-                <div class="advanced-grid">
+              <a-collapse :bordered="false" class="advanced-fields field-span-2">
+                <a-collapse-item key="advanced" header="高级参数">
+                  <div class="advanced-grid">
                   <label class="field">
                     <span class="field-label">缓动</span>
-                    <select
+                    <a-select
                       class="field-input"
-                      :value="animation.easing ?? 'ease-out'"
+                      :model-value="animation.easing ?? 'ease-out'"
                       @change="handleAnimationEasingChange(animation, $event)"
                     >
-                      <option
+                      <a-option
                         v-for="option in easingOptions"
                         :key="option.value"
                         :value="option.value"
                       >
                         {{ option.label }}
-                      </option>
-                    </select>
+                      </a-option>
+                    </a-select>
                   </label>
 
                   <label class="field">
                     <span class="field-label">延迟(ms)</span>
-                    <input
+                    <a-input-number
                       class="field-input"
-                      type="number"
                       min="0"
-                      step="10"
-                      :value="animation.delayMs ?? 0"
+                      :model-value="animation.delayMs ?? 0"
                       @change="handleAnimationDelayChange(animation, $event)"
                     />
                   </label>
 
                   <label v-if="animation.kind === 'slide-up'" class="field field-span-2">
                     <span class="field-label">偏移Y</span>
-                    <input
+                    <a-input-number
                       class="field-input"
-                      type="number"
                       min="0"
-                      step="1"
-                      :value="animation.offsetY ?? 32"
+                      :model-value="animation.offsetY ?? 32"
                       @change="handleAnimationOffsetYChange(animation, $event)"
                     />
                   </label>
-                </div>
-              </details>
+                  </div>
+                </a-collapse-item>
+              </a-collapse>
             </div>
           </article>
         </div>
@@ -1028,29 +1034,40 @@ const handleAnimationOffsetYChange = (animation: NodeAnimation, event: Event) =>
 
 .field-input {
   width: 100%;
-  min-height: 44px;
-  padding: 0 14px;
-  border: 1px solid rgba(19, 78, 74, 0.12);
-  border-radius: var(--cw-radius-sm);
-  color: var(--cw-color-text);
-  background: #ffffff;
-  transition:
-    border-color var(--cw-duration-fast) var(--cw-ease-standard),
-    box-shadow var(--cw-duration-fast) var(--cw-ease-standard);
 }
 
-.field-input:hover {
+.field-input:deep(.arco-input-wrapper),
+.field-input:deep(.arco-select-view),
+.field-input:deep(.arco-input-number),
+.field-input:deep(.arco-textarea-wrapper),
+.field-input:deep(.arco-color-picker-trigger) {
+  width: 100%;
+  min-height: 44px;
+  border-radius: var(--cw-radius-sm);
+}
+
+.field-input:deep(.arco-input-wrapper:hover),
+.field-input:deep(.arco-select-view:hover),
+.field-input:deep(.arco-input-number:hover),
+.field-input:deep(.arco-textarea-wrapper:hover),
+.field-input:deep(.arco-color-picker-trigger:hover) {
   border-color: rgba(22, 93, 255, 0.28);
 }
 
-.field-input:focus {
+.field-input:deep(.arco-input-wrapper.arco-input-focus),
+.field-input:deep(.arco-select-view.arco-select-view-focus),
+.field-input:deep(.arco-input-number-focus),
+.field-input:deep(.arco-textarea-wrapper-focus),
+.field-input:deep(.arco-color-picker-trigger-active) {
   border-color: rgba(22, 93, 255, 0.36);
 }
 
 .field-textarea {
   min-height: 112px;
-  padding-top: 12px;
-  padding-bottom: 12px;
+}
+
+.field-textarea:deep(textarea) {
+  min-height: 112px;
   resize: vertical;
 }
 
@@ -1060,21 +1077,18 @@ const handleAnimationOffsetYChange = (animation: NodeAnimation, event: Event) =>
 
 .advanced-fields {
   margin: 0;
-  padding: 12px;
-  border: 1px dashed rgba(22, 93, 255, 0.24);
-  border-radius: var(--cw-radius-md);
-  background: rgba(248, 250, 252, 0.72);
 }
 
-.advanced-fields > summary {
-  cursor: pointer;
+.advanced-fields:deep(.arco-collapse-item-header) {
+  padding: 0 0 var(--cw-space-2);
   font-size: 12px;
   font-weight: 600;
   color: var(--cw-color-muted);
+  background: transparent;
 }
 
-.advanced-fields[open] > summary {
-  margin-bottom: var(--cw-space-2);
+.advanced-fields:deep(.arco-collapse-item-content-box) {
+  padding: 0;
 }
 
 .advanced-grid {
@@ -1101,9 +1115,7 @@ const handleAnimationOffsetYChange = (animation: NodeAnimation, event: Event) =>
 }
 
 .field-toggle {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--cw-color-primary);
+  flex-shrink: 0;
 }
 
 .empty-card {

@@ -320,6 +320,7 @@
   display: grid;
   gap: var(--cw-space-1);
   width: 100%;
+  height: auto;
   min-height: 70px;
   padding: 12px 14px;
   border: 1px solid color-mix(in srgb, var(--cw-color-border) 92%, #ffffff);
@@ -337,6 +338,12 @@
 .slide-chip.is-active {
   border-color: color-mix(in srgb, var(--cw-color-primary) 44%, var(--cw-color-border));
   background: linear-gradient(180deg, var(--cw-color-primary-soft), rgba(255, 255, 255, 0.98));
+}
+
+.slide-chip:deep(.arco-btn-content) {
+  display: grid;
+  width: 100%;
+  gap: var(--cw-space-1);
 }
 
 .slide-chip span {

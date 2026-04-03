@@ -491,12 +491,12 @@ onBeforeUnmount(() => {
           </div>
 
           <div class="slide-list">
-            <button
+            <a-button
               v-for="(slide, index) in snapshot.document.slides"
               :key="slide.id"
               class="slide-card"
               :class="{ 'is-active': slide.id === snapshot.activeSlideId }"
-              type="button"
+              type="text"
               :aria-pressed="slide.id === snapshot.activeSlideId"
               @click="activateSlide(slide.id)"
             >
@@ -513,27 +513,27 @@ onBeforeUnmount(() => {
                   <i />
                 </span>
               </div>
-            </button>
+            </a-button>
           </div>
         </aside>
 
         <section class="workspace-shell panel-shell">
-          <button
+          <a-button
             class="stage-side-badge stage-side-badge-left"
-            type="button"
+            type="text"
             :aria-label="isSlideRailCollapsed ? '展开左侧页面栏' : '收起左侧页面栏'"
             @click="toggleSlideRail"
           >
             {{ isSlideRailCollapsed ? "›" : "‹" }}
-          </button>
-          <button
+          </a-button>
+          <a-button
             class="stage-side-badge stage-side-badge-right"
-            type="button"
+            type="text"
             :aria-label="isEditorSideCollapsed ? '展开右侧管理栏' : '收起右侧管理栏'"
             @click="toggleEditorSide"
           >
             {{ isEditorSideCollapsed ? "‹" : "›" }}
-          </button>
+          </a-button>
 
           <div ref="stageViewportRef" class="stage-scroll" :style="stageStyle">
             <div class="stage-backdrop">

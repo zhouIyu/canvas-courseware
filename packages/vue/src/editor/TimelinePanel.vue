@@ -98,17 +98,29 @@ const preferredNodeId = computed(
 );
 
 /** 读取文本输入框和下拉框的字符串值。 */
-const readTextInputValue = (event: Event, fallback = ""): string => {
-  const target = event.target;
+const readTextInputValue = (value: unknown, fallback = ""): string => {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (typeof value === "number") {
+    return String(value);
+  }
+
+  const target = value instanceof Event ? value.target : null;
   return target instanceof HTMLInputElement || target instanceof HTMLSelectElement
     ? target.value
     : fallback;
 };
 
 /** 读取数字输入框的值，并在非法输入时回退到当前值。 */
-const readNumberInputValue = (event: Event, fallback: number, minimum = 0): number => {
-  const target = event.target;
-  const parsed = target instanceof HTMLInputElement ? Number(target.value) : Number.NaN;
+const readNumberInputValue = (value: unknown, fallback: number, minimum = 0): number => {
+  const parsed =
+    typeof value === "number" || typeof value === "string"
+      ? Number(value)
+      : value instanceof Event && value.target instanceof HTMLInputElement
+        ? Number(value.target.value)
+        : Number.NaN;
 
   if (Number.isNaN(parsed)) {
     return fallback;
@@ -276,17 +288,23 @@ function handleRemoveStep(stepId: string): void {
 }
 
 /** 更新步骤名称。 */
-function handleStepNameInput(step: TimelineStep, event: Event): void {
+function handleStepNameInput(
+  step: TimelineStep,
+  value: string | number | undefined,
+): void {
   emitStep({
     ...step,
-    name: readTextInputValue(event, step.name),
+    name: readTextInputValue(value, step.name),
   });
 }
 
 /** 更新步骤触发方式，并在 auto 时补默认延迟。 */
-function handleStepTriggerTypeChange(step: TimelineStep, event: Event): void {
+function handleStepTriggerTypeChange(
+  step: TimelineStep,
+  value: string | number | boolean | undefined,
+): void {
   const nextTriggerType = readTextInputValue(
-    event,
+    value,
     step.trigger.type,
   ) as TimelineStep["trigger"]["type"];
 
@@ -313,7 +331,10 @@ function handleStepTriggerTypeChange(step: TimelineStep, event: Event): void {
 }
 
 /** 更新自动步骤的延迟时间。 */
-function handleStepDelayChange(step: TimelineStep, event: Event): void {
+function handleStepDelayChange(
+  step: TimelineStep,
+  value: number | string | undefined,
+): void {
   if (step.trigger.type !== "auto") {
     return;
   }
@@ -322,13 +343,16 @@ function handleStepDelayChange(step: TimelineStep, event: Event): void {
     ...step,
     trigger: {
       type: "auto",
-      delayMs: readNumberInputValue(event, step.trigger.delayMs, 0),
+      delayMs: readNumberInputValue(value, step.trigger.delayMs, 0),
     },
   });
 }
 
 /** 更新对象点击触发器的目标对象。 */
-function handleStepTriggerTargetChange(step: TimelineStep, event: Event): void {
+function handleStepTriggerTargetChange(
+  step: TimelineStep,
+  value: string | number | boolean | undefined,
+): void {
   if (step.trigger.type !== "node-click") {
     return;
   }
@@ -337,7 +361,7 @@ function handleStepTriggerTargetChange(step: TimelineStep, event: Event): void {
     ...step,
     trigger: {
       type: "node-click",
-      targetId: readTextInputValue(event, step.trigger.targetId),
+      targetId: readTextInputValue(value, step.trigger.targetId),
     },
   });
 }
@@ -366,8 +390,12 @@ function handleRemoveAction(step: TimelineStep, actionId: string): void {
 }
 
 /** 更新动作类型，并自动对齐目标节点和动画引用。 */
-function handleActionTypeChange(step: TimelineStep, actionId: string, event: Event): void {
-  const nextType = readTextInputValue(event) as TimelineAction["type"];
+function handleActionTypeChange(
+  step: TimelineStep,
+  actionId: string,
+  value: string | number | boolean | undefined,
+): void {
+  const nextType = readTextInputValue(value) as TimelineAction["type"];
 
   updateStepAction(step, actionId, (action) => {
     const currentTargetId = resolveActionTargetId(action) || preferredNodeId.value;
@@ -388,8 +416,12 @@ function handleActionTypeChange(step: TimelineStep, actionId: string, event: Eve
 }
 
 /** 更新动作目标节点，并在 show-node 时自动收敛到同目标动画。 */
-function handleActionTargetChange(step: TimelineStep, actionId: string, event: Event): void {
-  const nextTargetId = readTextInputValue(event);
+function handleActionTargetChange(
+  step: TimelineStep,
+  actionId: string,
+  value: string | number | boolean | undefined,
+): void {
+  const nextTargetId = readTextInputValue(value);
 
   updateStepAction(step, actionId, (action) => {
     if (action.type !== "show-node" && action.type !== "hide-node") {
@@ -407,8 +439,12 @@ function handleActionTargetChange(step: TimelineStep, actionId: string, event: E
 }
 
 /** 更新动作关联动画。 */
-function handleActionAnimationChange(step: TimelineStep, actionId: string, event: Event): void {
-  const nextAnimationId = readTextInputValue(event);
+function handleActionAnimationChange(
+  step: TimelineStep,
+  actionId: string,
+  value: string | number | boolean | undefined,
+): void {
+  const nextAnimationId = readTextInputValue(value);
 
   updateStepAction(step, actionId, (action) => {
     if (action.type === "hide-node") {
@@ -440,14 +476,14 @@ function handleActionAnimationChange(step: TimelineStep, actionId: string, event
       <section class="group-card">
         <div class="group-head">
           <h4>步骤</h4>
-          <button
+          <a-button
             class="soft-button"
-            type="button"
+            type="outline"
             :disabled="!hasNodes"
             @click="handleCreateStep"
           >
             新建步骤
-          </button>
+          </a-button>
         </div>
 
         <div v-if="(slide?.timeline.steps.length ?? 0) > 0" class="step-list">
@@ -461,47 +497,43 @@ function handleActionAnimationChange(step: TimelineStep, actionId: string, event
                 <span class="card-index">步骤 {{ String(stepIndex + 1).padStart(2, "0") }}</span>
               </div>
 
-              <button class="danger-button" type="button" @click="handleRemoveStep(step.id)">
-                删除步骤
-              </button>
+              <a-button class="danger-button" status="danger" type="outline" @click="handleRemoveStep(step.id)">删除步骤</a-button>
             </header>
 
             <div class="field-grid">
               <label class="field field-span-2">
                 <span class="field-label">名称</span>
-                <input class="field-input" :value="step.name" @input="handleStepNameInput(step, $event)" />
+                <a-input class="field-input" :model-value="step.name" @input="handleStepNameInput(step, $event)" />
               </label>
 
               <label class="field">
                 <span class="field-label">触发</span>
-                <select class="field-input" :value="step.trigger.type" @change="handleStepTriggerTypeChange(step, $event)">
-                  <option v-for="option in triggerOptions" :key="option.value" :value="option.value">
+                <a-select class="field-input" :model-value="step.trigger.type" @change="handleStepTriggerTypeChange(step, $event)">
+                  <a-option v-for="option in triggerOptions" :key="option.value" :value="option.value">
                     {{ option.label }}
-                  </option>
-                </select>
+                  </a-option>
+                </a-select>
               </label>
 
               <label v-if="step.trigger.type === 'node-click'" class="field">
                 <span class="field-label">对象</span>
-                <select
+                <a-select
                   class="field-input"
-                  :value="step.trigger.targetId"
+                  :model-value="step.trigger.targetId"
                   @change="handleStepTriggerTargetChange(step, $event)"
                 >
-                  <option v-for="option in nodeOptions" :key="option.value" :value="option.value">
+                  <a-option v-for="option in nodeOptions" :key="option.value" :value="option.value">
                     {{ option.label }} · {{ option.detail }}
-                  </option>
-                </select>
+                  </a-option>
+                </a-select>
               </label>
 
               <label v-if="step.trigger.type === 'auto'" class="field">
                 <span class="field-label">延迟(ms)</span>
-                <input
+                <a-input-number
                   class="field-input"
-                  type="number"
                   min="0"
-                  step="100"
-                  :value="step.trigger.delayMs"
+                  :model-value="step.trigger.delayMs"
                   @change="handleStepDelayChange(step, $event)"
                 />
               </label>
@@ -509,14 +541,14 @@ function handleActionAnimationChange(step: TimelineStep, actionId: string, event
 
             <div class="subsection-head">
               <strong>动作</strong>
-              <button
+              <a-button
                 class="ghost-button"
-                type="button"
+                type="outline"
                 :disabled="!hasNodes"
                 @click="handleAddAction(step)"
               >
                 添加动作
-              </button>
+              </a-button>
             </div>
 
             <div v-if="step.actions.length > 0" class="action-list">
@@ -529,44 +561,45 @@ function handleActionAnimationChange(step: TimelineStep, actionId: string, event
                   <div class="action-copy">
                     <strong>动作 {{ actionIndex + 1 }}</strong>
                   </div>
-                  <button
+                  <a-button
                     class="danger-text-button"
-                    type="button"
+                    status="danger"
+                    type="text"
                     @click="handleRemoveAction(step, action.id)"
                   >
                     删除
-                  </button>
+                  </a-button>
                 </div>
 
                 <div class="field-grid">
                   <label class="field">
                     <span class="field-label">类型</span>
-                    <select
+                    <a-select
                       class="field-input"
-                      :value="action.type"
+                      :model-value="action.type"
                       @change="handleActionTypeChange(step, action.id, $event)"
                     >
-                      <option
+                      <a-option
                         v-for="option in actionTypeOptions"
                         :key="option.value"
                         :value="option.value"
                       >
                         {{ option.label }}
-                      </option>
-                    </select>
+                      </a-option>
+                    </a-select>
                   </label>
 
                   <label v-if="action.type !== 'play-animation'" class="field">
                     <span class="field-label">对象</span>
-                    <select
+                    <a-select
                       class="field-input"
-                      :value="resolveActionTargetId(action)"
+                      :model-value="resolveActionTargetId(action)"
                       @change="handleActionTargetChange(step, action.id, $event)"
                     >
-                      <option v-for="option in nodeOptions" :key="option.value" :value="option.value">
+                      <a-option v-for="option in nodeOptions" :key="option.value" :value="option.value">
                         {{ option.label }} · {{ option.detail }}
-                      </option>
-                    </select>
+                      </a-option>
+                    </a-select>
                   </label>
 
                   <label
@@ -575,26 +608,26 @@ function handleActionAnimationChange(step: TimelineStep, actionId: string, event
                     :class="{ 'field-span-2': action.type === 'play-animation' }"
                   >
                     <span class="field-label">动画</span>
-                    <select
+                    <a-select
                       class="field-input"
-                      :value="resolveActionAnimationValue(action)"
+                      :model-value="resolveActionAnimationValue(action)"
                       @change="handleActionAnimationChange(step, action.id, $event)"
                     >
-                      <option v-if="action.type === 'show-node'" value="">无</option>
-                      <option
+                      <a-option v-if="action.type === 'show-node'" value="">无</a-option>
+                      <a-option
                         v-if="action.type === 'play-animation' && resolveAnimationOptionsForAction(action).length === 0"
                         value=""
                       >
                         请先到组件属性中创建动画
-                      </option>
-                      <option
+                      </a-option>
+                      <a-option
                         v-for="option in resolveAnimationOptionsForAction(action)"
                         :key="option.value"
                         :value="option.value"
                       >
                         {{ option.label }} · {{ option.detail }}
-                      </option>
-                    </select>
+                      </a-option>
+                    </a-select>
                   </label>
                 </div>
               </article>
@@ -733,21 +766,20 @@ function handleActionAnimationChange(step: TimelineStep, actionId: string, event
 }
 
 .field-input {
-  min-height: 40px;
-  padding: 0 14px;
-  border: 1px solid rgba(22, 93, 255, 0.16);
-  border-radius: var(--cw-radius-md);
-  font-size: 14px;
-  color: var(--cw-color-text);
-  background: rgba(255, 255, 255, 0.96);
-  outline: none;
-  transition:
-    border-color var(--cw-duration-fast) var(--cw-ease-standard),
-    box-shadow var(--cw-duration-fast) var(--cw-ease-standard),
-    background var(--cw-duration-fast) var(--cw-ease-standard);
+  width: 100%;
 }
 
-.field-input:focus-visible,
+.field-input:deep(.arco-input-wrapper),
+.field-input:deep(.arco-select-view),
+.field-input:deep(.arco-input-number) {
+  width: 100%;
+  min-height: 40px;
+  border-radius: var(--cw-radius-md);
+}
+
+.field-input:deep(.arco-input-wrapper.arco-input-focus),
+.field-input:deep(.arco-select-view.arco-select-view-focus),
+.field-input:deep(.arco-input-number-focus),
 .soft-button:focus-visible,
 .ghost-button:focus-visible,
 .danger-button:focus-visible,
@@ -756,7 +788,15 @@ function handleActionAnimationChange(step: TimelineStep, actionId: string, event
   box-shadow: 0 0 0 3px rgba(22, 93, 255, 0.14);
 }
 
-.field-input:disabled {
+.field-input:deep(.arco-input-wrapper:hover),
+.field-input:deep(.arco-select-view:hover),
+.field-input:deep(.arco-input-number:hover) {
+  border-color: rgba(22, 93, 255, 0.28);
+}
+
+.field-input:deep(.arco-input-wrapper-disabled),
+.field-input:deep(.arco-select-view-disabled),
+.field-input:deep(.arco-input-number-disabled) {
   color: var(--cw-color-muted);
   cursor: not-allowed;
   background: rgba(148, 163, 184, 0.08);

@@ -205,19 +205,19 @@ const toggleTimelinePanel = () => {
         </header>
 
         <div v-if="!isSlideRailCollapsed" class="slide-chip-list">
-          <button
+          <a-button
             v-for="(slide, index) in state.document?.slides ?? []"
             :key="slide.id"
             class="slide-chip"
             :class="{ 'is-active': slide.id === state.slideId }"
-            type="button"
+            type="text"
             :aria-pressed="slide.id === state.slideId"
             @click="activateSlide(slide.id)"
           >
             <span>{{ String(index + 1).padStart(2, '0') }}</span>
             <strong>{{ slide.name }}</strong>
             <small>{{ slide.timeline.steps.length }} 个步骤</small>
-          </button>
+          </a-button>
         </div>
         <div v-else class="collapsed-side-shell">
           <span class="collapsed-count">{{ state.document?.slides.length ?? 0 }}</span>

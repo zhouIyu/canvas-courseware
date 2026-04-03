@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { CoursewareDocument, EditorSnapshot } from "@canvas-courseware/core";
+import type { RequestOption } from "@arco-design/web-vue";
 import { CoursewareEditor, CoursewarePreview } from "@canvas-courseware/vue";
 import { IconLeft } from "@arco-design/web-vue/es/icon";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
@@ -39,9 +40,6 @@ const documentModel = ref<CoursewareDocument>();
 
 /** 当前编辑器快照，用于同步预览页面的 slide 对齐。 */
 const editorSnapshot = ref<EditorSnapshot | null>(null);
-
-/** JSON 导入输入框引用。 */
-const jsonImportInputRef = ref<HTMLInputElement | null>(null);
 
 /** 工作区内容容器引用，用来计算可用高度。 */
 const workspaceStageRef = ref<HTMLElement | null>(null);
@@ -313,11 +311,6 @@ const setIoFeedback = (tone: IoFeedbackTone, message: string) => {
   };
 };
 
-/** 触发本地 JSON 文件选择。 */
-const handleJsonImportClick = () => {
-  jsonImportInputRef.value?.click();
-};
-
 /** 导出当前项目的标准 JSON。 */
 const handleJsonExportClick = () => {
   const projectRecord = buildProjectRecord();
@@ -355,18 +348,12 @@ const applyImportedDocument = async (nextDocument: CoursewareDocument): Promise<
   }
 };
 
-/** 读取用户选择的 JSON 文件，并把合法文档导入当前项目。 */
-const handleJsonImportChange = async (event: Event) => {
-  const target = event.target;
-  if (!(target instanceof HTMLInputElement)) {
-    return;
-  }
-
-  const selectedFile = target.files?.[0];
-  target.value = "";
-
+/** 通过 Arco Upload 接收一份 JSON 文件，并把合法文档导入当前项目。 */
+const handleJsonImportRequest = async (option: RequestOption) => {
+  const selectedFile = option.fileItem.file;
   if (!selectedFile) {
-    return;
+    option.onError?.(new Error("未选择文件"));
+    return {};
   }
 
   try {
@@ -375,13 +362,18 @@ const handleJsonImportChange = async (event: Event) => {
 
     if (saved) {
       setIoFeedback("success", `已导入 ${selectedFile.name} 并保存到本地项目`);
-      return;
+      option.onSuccess?.();
+      return {};
     }
 
     setIoFeedback("error", `已导入 ${selectedFile.name}，但本地保存失败`);
+    option.onError?.(new Error("save_failed"));
   } catch (error) {
     setIoFeedback("error", formatCoursewareJsonError(error));
+    option.onError?.(error);
   }
+
+  return {};
 };
 
 /** 顶部标题输入时同步更新项目名和文档名。 */
@@ -518,16 +510,20 @@ onMounted(() => {
             </a-radio-group>
 
             <div class="workspace-actions">
-              <input
-                ref="jsonImportInputRef"
-                class="visually-hidden-input"
-                type="file"
+              <a-upload
                 accept=".json,application/json"
-                @change="handleJsonImportChange"
-              />
-              <a-button class="utility-button" type="outline" @click="handleJsonImportClick">
-                导入 JSON
-              </a-button>
+                :auto-upload="true"
+                :custom-request="handleJsonImportRequest"
+                :show-file-list="false"
+                :show-upload-button="true"
+                class="workspace-upload"
+              >
+                <template #upload-button>
+                  <a-button class="utility-button" type="outline">
+                    导入 JSON
+                  </a-button>
+                </template>
+              </a-upload>
               <a-button class="utility-button" type="outline" @click="handleJsonExportClick">
                 导出 JSON
               </a-button>

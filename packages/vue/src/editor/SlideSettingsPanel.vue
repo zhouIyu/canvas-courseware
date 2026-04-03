@@ -19,8 +19,16 @@ const emit = defineEmits<{
 }>();
 
 /** 读取文本输入框的字符串值。 */
-const readTextInputValue = (event: Event, fallback = ""): string => {
-  const target = event.target;
+const readTextInputValue = (value: unknown, fallback = ""): string => {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (typeof value === "number") {
+    return String(value);
+  }
+
+  const target = value instanceof Event ? value.target : null;
   return target instanceof HTMLInputElement ? target.value : fallback;
 };
 
@@ -28,9 +36,13 @@ const readTextInputValue = (event: Event, fallback = ""): string => {
  * 读取数字输入框的值，并在非法输入时回退到当前值。
  * 宽高会额外做最小值保护，避免页面尺寸被改成不可渲染的值。
  */
-const readNumberInputValue = (event: Event, fallback: number, minimum: number): number => {
-  const target = event.target;
-  const parsed = target instanceof HTMLInputElement ? Number(target.value) : Number.NaN;
+const readNumberInputValue = (value: unknown, fallback: number, minimum: number): number => {
+  const parsed =
+    typeof value === "number" || typeof value === "string"
+      ? Number(value)
+      : value instanceof Event && value.target instanceof HTMLInputElement
+        ? Number(value.target.value)
+        : Number.NaN;
 
   if (Number.isNaN(parsed)) {
     return fallback;
@@ -45,18 +57,18 @@ const updateSlide = (patch: Partial<Pick<Slide, "name" | "size" | "background">>
 };
 
 /** 更新页面名称。 */
-const handleSlideNameInput = (event: Event) => {
+const handleSlideNameInput = (value: string | number | undefined) => {
   if (!props.slide) {
     return;
   }
 
   updateSlide({
-    name: readTextInputValue(event, props.slide.name),
+    name: readTextInputValue(value, props.slide.name),
   });
 };
 
 /** 更新页面宽度。 */
-const handleSlideWidthChange = (event: Event) => {
+const handleSlideWidthChange = (value: number | string | undefined) => {
   if (!props.slide) {
     return;
   }
@@ -64,13 +76,13 @@ const handleSlideWidthChange = (event: Event) => {
   updateSlide({
     size: {
       ...props.slide.size,
-      width: readNumberInputValue(event, props.slide.size.width, 320),
+      width: readNumberInputValue(value, props.slide.size.width, 320),
     },
   });
 };
 
 /** 更新页面高度。 */
-const handleSlideHeightChange = (event: Event) => {
+const handleSlideHeightChange = (value: number | string | undefined) => {
   if (!props.slide) {
     return;
   }
@@ -78,13 +90,13 @@ const handleSlideHeightChange = (event: Event) => {
   updateSlide({
     size: {
       ...props.slide.size,
-      height: readNumberInputValue(event, props.slide.size.height, 180),
+      height: readNumberInputValue(value, props.slide.size.height, 180),
     },
   });
 };
 
 /** 更新页面背景色。 */
-const handleSlideBackgroundChange = (event: Event) => {
+const handleSlideBackgroundChange = (value: string | undefined) => {
   if (!props.slide) {
     return;
   }
@@ -92,7 +104,7 @@ const handleSlideBackgroundChange = (event: Event) => {
   updateSlide({
     background: {
       ...props.slide.background,
-      fill: readTextInputValue(event, props.slide.background.fill),
+      fill: readTextInputValue(value, props.slide.background.fill),
     },
   });
 };
@@ -109,40 +121,36 @@ const handleSlideBackgroundChange = (event: Event) => {
       <div class="field-grid">
         <label class="field field-span-2">
           <span class="field-label">页面名称</span>
-          <input class="field-input" :value="slide.name" @input="handleSlideNameInput" />
+          <a-input class="field-input" :model-value="slide.name" @input="handleSlideNameInput" />
         </label>
 
         <label class="field">
           <span class="field-label">宽度</span>
-          <input
+          <a-input-number
             class="field-input"
-            type="number"
             min="320"
-            step="10"
-            :value="slide.size.width"
+            :model-value="slide.size.width"
             @change="handleSlideWidthChange"
           />
         </label>
 
         <label class="field">
           <span class="field-label">高度</span>
-          <input
+          <a-input-number
             class="field-input"
-            type="number"
             min="180"
-            step="10"
-            :value="slide.size.height"
+            :model-value="slide.size.height"
             @change="handleSlideHeightChange"
           />
         </label>
 
         <label class="field field-span-2">
           <span class="field-label">背景色</span>
-          <input
+          <a-color-picker
             class="field-input color-input"
-            type="color"
-            :value="slide.background.fill"
-            @input="handleSlideBackgroundChange"
+            :model-value="slide.background.fill"
+            show-text
+            @change="handleSlideBackgroundChange"
           />
         </label>
       </div>
@@ -233,27 +241,29 @@ const handleSlideBackgroundChange = (event: Event) => {
 
 .field-input {
   width: 100%;
-  min-height: 44px;
-  padding: 0 14px;
-  border: 1px solid rgba(19, 78, 74, 0.12);
-  border-radius: var(--cw-radius-sm);
-  color: var(--cw-color-text);
-  background: #ffffff;
-  transition:
-    border-color var(--cw-duration-fast) var(--cw-ease-standard),
-    box-shadow var(--cw-duration-fast) var(--cw-ease-standard);
 }
 
-.field-input:hover {
+.field-input:deep(.arco-input-wrapper),
+.field-input:deep(.arco-select-view),
+.field-input:deep(.arco-input-number),
+.field-input:deep(.arco-color-picker-trigger) {
+  width: 100%;
+  min-height: 44px;
+  border-radius: var(--cw-radius-sm);
+}
+
+.field-input:deep(.arco-input-wrapper:hover),
+.field-input:deep(.arco-select-view:hover),
+.field-input:deep(.arco-input-number:hover),
+.field-input:deep(.arco-color-picker-trigger:hover) {
   border-color: rgba(22, 93, 255, 0.28);
 }
 
-.field-input:focus {
+.field-input:deep(.arco-input-wrapper.arco-input-focus),
+.field-input:deep(.arco-select-view.arco-select-view-focus),
+.field-input:deep(.arco-input-number-focus),
+.field-input:deep(.arco-color-picker-trigger-active) {
   border-color: rgba(22, 93, 255, 0.36);
-}
-
-.color-input {
-  padding: 6px;
 }
 
 .empty-card {
