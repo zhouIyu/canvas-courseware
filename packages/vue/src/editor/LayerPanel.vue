@@ -7,10 +7,8 @@ import type {
 import { computed } from "vue";
 import {
   formatNodeGeometry,
-  formatNodeInitialVisibilityLabel,
   formatNodeTimelineSummaryLabel,
   formatNodeTypeLabel,
-  formatStepIndexLabel,
 } from "../shared";
 
 /** 图层面板的只读输入。 */
@@ -90,11 +88,9 @@ const handleReorder = (position: ReorderPosition) => {
 const resolveNodeTimelineSummary = (nodeId: string): NodeTimelineSummary | null =>
   props.nodeTimelineSummaryMap[nodeId] ?? null;
 
-/** 读取节点归属中的步骤 chip 列表。 */
-const resolveStepReferenceLabels = (nodeId: string): string[] =>
-  (resolveNodeTimelineSummary(nodeId)?.stepReferences ?? []).map((stepReference) =>
-    formatStepIndexLabel(stepReference.stepIndex),
-  );
+/** 组合单张图层卡片的精简元信息。 */
+const resolveNodeMetaLine = (node: CoursewareNode): string =>
+  `${formatNodeTypeLabel(node.type)} · ${node.visible ? "可见" : "隐藏"} · ${formatNodeGeometry(node)}`;
 </script>
 
 <template>
@@ -113,28 +109,14 @@ const resolveStepReferenceLabels = (nodeId: string): string[] =>
         :aria-pressed="selectedNodeIds.includes(node.id)"
         @click="handleSelect(node.id)"
       >
-        <div class="layer-topline">
+        <div class="layer-item-head">
+          <strong>{{ node.name }}</strong>
           <span class="layer-type">{{ formatNodeTypeLabel(node.type) }}</span>
-          <span class="layer-status">{{ node.visible ? "可见" : "隐藏" }}</span>
         </div>
-        <strong>{{ node.name }}</strong>
-        <small>{{ formatNodeGeometry(node) }}</small>
-        <div class="timeline-meta">
-          <span class="timeline-chip">
-            {{
-              formatNodeInitialVisibilityLabel(
-                resolveNodeTimelineSummary(node.id)?.isInitiallyVisible ?? node.visible,
-              )
-            }}
-          </span>
-          <span
-            v-for="stepLabel in resolveStepReferenceLabels(node.id)"
-            :key="`${node.id}-${stepLabel}`"
-            class="timeline-chip accent"
-          >
-            {{ stepLabel }}
-          </span>
-          <span class="timeline-chip subtle">
+        <small class="layer-meta-line">{{ resolveNodeMetaLine(node) }}</small>
+        <div class="layer-summary-line">
+          <span class="layer-summary-label">播放</span>
+          <span class="layer-summary-value">
             {{ formatNodeTimelineSummaryLabel(resolveNodeTimelineSummary(node.id)) }}
           </span>
         </div>
@@ -204,19 +186,19 @@ const resolveStepReferenceLabels = (nodeId: string): string[] =>
 
 .layer-list {
   display: grid;
-  gap: var(--cw-space-3);
+  gap: 10px;
 }
 
 .layer-item {
   display: grid;
-  gap: var(--cw-space-2);
+  gap: 8px;
   width: 100%;
-  padding: 14px 16px;
-  border: 1px solid rgba(19, 78, 74, 0.08);
-  border-radius: var(--cw-radius-md);
+  padding: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 12px;
   text-align: left;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.98);
   transition:
     transform var(--cw-duration-fast) var(--cw-ease-standard),
     border-color var(--cw-duration-fast) var(--cw-ease-standard),
@@ -226,16 +208,19 @@ const resolveStepReferenceLabels = (nodeId: string): string[] =>
 
 .layer-item:hover {
   transform: translateY(-1px);
-  border-color: rgba(22, 93, 255, 0.28);
+  border-color: rgba(22, 93, 255, 0.3);
+  box-shadow: 0 10px 18px rgba(15, 23, 42, 0.06);
 }
 
 .layer-item.is-active {
   border-color: rgba(22, 93, 255, 0.42);
-  background: rgba(22, 93, 255, 0.08);
-  box-shadow: inset 0 0 0 1px rgba(22, 93, 255, 0.22);
+  background: rgba(248, 251, 255, 0.98);
+  box-shadow:
+    inset 3px 0 0 var(--cw-color-primary),
+    0 12px 24px rgba(22, 93, 255, 0.08);
 }
 
-.layer-topline {
+.layer-item-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -245,47 +230,48 @@ const resolveStepReferenceLabels = (nodeId: string): string[] =>
 .layer-type {
   display: inline-flex;
   align-items: center;
-  min-height: 28px;
-  padding: 0 10px;
-  border-radius: var(--cw-radius-pill);
   font-size: 12px;
   font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
   color: var(--cw-color-primary);
-  background: rgba(22, 93, 255, 0.1);
 }
 
 .layer-item strong {
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.5;
   color: var(--cw-color-text);
 }
 
-.timeline-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--cw-space-2);
+.layer-meta-line {
+  display: block;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--cw-color-muted);
 }
 
-.timeline-chip {
+.layer-summary-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.layer-summary-label {
   display: inline-flex;
   align-items: center;
-  min-height: 28px;
-  padding: 0 10px;
-  border-radius: var(--cw-radius-pill);
   font-size: 12px;
   font-weight: 600;
   color: var(--cw-color-muted);
-  background: rgba(100, 116, 139, 0.1);
 }
 
-.timeline-chip.accent {
-  color: var(--cw-color-primary);
-  background: rgba(22, 93, 255, 0.12);
-}
-
-.timeline-chip.subtle {
+.layer-summary-value {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
   color: var(--cw-color-text);
-  background: rgba(19, 78, 74, 0.08);
 }
 
 .layer-actions {
