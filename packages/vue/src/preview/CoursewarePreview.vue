@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { CoursewareDocument } from "@canvas-courseware/core";
-import { computed, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import {
   DEFAULT_PREVIEW_HEIGHT,
   formatPlaybackStatus,
@@ -71,6 +71,15 @@ const stageStyle = computed(() => ({
   minHeight: `${props.height}px`,
 }));
 
+/** 预览区滚动容器引用，用来计算可用宽高。 */
+const previewStageRef = ref<HTMLDivElement | null>(null);
+
+/** 预览区当前可用尺寸。 */
+const previewStageSize = ref({
+  width: 0,
+  height: 0,
+});
+
 /** 预览 canvas 实际尺寸。 */
 const canvasStyle = computed(() => {
   if (!activeSlide.value) {
@@ -80,6 +89,49 @@ const canvasStyle = computed(() => {
   return {
     width: `${activeSlide.value.size.width}px`,
     height: `${activeSlide.value.size.height}px`,
+  };
+});
+
+/** 预览态按容器宽高等比缩放，保证整张画布始终完整显示。 */
+const canvasScale = computed(() => {
+  if (
+    !activeSlide.value ||
+    previewStageSize.value.width <= 0 ||
+    previewStageSize.value.height <= 0
+  ) {
+    return 1;
+  }
+
+  const availableWidth = Math.max(previewStageSize.value.width - 88, 180);
+  const availableHeight = Math.max(previewStageSize.value.height - 80, 160);
+  const widthScale = availableWidth / activeSlide.value.size.width;
+  const heightScale = availableHeight / activeSlide.value.size.height;
+
+  return Math.min(1, widthScale, heightScale);
+});
+
+/** 缩放后的预览画布外框尺寸。 */
+const canvasFrameStyle = computed(() => {
+  if (!activeSlide.value) {
+    return {};
+  }
+
+  return {
+    width: `${activeSlide.value.size.width * canvasScale.value}px`,
+    height: `${activeSlide.value.size.height * canvasScale.value}px`,
+  };
+});
+
+/** 预览画布保持原始尺寸渲染，只通过 transform 做缩放。 */
+const canvasSurfaceStyle = computed(() => {
+  if (!activeSlide.value) {
+    return {};
+  }
+
+  return {
+    ...canvasStyle.value,
+    transform: `scale(${canvasScale.value})`,
+    transformOrigin: "top left",
   };
 });
 
@@ -177,6 +229,33 @@ const toggleSlideRail = () => {
 const toggleTimelinePanel = () => {
   isTimelineCollapsed.value = !isTimelineCollapsed.value;
 };
+
+/** 读取预览区当前可用尺寸，用于画布自适应缩放。 */
+const updatePreviewStageSize = () => {
+  previewStageSize.value = {
+    width: previewStageRef.value?.clientWidth ?? 0,
+    height: previewStageRef.value?.clientHeight ?? 0,
+  };
+};
+
+/** 监听预览区尺寸变化。 */
+let previewStageResizeObserver: ResizeObserver | null = null;
+
+onMounted(() => {
+  updatePreviewStageSize();
+
+  if (previewStageRef.value) {
+    previewStageResizeObserver = new ResizeObserver(() => {
+      updatePreviewStageSize();
+    });
+    previewStageResizeObserver.observe(previewStageRef.value);
+  }
+});
+
+onBeforeUnmount(() => {
+  previewStageResizeObserver?.disconnect();
+  previewStageResizeObserver = null;
+});
 </script>
 
 <template>
@@ -267,10 +346,12 @@ const toggleTimelinePanel = () => {
           {{ embeddedSummaryLabel }}
         </p>
 
-        <div class="preview-stage" :style="stageStyle">
+        <div ref="previewStageRef" class="preview-stage" :style="stageStyle">
           <div class="preview-stage-scroll">
-            <div v-if="activeSlide" class="preview-stage-surface" :style="canvasStyle">
-              <canvas ref="previewCanvasRef" />
+            <div v-if="activeSlide" class="preview-stage-frame" :style="canvasFrameStyle">
+              <div class="preview-stage-surface" :style="canvasSurfaceStyle">
+                <canvas ref="previewCanvasRef" />
+              </div>
             </div>
             <div v-else class="empty-state">
               <strong>还没有可预览的页面</strong>
