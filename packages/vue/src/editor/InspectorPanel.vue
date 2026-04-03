@@ -1076,13 +1076,38 @@ const handleAnimationOffsetYChange = (
 
 .advanced-fields {
   margin: 0;
+  background: transparent;
+}
+
+.advanced-fields:deep(.arco-collapse) {
+  background: transparent;
+  border: 0;
+}
+
+.advanced-fields:deep(.arco-collapse-item) {
+  border: 0;
+  background: transparent;
 }
 
 .advanced-fields:deep(.arco-collapse-item-header) {
-  padding: 0 0 var(--cw-space-2);
+  display: inline-flex;
+  align-items: center;
+  min-height: auto;
+  padding: 0;
   font-size: 12px;
   font-weight: 600;
   color: var(--cw-color-muted);
+  background: transparent;
+}
+
+.advanced-fields:deep(.arco-collapse-item-icon) {
+  margin-right: 6px;
+  color: currentColor;
+}
+
+.advanced-fields:deep(.arco-collapse-item-content) {
+  padding-top: var(--cw-space-3);
+  border: 0;
   background: transparent;
 }
 
