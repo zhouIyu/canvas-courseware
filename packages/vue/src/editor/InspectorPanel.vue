@@ -6,7 +6,7 @@ import {
   type NodePatch,
   type NodeTimelineSummary,
 } from "@canvas-courseware/core";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import {
   formatAnimationKindLabel,
   formatEasingLabel,
@@ -101,6 +101,9 @@ const hasFirstTimelineStep = computed(
 
 /** 当前选中节点是否已经配置动画。 */
 const hasSelectedAnimations = computed(() => props.selectedAnimations.length > 0);
+
+/** 当前已展开高级参数的动画 id 列表。 */
+const expandedAnimationIds = ref<string[]>([]);
 
 /** 读取文本输入框的字符串值。 */
 const readTextInputValue = (value: unknown, fallback = ""): string => {
@@ -374,16 +377,29 @@ const handleCreateAnimation = () => {
     return;
   }
 
-  updateAnimation(
-    createNodeAnimation({
-      targetId: props.selectedNode.id,
-    }),
-  );
+  const animation = createNodeAnimation({
+    targetId: props.selectedNode.id,
+  });
+
+  expandedAnimationIds.value = [...expandedAnimationIds.value, animation.id];
+  updateAnimation(animation);
 };
 
 /** 删除某个动画资源。 */
 const handleRemoveAnimation = (animationId: string) => {
+  expandedAnimationIds.value = expandedAnimationIds.value.filter((id) => id !== animationId);
   emit("remove-animation", animationId);
+};
+
+/** 判断某个动画的高级参数是否处于展开状态。 */
+const isAnimationAdvancedOpen = (animationId: string): boolean =>
+  expandedAnimationIds.value.includes(animationId);
+
+/** 切换某个动画的高级参数显隐。 */
+const toggleAnimationAdvanced = (animationId: string): void => {
+  expandedAnimationIds.value = isAnimationAdvancedOpen(animationId)
+    ? expandedAnimationIds.value.filter((id) => id !== animationId)
+    : [...expandedAnimationIds.value, animationId];
 };
 
 /** 更新动画类型。 */
@@ -765,9 +781,16 @@ const handleAnimationOffsetYChange = (
                 />
               </div>
 
-              <a-collapse :bordered="false" class="advanced-fields field-span-2">
-                <a-collapse-item key="advanced" header="高级参数">
-                  <div class="advanced-grid">
+              <div class="advanced-fields field-span-2">
+                <a-button
+                  class="advanced-toggle"
+                  type="text"
+                  @click="toggleAnimationAdvanced(animation.id)"
+                >
+                  {{ isAnimationAdvancedOpen(animation.id) ? "收起高级参数" : "高级参数" }}
+                </a-button>
+
+                <div v-if="isAnimationAdvancedOpen(animation.id)" class="advanced-grid">
                   <div class="field">
                     <span class="field-label">缓动</span>
                     <a-select
@@ -805,9 +828,8 @@ const handleAnimationOffsetYChange = (
                       @change="handleAnimationOffsetYChange(animation, $event)"
                     />
                   </div>
-                  </div>
-                </a-collapse-item>
-              </a-collapse>
+                </div>
+              </div>
             </div>
           </article>
         </div>
@@ -1079,43 +1101,21 @@ const handleAnimationOffsetYChange = (
   background: transparent;
 }
 
-.advanced-fields:deep(.arco-collapse) {
-  background: transparent;
-  border: 0;
-}
-
-.advanced-fields:deep(.arco-collapse-item) {
-  border: 0;
-  background: transparent;
-}
-
-.advanced-fields:deep(.arco-collapse-item-header) {
-  display: inline-flex;
-  align-items: center;
-  min-height: auto;
+.advanced-toggle {
+  min-height: 28px;
   padding: 0;
   font-size: 12px;
   font-weight: 600;
   color: var(--cw-color-muted);
+}
+
+.advanced-toggle:hover {
+  color: var(--cw-color-primary);
   background: transparent;
-}
-
-.advanced-fields:deep(.arco-collapse-item-icon) {
-  margin-right: 6px;
-  color: currentColor;
-}
-
-.advanced-fields:deep(.arco-collapse-item-content) {
-  padding-top: var(--cw-space-3);
-  border: 0;
-  background: transparent;
-}
-
-.advanced-fields:deep(.arco-collapse-item-content-box) {
-  padding: 0;
 }
 
 .advanced-grid {
+  padding-top: var(--cw-space-3);
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--cw-space-3);
