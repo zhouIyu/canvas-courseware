@@ -100,17 +100,10 @@ const handleSlideBackgroundChange = (event: Event) => {
 
 <template>
   <section class="slide-settings-panel">
-    <header class="panel-head">
-      <div>
-        <h3>页面设置</h3>
-      </div>
-      <span class="panel-count">{{ slide ? "当前页" : "未选择" }}</span>
-    </header>
-
     <div v-if="slide" class="group-card">
       <div class="group-head">
         <h4>基础信息</h4>
-        <span class="group-badge">Slide</span>
+        <span class="group-badge">当前页</span>
       </div>
 
       <div class="field-grid">
@@ -157,7 +150,7 @@ const handleSlideBackgroundChange = (event: Event) => {
 
     <div v-else class="group-card empty-card">
       <div class="group-head">
-        <h4>页面设置</h4>
+        <h4>未选择页面</h4>
         <span class="group-badge">待选择</span>
       </div>
       <p class="group-copy">先切换到一个页面，这里才会显示它的名称、尺寸和背景配置。</p>
@@ -178,20 +171,6 @@ const handleSlideBackgroundChange = (event: Event) => {
   box-shadow: var(--cw-shadow-weak);
 }
 
-.panel-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--cw-space-4);
-}
-
-.panel-head h3 {
-  margin: 0;
-  font-size: 22px;
-  line-height: 1.2;
-}
-
-.panel-count,
 .group-badge {
   display: inline-flex;
   align-items: center;

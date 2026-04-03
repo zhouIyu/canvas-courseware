@@ -415,14 +415,6 @@ const handleAnimationOffsetYChange = (animation: NodeAnimation, event: Event) =>
 
 <template>
   <section class="inspector-panel">
-    <header class="panel-head">
-      <div>
-        <p class="panel-kicker">组件管理</p>
-        <h3>组件属性</h3>
-      </div>
-      <span class="panel-count">{{ selectedCount }} 个选中</span>
-    </header>
-
     <div v-if="hasMultipleSelection" class="group-card empty-card">
       <div class="group-head">
         <h4>多选状态</h4>
@@ -837,7 +829,7 @@ const handleAnimationOffsetYChange = (animation: NodeAnimation, event: Event) =>
 
     <div v-else class="group-card empty-card">
       <div class="group-head">
-        <h4>组件属性</h4>
+        <h4>未选择组件</h4>
         <span class="group-badge">待选择</span>
       </div>
       <p class="group-copy">选中一个画布对象后，这里会显示它的基础信息和类型专属属性。</p>
@@ -858,30 +850,6 @@ const handleAnimationOffsetYChange = (animation: NodeAnimation, event: Event) =>
   box-shadow: var(--cw-shadow-weak);
 }
 
-.panel-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--cw-space-4);
-}
-
-.panel-kicker {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.4;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--cw-color-accent);
-}
-
-.panel-head h3 {
-  margin: var(--cw-space-2) 0 0;
-  font-size: 22px;
-  line-height: 1.2;
-}
-
-.panel-count,
 .group-badge {
   display: inline-flex;
   align-items: center;

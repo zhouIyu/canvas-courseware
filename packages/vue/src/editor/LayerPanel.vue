@@ -99,14 +99,6 @@ const resolveStepReferenceLabels = (nodeId: string): string[] =>
 
 <template>
   <section class="layer-panel">
-    <header class="panel-head">
-      <div>
-        <p class="panel-kicker">管理区</p>
-        <h3>图层列表</h3>
-      </div>
-      <span class="panel-count">{{ nodes.length }} 个对象</span>
-    </header>
-
     <p class="panel-copy">
       当前顺序与文档 `nodes[]` 一致，下方标签会同时提示对象默认显隐状态和关联步骤。
     </p>
@@ -198,40 +190,6 @@ const resolveStepReferenceLabels = (nodeId: string): string[] =>
     linear-gradient(180deg, rgba(22, 93, 255, 0.08), rgba(255, 255, 255, 0.96)),
     var(--cw-color-surface);
   box-shadow: var(--cw-shadow-weak);
-}
-
-.panel-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--cw-space-4);
-}
-
-.panel-kicker {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.4;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--cw-color-primary);
-}
-
-.panel-head h3 {
-  margin: var(--cw-space-2) 0 0;
-  font-size: 22px;
-  line-height: 1.2;
-}
-
-.panel-count {
-  display: inline-flex;
-  align-items: center;
-  min-height: 36px;
-  padding: 0 var(--cw-space-3);
-  border-radius: var(--cw-radius-pill);
-  font-size: 13px;
-  color: var(--cw-color-primary);
-  background: rgba(22, 93, 255, 0.12);
 }
 
 .panel-copy,

@@ -426,13 +426,6 @@ function handleActionAnimationChange(step: TimelineStep, actionId: string, event
 
 <template>
   <section class="timeline-panel">
-    <header class="panel-head">
-      <h3>时间轴</h3>
-      <span class="panel-count">
-        {{ hasSlide ? `${slide?.timeline.steps.length ?? 0} 步` : "未选择页面" }}
-      </span>
-    </header>
-
     <div v-if="!hasSlide" class="group-card empty-card">
       <h4>未选择页面</h4>
       <p class="group-copy">选择页面后即可配置步骤和动作。</p>
@@ -628,7 +621,6 @@ function handleActionAnimationChange(step: TimelineStep, actionId: string, event
   box-shadow: var(--cw-shadow-weak);
 }
 
-.panel-head,
 .group-head,
 .card-head,
 .subsection-head,
@@ -639,14 +631,8 @@ function handleActionAnimationChange(step: TimelineStep, actionId: string, event
   gap: var(--cw-space-3);
 }
 
-.panel-head h3,
 .group-head h4 {
   margin: 0;
-}
-
-.panel-head h3 {
-  font-size: 22px;
-  line-height: 1.2;
 }
 
 .group-card,
@@ -661,7 +647,6 @@ function handleActionAnimationChange(step: TimelineStep, actionId: string, event
   background: rgba(255, 255, 255, 0.92);
 }
 
-.panel-count,
 .card-index {
   display: inline-flex;
   align-items: center;
