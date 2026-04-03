@@ -88,9 +88,6 @@ const toolbarShellRef = ref<HTMLElement | null>(null);
 /** 中间编辑区滚动容器的 DOM 引用。 */
 const stageViewportRef = ref<HTMLDivElement | null>(null);
 
-/** 中间编辑区当前可用宽度。 */
-const stageViewportWidth = ref(0);
-
 /** 当前工具条实际高度。 */
 const toolbarHeight = ref(0);
 
@@ -251,15 +248,8 @@ const canvasStyle = computed(() => {
   };
 });
 
-/** 根据中间区域宽度计算画布缩放比例，只缩小不放大。 */
-const canvasScale = computed(() => {
-  if (!activeSlide.value || stageViewportWidth.value <= 0) {
-    return 1;
-  }
-
-  const availableWidth = Math.max(stageViewportWidth.value - 48, 180);
-  return Math.min(1, availableWidth / activeSlide.value.size.width);
-});
+/** 编辑态保持原始画布尺寸，超出中区时交给滚动容器处理。 */
+const canvasScale = computed(() => 1);
 
 /** 缩放后的画布外框尺寸，保证布局高度与展示尺寸一致。 */
 const canvasFrameStyle = computed(() => {
@@ -433,23 +423,16 @@ const toggleEditorSide = () => {
   isEditorSideCollapsed.value = !isEditorSideCollapsed.value;
 };
 
-/** 刷新中间编辑区当前可用宽度。 */
-const updateStageViewportWidth = () => {
-  stageViewportWidth.value = stageViewportRef.value?.clientWidth ?? 0;
-};
-
 /** 读取当前工具条的真实高度。 */
 const updateToolbarHeight = () => {
   toolbarHeight.value = toolbarShellRef.value?.offsetHeight ?? 0;
 };
 
-/** 监听中间区域尺寸变化，让画布缩放及时同步。 */
-let stageViewportResizeObserver: ResizeObserver | null = null;
+/** 监听工具条尺寸变化，让三栏高度及时同步。 */
 let toolbarResizeObserver: ResizeObserver | null = null;
 
 onMounted(() => {
   updateToolbarHeight();
-  updateStageViewportWidth();
 
   if (toolbarShellRef.value) {
     toolbarResizeObserver = new ResizeObserver(() => {
@@ -457,22 +440,11 @@ onMounted(() => {
     });
     toolbarResizeObserver.observe(toolbarShellRef.value);
   }
-
-  if (!stageViewportRef.value) {
-    return;
-  }
-
-  stageViewportResizeObserver = new ResizeObserver(() => {
-    updateStageViewportWidth();
-  });
-  stageViewportResizeObserver.observe(stageViewportRef.value);
 });
 
 onBeforeUnmount(() => {
   toolbarResizeObserver?.disconnect();
   toolbarResizeObserver = null;
-  stageViewportResizeObserver?.disconnect();
-  stageViewportResizeObserver = null;
 });
 </script>
 

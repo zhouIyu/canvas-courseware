@@ -87,8 +87,7 @@ const animationOptions = computed(() =>
   (props.slide?.timeline.animations ?? []).map((animation) => ({
     value: animation.id,
     targetId: animation.targetId,
-    label: `${formatAnimationKindLabel(animation.kind)} · ${resolveNodeName(animation.targetId)}`,
-    detail: `${animation.durationMs}ms`,
+    label: `${formatAnimationKindLabel(animation.kind)} · ${animation.durationMs}ms`,
   })),
 );
 
@@ -128,12 +127,6 @@ const readNumberInputValue = (value: unknown, fallback: number, minimum = 0): nu
 
   return Math.max(parsed, minimum);
 };
-
-/** 根据节点 id 解析一个更适合 UI 展示的节点名称。 */
-function resolveNodeName(nodeId: string): string {
-  const node = props.slide?.nodes.find((item) => item.id === nodeId);
-  return node?.name ?? "未匹配对象";
-}
 
 /** 返回当前页面的第一条动画 id，供动作切换时兜底使用。 */
 function resolveFirstAnimationId(): string {
@@ -632,7 +625,7 @@ function handleActionAnimationChange(
                         :key="option.value"
                         :value="option.value"
                       >
-                        {{ option.label }} · {{ option.detail }}
+                        {{ option.label }}
                       </a-option>
                     </a-select>
                   </div>

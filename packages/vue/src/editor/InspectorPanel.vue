@@ -701,7 +701,16 @@ const handleAnimationOffsetYChange = (
       <div class="group-card">
         <div class="group-head">
           <h4>动画设置</h4>
-          <a-button class="soft-button" type="outline" @click="handleCreateAnimation">新建动画</a-button>
+          <a-button
+            class="icon-button"
+            type="text"
+            aria-label="新建动画"
+            @click="handleCreateAnimation"
+          >
+            <template #icon>
+              <icon-plus />
+            </template>
+          </a-button>
         </div>
 
         <div v-if="hasSelectedAnimations" class="animation-list">
@@ -715,12 +724,15 @@ const handleAnimationOffsetYChange = (
                 <span class="card-index">动画 {{ animationIndex + 1 }}</span>
               </div>
               <a-button
-                class="danger-button"
+                class="icon-button danger-icon-button"
                 status="danger"
-                type="outline"
+                type="text"
+                aria-label="删除动画"
                 @click="handleRemoveAnimation(animation.id)"
               >
-                删除动画
+                <template #icon>
+                  <icon-delete />
+                </template>
               </a-button>
             </header>
 
@@ -1106,10 +1118,19 @@ const handleAnimationOffsetYChange = (
   background: rgba(240, 253, 250, 0.74);
 }
 
-.soft-button,
-.danger-button {
+.icon-button {
+  min-width: 34px;
   min-height: 34px;
-  font-size: 13px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.icon-button:hover {
+  background: rgba(22, 93, 255, 0.08);
+}
+
+.danger-icon-button:hover {
+  background: rgba(245, 63, 63, 0.08);
 }
 
 @media (max-width: 640px) {
