@@ -502,7 +502,7 @@ function handleActionAnimationChange(
               </a-button>
             </header>
 
-            <div class="field-grid">
+            <div class="field-grid step-field-grid">
               <div class="field field-span-2">
                 <span class="field-label">名称</span>
                 <a-input class="field-input" :model-value="step.name" @input="handleStepNameInput(step, $event)" />
@@ -575,7 +575,7 @@ function handleActionAnimationChange(
                   </a-button>
                 </div>
 
-                <div class="field-grid">
+                <div class="field-grid action-field-grid">
                   <div class="field">
                     <span class="field-label">类型</span>
                     <a-select
@@ -690,6 +690,14 @@ function handleActionAnimationChange(
   background: rgba(255, 255, 255, 0.96);
 }
 
+.step-card {
+  gap: 10px;
+}
+
+.action-card {
+  gap: 10px;
+}
+
 .card-index {
   display: inline-flex;
   align-items: center;
@@ -725,8 +733,16 @@ function handleActionAnimationChange(
 
 .field-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--cw-space-2);
+}
+
+.step-field-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.action-field-grid {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .field {
@@ -785,6 +801,10 @@ function handleActionAnimationChange(
   min-height: 40px;
 }
 
+.field-input:deep(.arco-select-view) {
+  padding-right: 8px;
+}
+
 .soft-button,
 .text-button,
 .danger-text-button {
@@ -803,6 +823,12 @@ function handleActionAnimationChange(
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.field-input:deep(.arco-select-view-inner),
+.field-input:deep(.arco-input-wrapper),
+.field-input:deep(.arco-input-number) {
+  border-radius: 12px;
 }
 
 .card-head :deep(.arco-btn),

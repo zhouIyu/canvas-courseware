@@ -148,7 +148,7 @@
 .editor-layout {
   --cw-editor-pane-height: 820px;
   display: grid;
-  grid-template-columns: 176px minmax(0, 1fr) 348px;
+  grid-template-columns: 176px minmax(0, 1fr) 376px;
   gap: 12px;
   align-items: stretch;
   height: var(--cw-editor-pane-height);
@@ -163,7 +163,7 @@
 }
 
 .editor-layout.is-left-collapsed {
-  grid-template-columns: minmax(0, 1fr) 348px;
+  grid-template-columns: minmax(0, 1fr) 376px;
 }
 
 .editor-layout.is-right-collapsed {
