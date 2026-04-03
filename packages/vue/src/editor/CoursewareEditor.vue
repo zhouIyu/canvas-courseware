@@ -79,6 +79,9 @@ const isSlideRailCollapsed = ref(false);
 /** 当前右侧管理栏是否已收起。 */
 const isEditorSideCollapsed = ref(false);
 
+/** 属性面板最近一次稳定选中的节点 id。 */
+const retainedInspectorNodeId = ref<string | null>(null);
+
 /** 工具条容器引用，用来计算剩余可用高度。 */
 const toolbarShellRef = ref<HTMLElement | null>(null);
 
@@ -169,6 +172,7 @@ watch(
      * 这样时间轴步骤、动画等与选中态无关的更新，就不会把用户手动停留的标签覆盖掉。
      */
     if (activeSlideId !== previousSlideId) {
+      retainedInspectorNodeId.value = null;
       activeSideTab.value = "slide";
       return;
     }
@@ -181,14 +185,25 @@ watch(
       return;
     }
 
-    if (selectionCount === 1) {
-      activeSideTab.value = "node";
-      return;
-    }
-
     if (selectionCount > 1) {
       activeSideTab.value = "layers";
       return;
+    }
+
+    if (selectionCount === 1 && activeSideTab.value === "slide") {
+      activeSideTab.value = "node";
+      return;
+    }
+  },
+  { immediate: true },
+);
+
+/** 只要存在稳定单选，就记住它，供属性面板在交互过程里继续复用。 */
+watch(
+  () => snapshot.value.selection.nodeIds,
+  (nodeIds) => {
+    if (nodeIds.length === 1) {
+      retainedInspectorNodeId.value = nodeIds[0];
     }
   },
   { immediate: true },
@@ -215,12 +230,12 @@ const editorShellStyle = computed(() =>
 
 /** 当前选中节点对应的动画资源列表。 */
 const selectedNodeAnimations = computed<NodeAnimation[]>(() => {
-  if (!activeSlide.value || !selectedNode.value) {
+  if (!activeSlide.value || !inspectorNode.value) {
     return [];
   }
 
   return activeSlide.value.timeline.animations.filter(
-    (animation) => animation.targetId === selectedNode.value?.id,
+    (animation) => animation.targetId === inspectorNode.value?.id,
   );
 });
 
@@ -288,9 +303,34 @@ const nodeTimelineSummaryMap = computed<Record<string, NodeTimelineSummary>>(() 
   activeSlide.value ? createSlideNodeTimelineSummaryMap(activeSlide.value) : {},
 );
 
-/** 当前选中节点的步骤归属摘要。 */
+/** 属性面板优先使用当前单选节点，若交互过程中临时失焦则回退到最近一次稳定单选。 */
+const inspectorNode = computed(() => {
+  if (!activeSlide.value) {
+    return null;
+  }
+
+  const nodeId =
+    snapshot.value.selection.nodeIds.length === 1
+      ? snapshot.value.selection.nodeIds[0]
+      : snapshot.value.selection.nodeIds.length === 0
+        ? retainedInspectorNodeId.value
+        : null;
+
+  return nodeId ? activeSlide.value.nodes.find((node) => node.id === nodeId) ?? null : null;
+});
+
+/** 属性面板展示用的选中数量；若处于失焦保留态，仍按单选渲染。 */
+const inspectorSelectedCount = computed(() =>
+  snapshot.value.selection.nodeIds.length > 1
+    ? snapshot.value.selection.nodeIds.length
+    : inspectorNode.value
+      ? 1
+      : 0,
+);
+
+/** 当前属性面板节点的步骤归属摘要。 */
 const selectedNodeTimelineSummary = computed<NodeTimelineSummary | null>(() =>
-  selectedNode.value ? nodeTimelineSummaryMap.value[selectedNode.value.id] ?? null : null,
+  inspectorNode.value ? nodeTimelineSummaryMap.value[inspectorNode.value.id] ?? null : null,
 );
 
 /** 当前 slide 的更新入口。 */
@@ -571,8 +611,8 @@ onBeforeUnmount(() => {
             />
             <InspectorPanel
               v-else-if="activeSideTab === 'node'"
-              :selected-count="snapshot.selection.nodeIds.length"
-              :selected-node="selectedNode ?? null"
+              :selected-count="inspectorSelectedCount"
+              :selected-node="inspectorNode"
               :selected-animations="selectedNodeAnimations"
               :timeline-summary="selectedNodeTimelineSummary"
               @update-node="handleNodeUpdate"

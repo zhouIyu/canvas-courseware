@@ -465,30 +465,30 @@ const handleAnimationOffsetYChange = (
         </div>
 
         <div class="field-grid">
-          <label class="field field-span-2">
+          <div class="field field-span-2">
             <span class="field-label">节点名称</span>
             <a-input class="field-input" :model-value="selectedNode.name" @input="handleNodeNameInput" />
-          </label>
+          </div>
 
-          <label class="field">
+          <div class="field">
             <span class="field-label">X</span>
             <a-input-number
               class="field-input"
               :model-value="selectedNode.x"
               @change="handleNodeBaseNumberChange('x', $event)"
             />
-          </label>
+          </div>
 
-          <label class="field">
+          <div class="field">
             <span class="field-label">Y</span>
             <a-input-number
               class="field-input"
               :model-value="selectedNode.y"
               @change="handleNodeBaseNumberChange('y', $event)"
             />
-          </label>
+          </div>
 
-          <label class="field">
+          <div class="field">
             <span class="field-label">宽度</span>
             <a-input-number
               class="field-input"
@@ -496,9 +496,9 @@ const handleAnimationOffsetYChange = (
               :model-value="selectedNode.width"
               @change="handleNodeBaseNumberChange('width', $event)"
             />
-          </label>
+          </div>
 
-          <label class="field">
+          <div class="field">
             <span class="field-label">高度</span>
             <a-input-number
               class="field-input"
@@ -506,18 +506,18 @@ const handleAnimationOffsetYChange = (
               :model-value="selectedNode.height"
               @change="handleNodeBaseNumberChange('height', $event)"
             />
-          </label>
+          </div>
 
-          <label class="field">
+          <div class="field">
             <span class="field-label">旋转</span>
             <a-input-number
               class="field-input"
               :model-value="selectedNode.rotation"
               @change="handleNodeBaseNumberChange('rotation', $event)"
             />
-          </label>
+          </div>
 
-          <label class="field">
+          <div class="field">
             <span class="field-label">透明度</span>
             <a-input-number
               class="field-input"
@@ -526,27 +526,27 @@ const handleAnimationOffsetYChange = (
               :model-value="nodeOpacityPercent"
               @change="handleNodeOpacityChange"
             />
-          </label>
+          </div>
         </div>
 
         <div class="toggle-grid">
-          <label class="toggle-field">
+          <div class="toggle-field">
             <span class="field-label">可见</span>
             <a-switch
               class="field-toggle"
               :model-value="selectedNode.visible"
               @change="handleNodeToggle('visible', $event)"
             />
-          </label>
+          </div>
 
-          <label class="toggle-field">
+          <div class="toggle-field">
             <span class="field-label">锁定</span>
             <a-switch
               class="field-toggle"
               :model-value="selectedNode.locked"
               @change="handleNodeToggle('locked', $event)"
             />
-          </label>
+          </div>
         </div>
 
         <p class="group-footnote">当前透明度：{{ formatOpacityValue(selectedNode.opacity) }}</p>
@@ -559,16 +559,16 @@ const handleAnimationOffsetYChange = (
         </div>
 
         <div class="field-grid">
-          <label class="field field-span-2">
+          <div class="field field-span-2">
             <span class="field-label">内容</span>
             <a-textarea
               class="field-input field-textarea"
               :model-value="selectedNode.props.text"
               @input="handleTextContentInput"
             />
-          </label>
+          </div>
 
-          <label class="field">
+          <div class="field">
             <span class="field-label">字号</span>
             <a-input-number
               class="field-input"
@@ -576,9 +576,9 @@ const handleAnimationOffsetYChange = (
               :model-value="selectedNode.props.fontSize"
               @change="handleTextFontSizeChange"
             />
-          </label>
+          </div>
 
-          <label class="field">
+          <div class="field">
             <span class="field-label">颜色</span>
             <a-color-picker
               class="field-input color-input"
@@ -586,9 +586,9 @@ const handleAnimationOffsetYChange = (
               show-text
               @change="handleTextColorChange"
             />
-          </label>
+          </div>
 
-          <label class="field field-span-2">
+          <div class="field field-span-2">
             <span class="field-label">对齐方式</span>
             <a-select
               class="field-input"
@@ -604,7 +604,7 @@ const handleAnimationOffsetYChange = (
                 {{ option.label }}
               </a-option>
             </a-select>
-          </label>
+          </div>
         </div>
       </div>
 
@@ -615,7 +615,7 @@ const handleAnimationOffsetYChange = (
         </div>
 
         <div class="field-grid">
-          <label class="field">
+          <div class="field">
             <span class="field-label">填充色</span>
             <a-color-picker
               class="field-input color-input"
@@ -623,9 +623,9 @@ const handleAnimationOffsetYChange = (
               show-text
               @change="handleRectFillChange"
             />
-          </label>
+          </div>
 
-          <label class="field">
+          <div class="field">
             <span class="field-label">描边色</span>
             <a-color-picker
               class="field-input color-input"
@@ -633,9 +633,9 @@ const handleAnimationOffsetYChange = (
               show-text
               @change="handleRectStrokeChange"
             />
-          </label>
+          </div>
 
-          <label class="field">
+          <div class="field">
             <span class="field-label">描边宽度</span>
             <a-input-number
               class="field-input"
@@ -643,9 +643,9 @@ const handleAnimationOffsetYChange = (
               :model-value="selectedNode.props.strokeWidth ?? 0"
               @change="handleRectStrokeWidthChange"
             />
-          </label>
+          </div>
 
-          <label class="field">
+          <div class="field">
             <span class="field-label">圆角</span>
             <a-input-number
               class="field-input"
@@ -653,7 +653,7 @@ const handleAnimationOffsetYChange = (
               :model-value="selectedNode.props.radius ?? 0"
               @change="handleRectRadiusChange"
             />
-          </label>
+          </div>
         </div>
       </div>
 
@@ -664,21 +664,21 @@ const handleAnimationOffsetYChange = (
         </div>
 
         <div class="field-grid">
-          <label class="field field-span-2">
+          <div class="field field-span-2">
             <span class="field-label">图片地址</span>
             <a-input class="field-input" :model-value="selectedNode.props.src" @input="handleImageSourceInput" />
-          </label>
+          </div>
 
-          <label class="field field-span-2">
+          <div class="field field-span-2">
             <span class="field-label">替代文本</span>
             <a-input
               class="field-input"
               :model-value="selectedNode.props.alt ?? ''"
               @input="handleImageAltInput"
             />
-          </label>
+          </div>
 
-          <label class="field field-span-2">
+          <div class="field field-span-2">
             <span class="field-label">适配方式</span>
             <a-select
               class="field-input"
@@ -694,7 +694,7 @@ const handleAnimationOffsetYChange = (
                 {{ option.label }}
               </a-option>
             </a-select>
-          </label>
+          </div>
         </div>
       </div>
 
@@ -725,7 +725,7 @@ const handleAnimationOffsetYChange = (
             </header>
 
             <div class="field-grid">
-              <label class="field">
+              <div class="field">
                 <span class="field-label">类型</span>
                 <a-select
                   class="field-input"
@@ -741,9 +741,9 @@ const handleAnimationOffsetYChange = (
                     {{ option.label }}
                   </a-option>
                 </a-select>
-              </label>
+              </div>
 
-              <label class="field">
+              <div class="field">
                 <span class="field-label">时长(ms)</span>
                 <a-input-number
                   class="field-input"
@@ -751,12 +751,12 @@ const handleAnimationOffsetYChange = (
                   :model-value="animation.durationMs"
                   @change="handleAnimationDurationChange(animation, $event)"
                 />
-              </label>
+              </div>
 
               <a-collapse :bordered="false" class="advanced-fields field-span-2">
                 <a-collapse-item key="advanced" header="高级参数">
                   <div class="advanced-grid">
-                  <label class="field">
+                  <div class="field">
                     <span class="field-label">缓动</span>
                     <a-select
                       class="field-input"
@@ -772,9 +772,9 @@ const handleAnimationOffsetYChange = (
                         {{ option.label }}
                       </a-option>
                     </a-select>
-                  </label>
+                  </div>
 
-                  <label class="field">
+                  <div class="field">
                     <span class="field-label">延迟(ms)</span>
                     <a-input-number
                       class="field-input"
@@ -782,9 +782,9 @@ const handleAnimationOffsetYChange = (
                       :model-value="animation.delayMs ?? 0"
                       @change="handleAnimationDelayChange(animation, $event)"
                     />
-                  </label>
+                  </div>
 
-                  <label v-if="animation.kind === 'slide-up'" class="field field-span-2">
+                  <div v-if="animation.kind === 'slide-up'" class="field field-span-2">
                     <span class="field-label">偏移Y</span>
                     <a-input-number
                       class="field-input"
@@ -792,7 +792,7 @@ const handleAnimationOffsetYChange = (
                       :model-value="animation.offsetY ?? 32"
                       @change="handleAnimationOffsetYChange(animation, $event)"
                     />
-                  </label>
+                  </div>
                   </div>
                 </a-collapse-item>
               </a-collapse>

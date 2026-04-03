@@ -501,21 +501,21 @@ function handleActionAnimationChange(
             </header>
 
             <div class="field-grid">
-              <label class="field field-span-2">
+              <div class="field field-span-2">
                 <span class="field-label">名称</span>
                 <a-input class="field-input" :model-value="step.name" @input="handleStepNameInput(step, $event)" />
-              </label>
+              </div>
 
-              <label class="field">
+              <div class="field">
                 <span class="field-label">触发</span>
                 <a-select class="field-input" :model-value="step.trigger.type" popup-container="body" @change="handleStepTriggerTypeChange(step, $event)">
                   <a-option v-for="option in triggerOptions" :key="option.value" :value="option.value">
                     {{ option.label }}
                   </a-option>
                 </a-select>
-              </label>
+              </div>
 
-              <label v-if="step.trigger.type === 'node-click'" class="field">
+              <div v-if="step.trigger.type === 'node-click'" class="field">
                 <span class="field-label">对象</span>
                 <a-select
                   class="field-input"
@@ -527,9 +527,9 @@ function handleActionAnimationChange(
                     {{ option.label }} · {{ option.detail }}
                   </a-option>
                 </a-select>
-              </label>
+              </div>
 
-              <label v-if="step.trigger.type === 'auto'" class="field">
+              <div v-if="step.trigger.type === 'auto'" class="field">
                 <span class="field-label">延迟(ms)</span>
                 <a-input-number
                   class="field-input"
@@ -537,7 +537,7 @@ function handleActionAnimationChange(
                   :model-value="step.trigger.delayMs"
                   @change="handleStepDelayChange(step, $event)"
                 />
-              </label>
+              </div>
             </div>
 
             <div class="subsection-head">
@@ -574,7 +574,7 @@ function handleActionAnimationChange(
                 </div>
 
                 <div class="field-grid">
-                  <label class="field">
+                  <div class="field">
                     <span class="field-label">类型</span>
                     <a-select
                       class="field-input"
@@ -590,9 +590,9 @@ function handleActionAnimationChange(
                         {{ option.label }}
                       </a-option>
                     </a-select>
-                  </label>
+                  </div>
 
-                  <label v-if="action.type !== 'play-animation'" class="field">
+                  <div v-if="action.type !== 'play-animation'" class="field">
                     <span class="field-label">对象</span>
                     <a-select
                       class="field-input"
@@ -604,9 +604,9 @@ function handleActionAnimationChange(
                         {{ option.label }} · {{ option.detail }}
                       </a-option>
                     </a-select>
-                  </label>
+                  </div>
 
-                  <label
+                  <div
                     v-if="action.type !== 'hide-node'"
                     class="field"
                     :class="{ 'field-span-2': action.type === 'play-animation' }"
@@ -633,7 +633,7 @@ function handleActionAnimationChange(
                         {{ option.label }} · {{ option.detail }}
                       </a-option>
                     </a-select>
-                  </label>
+                  </div>
                 </div>
               </article>
             </div>

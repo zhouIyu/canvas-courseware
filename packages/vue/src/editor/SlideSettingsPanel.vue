@@ -119,12 +119,12 @@ const handleSlideBackgroundChange = (value: string | undefined) => {
       </div>
 
       <div class="field-grid">
-        <label class="field field-span-2">
+        <div class="field field-span-2">
           <span class="field-label">页面名称</span>
           <a-input class="field-input" :model-value="slide.name" @input="handleSlideNameInput" />
-        </label>
+        </div>
 
-        <label class="field">
+        <div class="field">
           <span class="field-label">宽度</span>
           <a-input-number
             class="field-input"
@@ -132,9 +132,9 @@ const handleSlideBackgroundChange = (value: string | undefined) => {
             :model-value="slide.size.width"
             @change="handleSlideWidthChange"
           />
-        </label>
+        </div>
 
-        <label class="field">
+        <div class="field">
           <span class="field-label">高度</span>
           <a-input-number
             class="field-input"
@@ -142,9 +142,9 @@ const handleSlideBackgroundChange = (value: string | undefined) => {
             :model-value="slide.size.height"
             @change="handleSlideHeightChange"
           />
-        </label>
+        </div>
 
-        <label class="field field-span-2">
+        <div class="field field-span-2">
           <span class="field-label">背景色</span>
           <a-color-picker
             class="field-input color-input"
@@ -152,7 +152,7 @@ const handleSlideBackgroundChange = (value: string | undefined) => {
             show-text
             @change="handleSlideBackgroundChange"
           />
-        </label>
+        </div>
       </div>
     </div>
 
