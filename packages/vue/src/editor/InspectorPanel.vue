@@ -428,40 +428,6 @@ const handleAnimationOffsetYChange = (animation: NodeAnimation, event: Event) =>
     <template v-else-if="hasSingleSelection && selectedNode">
       <div class="group-card">
         <div class="group-head">
-          <h4>播放归属</h4>
-          <span class="group-badge accent">
-            {{ hasTimelineSummary ? `${timelineSummary?.stepReferences.length ?? 0} 个步骤` : "未编排" }}
-          </span>
-        </div>
-
-        <div class="timeline-overview">
-          <span class="timeline-chip">
-            {{ formatNodeInitialVisibilityLabel(timelineSummary?.isInitiallyVisible ?? selectedNode.visible) }}
-          </span>
-          <span v-if="hasFirstTimelineStep" class="timeline-chip accent">
-            {{ formatStepIndexLabel(timelineSummary?.firstStepIndex ?? 0) }}
-          </span>
-          <span v-else class="timeline-chip subtle">当前对象尚未加入时间轴步骤</span>
-        </div>
-
-        <div v-if="hasTimelineSummary" class="timeline-step-list">
-          <article
-            v-for="stepReference in timelineSummary?.stepReferences ?? []"
-            :key="stepReference.stepId"
-            class="timeline-step-card"
-          >
-            <div class="timeline-step-topline">
-              <strong>{{ formatStepIndexLabel(stepReference.stepIndex) }}</strong>
-              <span>{{ formatTriggerLabel(stepReference.triggerType) }}</span>
-            </div>
-            <p>{{ stepReference.stepName }}</p>
-            <small>{{ stepReference.actionTypes.length }} 个相关动作</small>
-          </article>
-        </div>
-      </div>
-
-      <div class="group-card">
-        <div class="group-head">
           <h4>基础属性</h4>
           <span class="group-badge accent">{{ formatNodeTypeLabel(selectedNode.type) }}</span>
         </div>
@@ -824,6 +790,40 @@ const handleAnimationOffsetYChange = (animation: NodeAnimation, event: Event) =>
           </article>
         </div>
         <p v-else class="group-copy">当前对象还没有动画。</p>
+      </div>
+
+      <div class="group-card">
+        <div class="group-head">
+          <h4>播放归属</h4>
+          <span class="group-badge accent">
+            {{ hasTimelineSummary ? `${timelineSummary?.stepReferences.length ?? 0} 个步骤` : "未编排" }}
+          </span>
+        </div>
+
+        <div class="timeline-overview">
+          <span class="timeline-chip">
+            {{ formatNodeInitialVisibilityLabel(timelineSummary?.isInitiallyVisible ?? selectedNode.visible) }}
+          </span>
+          <span v-if="hasFirstTimelineStep" class="timeline-chip accent">
+            {{ formatStepIndexLabel(timelineSummary?.firstStepIndex ?? 0) }}
+          </span>
+          <span v-else class="timeline-chip subtle">当前对象尚未加入时间轴步骤</span>
+        </div>
+
+        <div v-if="hasTimelineSummary" class="timeline-step-list">
+          <article
+            v-for="stepReference in timelineSummary?.stepReferences ?? []"
+            :key="stepReference.stepId"
+            class="timeline-step-card"
+          >
+            <div class="timeline-step-topline">
+              <strong>{{ formatStepIndexLabel(stepReference.stepIndex) }}</strong>
+              <span>{{ formatTriggerLabel(stepReference.triggerType) }}</span>
+            </div>
+            <p>{{ stepReference.stepName }}</p>
+            <small>{{ stepReference.actionTypes.length }} 个相关动作</small>
+          </article>
+        </div>
       </div>
     </template>
 
