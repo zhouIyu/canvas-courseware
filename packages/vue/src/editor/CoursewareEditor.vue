@@ -516,6 +516,23 @@ onBeforeUnmount(() => {
       </section>
 
       <div class="editor-layout" :class="editorLayoutClass" :style="editorLayoutStyle">
+        <a-button
+          class="stage-side-badge stage-side-badge-left"
+          type="text"
+          :aria-label="isSlideRailCollapsed ? '展开左侧页面栏' : '收起左侧页面栏'"
+          @click="toggleSlideRail"
+        >
+          {{ isSlideRailCollapsed ? "›" : "‹" }}
+        </a-button>
+        <a-button
+          class="stage-side-badge stage-side-badge-right"
+          type="text"
+          :aria-label="isEditorSideCollapsed ? '展开右侧管理栏' : '收起右侧管理栏'"
+          @click="toggleEditorSide"
+        >
+          {{ isEditorSideCollapsed ? "‹" : "›" }}
+        </a-button>
+
         <aside v-show="!isSlideRailCollapsed" class="slide-rail panel-shell">
           <div class="rail-toolbar">
             <a-button
@@ -556,23 +573,6 @@ onBeforeUnmount(() => {
         </aside>
 
         <section class="workspace-shell panel-shell">
-          <a-button
-            class="stage-side-badge stage-side-badge-left"
-            type="text"
-            :aria-label="isSlideRailCollapsed ? '展开左侧页面栏' : '收起左侧页面栏'"
-            @click="toggleSlideRail"
-          >
-            {{ isSlideRailCollapsed ? "›" : "‹" }}
-          </a-button>
-          <a-button
-            class="stage-side-badge stage-side-badge-right"
-            type="text"
-            :aria-label="isEditorSideCollapsed ? '展开右侧管理栏' : '收起右侧管理栏'"
-            @click="toggleEditorSide"
-          >
-            {{ isEditorSideCollapsed ? "‹" : "›" }}
-          </a-button>
-
           <div ref="stageViewportRef" class="stage-scroll" :style="stageStyle">
             <div class="stage-backdrop">
               <div v-if="activeSlide" class="stage-scale-frame" :style="canvasFrameStyle">
