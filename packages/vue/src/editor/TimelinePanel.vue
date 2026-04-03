@@ -477,8 +477,8 @@ function handleActionAnimationChange(
         <div class="group-head">
           <h4>步骤</h4>
           <a-button
-            class="soft-button"
-            type="outline"
+            class="text-button"
+            type="text"
             :disabled="!hasNodes"
             @click="handleCreateStep"
           >
@@ -497,7 +497,9 @@ function handleActionAnimationChange(
                 <span class="card-index">步骤 {{ String(stepIndex + 1).padStart(2, "0") }}</span>
               </div>
 
-              <a-button class="danger-button" status="danger" type="outline" @click="handleRemoveStep(step.id)">删除步骤</a-button>
+              <a-button class="danger-text-button" status="danger" type="text" @click="handleRemoveStep(step.id)">
+                删除
+              </a-button>
             </header>
 
             <div class="field-grid">
@@ -543,8 +545,8 @@ function handleActionAnimationChange(
             <div class="subsection-head">
               <strong>动作</strong>
               <a-button
-                class="ghost-button"
-                type="outline"
+                class="text-button"
+                type="text"
                 size="small"
                 :disabled="!hasNodes"
                 @click="handleAddAction(step)"
@@ -650,6 +652,7 @@ function handleActionAnimationChange(
 .timeline-panel {
   display: grid;
   gap: var(--cw-space-3);
+  min-width: 0;
   padding: var(--cw-space-4);
   border: 1px solid var(--cw-color-border);
   border-radius: var(--cw-radius-lg);
@@ -667,6 +670,7 @@ function handleActionAnimationChange(
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--cw-space-3);
+  min-width: 0;
 }
 
 .group-head h4 {
@@ -679,26 +683,22 @@ function handleActionAnimationChange(
 .action-card {
   display: grid;
   gap: var(--cw-space-2);
-  padding: 14px;
-  border: 1px solid rgba(19, 78, 74, 0.08);
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: var(--cw-radius-md);
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.96);
 }
 
 .card-index {
   display: inline-flex;
   align-items: center;
-  min-height: 34px;
-  padding: 0 var(--cw-space-3);
-  border-radius: var(--cw-radius-pill);
-  font-size: 13px;
-  color: var(--cw-color-text);
-  background: rgba(19, 78, 74, 0.08);
-}
-
-.card-index.subtle {
-  color: var(--cw-color-primary);
-  background: rgba(22, 93, 255, 0.12);
+  min-height: 24px;
+  min-width: 0;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cw-color-muted);
 }
 
 .group-copy,
@@ -720,6 +720,7 @@ function handleActionAnimationChange(
 .action-copy {
   display: grid;
   gap: var(--cw-space-2);
+  min-width: 0;
 }
 
 .field-grid {
@@ -731,6 +732,7 @@ function handleActionAnimationChange(
 .field {
   display: grid;
   gap: 6px;
+  min-width: 0;
 }
 
 .advanced-fields {
@@ -772,25 +774,41 @@ function handleActionAnimationChange(
 
 .field-input {
   width: 100%;
+  min-width: 0;
 }
 
 .field-input:deep(.arco-input-wrapper),
 .field-input:deep(.arco-select-view),
 .field-input:deep(.arco-input-number) {
   width: 100%;
+  min-width: 0;
   min-height: 40px;
 }
 
 .soft-button,
-.ghost-button,
-.danger-button,
+.text-button,
 .danger-text-button {
-  min-height: 38px;
+  min-height: 32px;
   font-size: 13px;
 }
 
-.danger-text-button {
-  min-height: 32px;
+.field-input:deep(.arco-select-view-value),
+.field-input:deep(.arco-select-view-single),
+.field-input:deep(.arco-input),
+.field-input:deep(.arco-input-number-input) {
+  min-width: 0;
+}
+
+.field-input:deep(.arco-select-view-value) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-head :deep(.arco-btn),
+.subsection-head :deep(.arco-btn),
+.action-head :deep(.arco-btn) {
+  flex-shrink: 0;
 }
 
 .empty-card {
