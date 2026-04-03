@@ -507,11 +507,11 @@ onBeforeUnmount(() => {
 
     <main class="editor-workbench">
       <section ref="toolbarShellRef" class="toolbar-shell panel-shell">
-        <span class="toolbar-caption">插入</span>
-        <div class="toolbar-group">
-          <a-button class="primary-button" type="primary" @click="addText">文本</a-button>
-          <a-button class="primary-button" type="primary" @click="addRect">矩形</a-button>
-          <a-button class="primary-button" type="primary" @click="addImage">图片</a-button>
+        <div class="toolbar-group toolbar-group-insert">
+          <span class="toolbar-caption">插入</span>
+          <a-button class="toolbar-action-button" type="text" @click="addText">文本</a-button>
+          <a-button class="toolbar-action-button" type="text" @click="addRect">矩形</a-button>
+          <a-button class="toolbar-action-button" type="text" @click="addImage">图片</a-button>
         </div>
       </section>
 

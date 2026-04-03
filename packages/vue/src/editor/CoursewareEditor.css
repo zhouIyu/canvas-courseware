@@ -145,6 +145,32 @@
   min-height: 36px;
 }
 
+.toolbar-group-insert {
+  gap: 4px;
+  padding: 4px 6px;
+  border: 1px solid color-mix(in srgb, var(--cw-color-border) 88%, #ffffff);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.toolbar-group-insert .toolbar-caption {
+  padding: 0 8px 0 4px;
+}
+
+.toolbar-action-button {
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cw-color-primary);
+}
+
+.toolbar-action-button:hover {
+  color: #0f6bff;
+  background: rgba(22, 93, 255, 0.08);
+}
+
 .editor-layout {
   --cw-editor-pane-height: 820px;
   --cw-slide-rail-width: 176px;
