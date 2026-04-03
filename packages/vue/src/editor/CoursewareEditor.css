@@ -676,6 +676,24 @@
   align-items: center;
 }
 
+.editor-side-body :deep(.field) {
+  min-width: 0;
+  container-type: inline-size;
+}
+
+@container (max-width: 148px) {
+  .editor-side-body :deep(.field .arco-select-view-value),
+  .editor-side-body :deep(.field .arco-select-view-placeholder) {
+    width: 0;
+    opacity: 0;
+    overflow: hidden;
+  }
+
+  .editor-side-body :deep(.field .arco-select-view-single) {
+    justify-content: flex-end;
+  }
+}
+
 .stage-side-badge:hover {
   color: #0f6bff;
   border-color: rgba(22, 93, 255, 0.24);
