@@ -174,12 +174,10 @@ const handleSlideBackgroundChange = (event: Event) => {
 .group-badge {
   display: inline-flex;
   align-items: center;
-  min-height: 34px;
-  padding: 0 var(--cw-space-3);
-  border-radius: var(--cw-radius-pill);
-  font-size: 13px;
-  color: var(--cw-color-text);
-  background: rgba(19, 78, 74, 0.08);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--cw-color-muted);
 }
 
 .group-card {
