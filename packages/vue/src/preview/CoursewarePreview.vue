@@ -311,16 +311,24 @@ onBeforeUnmount(() => {
           <a-button
             v-for="(slide, index) in state.document?.slides ?? []"
             :key="slide.id"
-            class="preview-slide-card"
+            class="slide-card"
             :class="{ 'is-active': slide.id === state.slideId }"
             type="text"
             :aria-pressed="slide.id === state.slideId"
             @click="activateSlide(slide.id)"
           >
-            <span class="preview-slide-index">{{ String(index + 1).padStart(2, '0') }}</span>
-            <div class="preview-slide-meta">
-              <strong>{{ slide.name }}</strong>
-              <small>{{ slide.timeline.steps.length }} 个步骤</small>
+            <div class="slide-card-top">
+              <span class="slide-index">{{ String(index + 1).padStart(2, '0') }}</span>
+            </div>
+
+            <div class="slide-thumbnail" :style="{ background: slide.background.fill }">
+              <span class="thumb-line long" />
+              <span class="thumb-line short" />
+              <span class="thumb-dots">
+                <i />
+                <i />
+                <i />
+              </span>
             </div>
           </a-button>
         </div>
