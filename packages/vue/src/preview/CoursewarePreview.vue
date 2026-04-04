@@ -202,12 +202,6 @@ const previewShellStyle = computed(() =>
     : {},
 );
 
-/** 内嵌模式下的简要播放摘要。 */
-const embeddedSummaryLabel = computed(() => {
-  const activeSlideName = activeSlide.value?.name ?? "未选择页面";
-  return `${playbackSummary.value} · ${activeSlideName} · ${nextTriggerLabel.value}`;
-});
-
 /** 当前左侧 slide 栏是否已收起。 */
 const isSlideRailCollapsed = ref(false);
 
@@ -350,10 +344,6 @@ onBeforeUnmount(() => {
             </div>
           </div>
         </header>
-
-        <p v-if="isEmbedded" class="preview-inline-summary">
-          {{ embeddedSummaryLabel }}
-        </p>
 
         <div ref="previewStageRef" class="preview-stage" :style="stageStyle">
           <div class="preview-stage-scroll">

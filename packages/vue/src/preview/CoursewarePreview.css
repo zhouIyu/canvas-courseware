@@ -221,14 +221,6 @@
   font-size: 12px;
 }
 
-.preview-inline-summary {
-  margin: 0;
-  padding: 10px 14px 0;
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--cw-color-muted);
-}
-
 .preview-stage {
   overflow: hidden;
   max-width: 100%;
