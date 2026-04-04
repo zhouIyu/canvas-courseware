@@ -17,7 +17,7 @@
 
 .preview-layout {
   --cw-preview-rail-width: 176px;
-  --cw-preview-side-width: 288px;
+  --cw-preview-side-width: 264px;
   display: grid;
   grid-template-columns: var(--cw-preview-rail-width) minmax(0, 1fr) var(--cw-preview-side-width);
   gap: 12px;
@@ -169,8 +169,7 @@
   background: rgba(255, 255, 255, 0.98);
 }
 
-.preview-rail.is-collapsed,
-.preview-side.is-collapsed {
+.preview-rail.is-collapsed {
   align-content: stretch;
 }
 
@@ -351,10 +350,10 @@
   display: grid;
   grid-template-columns: 20px minmax(0, 1fr);
   align-items: start;
-  gap: 8px;
+  gap: 6px;
   width: 100%;
   height: auto;
-  padding: 6px 6px 6px 0;
+  padding: 4px 4px 4px 0;
   border: 1px solid transparent;
   border-radius: 12px;
   text-align: left;
@@ -383,14 +382,14 @@
   grid-template-columns: 20px minmax(0, 1fr);
   width: 100%;
   align-items: start;
-  gap: 8px;
+  gap: 6px;
 }
 
 .slide-card.is-active::before {
   content: "";
   position: absolute;
-  top: 8px;
-  bottom: 8px;
+  top: 6px;
+  bottom: 6px;
   left: -5px;
   width: 4px;
   border-radius: 999px;
@@ -401,7 +400,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-top: 8px;
+  padding-top: 6px;
 }
 
 .slide-index {
@@ -418,10 +417,10 @@
 
 .slide-thumbnail {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   justify-items: center;
-  min-height: 66px;
-  padding: 10px;
+  min-height: 52px;
+  padding: 8px;
   border: 1px solid #dfe6ee;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.98);
@@ -436,23 +435,23 @@
 }
 
 .thumb-line.long {
-  width: 54px;
+  width: 46px;
 }
 
 .thumb-line.short {
-  width: 36px;
+  width: 30px;
   opacity: 0.64;
 }
 
 .thumb-dots {
   display: flex;
-  gap: 6px;
+  gap: 5px;
 }
 
 .thumb-dots i {
   display: inline-block;
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: color-mix(in srgb, var(--cw-color-primary) 70%, #ffffff);
 }

@@ -370,10 +370,10 @@ onBeforeUnmount(() => {
         </div>
       </section>
 
-      <aside class="preview-side timeline-shell" :class="{ 'is-collapsed': isTimelineCollapsed }">
+      <aside v-show="!isTimelineCollapsed" class="preview-side timeline-shell">
         <header class="section-head compact">
           <div>
-            <h3>{{ isTimelineCollapsed ? "步骤" : "步骤状态" }}</h3>
+            <h3>步骤状态</h3>
           </div>
         </header>
 
@@ -405,10 +405,6 @@ onBeforeUnmount(() => {
         <div v-else-if="!isTimelineCollapsed" class="empty-state compact">
           <strong>当前页面还没有步骤</strong>
           <p>后续 timeline 配置完成后，这里会直接展示页面点击、自动触发与对象点击的执行顺序。</p>
-        </div>
-        <div v-else class="collapsed-side-shell">
-          <span class="collapsed-count">{{ stepCount }}</span>
-          <small>{{ playbackSummary }}</small>
         </div>
       </aside>
     </main>
