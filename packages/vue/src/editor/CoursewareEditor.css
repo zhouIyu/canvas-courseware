@@ -157,6 +157,18 @@
   padding: 0 8px 0 4px;
 }
 
+.toolbar-group-history {
+  gap: 4px;
+  padding: 4px 6px;
+  border: 1px solid color-mix(in srgb, var(--cw-color-border) 88%, #ffffff);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.toolbar-group-history .toolbar-caption {
+  padding: 0 8px 0 4px;
+}
+
 .toolbar-action-button {
   min-height: 32px;
   padding: 0 10px;
@@ -169,6 +181,10 @@
 .toolbar-action-button:hover {
   color: #0f6bff;
   background: rgba(22, 93, 255, 0.08);
+}
+
+.toolbar-group-history :deep(.arco-btn.arco-btn-disabled) {
+  color: color-mix(in srgb, var(--cw-color-muted) 80%, #ffffff);
 }
 
 .editor-layout {

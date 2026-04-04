@@ -26,6 +26,8 @@ export type EditorCommand =
   | RemoveTimelineStepCommand
   | UpsertAnimationCommand
   | RemoveAnimationCommand
+  | HistoryUndoCommand
+  | HistoryRedoCommand
   | PlaybackSetSlideCommand
   | PlaybackAdvanceStepCommand
   | PlaybackResetCommand;
@@ -125,6 +127,16 @@ export interface RemoveAnimationCommand {
   type: "timeline.animation.remove";
   slideId: string;
   animationId: string;
+}
+
+/** 回退到上一条可恢复的编辑快照。 */
+export interface HistoryUndoCommand {
+  type: "history.undo";
+}
+
+/** 重新应用一条被撤销的编辑快照。 */
+export interface HistoryRedoCommand {
+  type: "history.redo";
 }
 
 export interface PlaybackSetSlideCommand {

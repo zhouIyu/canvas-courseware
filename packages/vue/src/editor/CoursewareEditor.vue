@@ -106,9 +106,12 @@ const {
   addText,
   applyingExternalDocument,
   activateSlide,
+  canRedo,
+  canUndo,
   editorCanvasRef,
   removeTimelineAnimation,
   removeTimelineStep,
+  redo,
   reorderNode,
   replaceDocument,
   selectedNode,
@@ -116,6 +119,7 @@ const {
   selectNodes,
   snapshot,
   stats,
+  undo,
   upsertTimelineAnimation,
   upsertTimelineStep,
   updateNode,
@@ -526,6 +530,26 @@ onBeforeUnmount(() => {
           <a-button class="toolbar-action-button" type="text" @click="addText">文本</a-button>
           <a-button class="toolbar-action-button" type="text" @click="addRect">矩形</a-button>
           <a-button class="toolbar-action-button" type="text" @click="addImage">图片</a-button>
+        </div>
+
+        <div class="toolbar-group toolbar-group-history">
+          <span class="toolbar-caption">历史</span>
+          <a-button
+            class="toolbar-action-button"
+            type="text"
+            :disabled="!canUndo"
+            @click="undo"
+          >
+            撤销
+          </a-button>
+          <a-button
+            class="toolbar-action-button"
+            type="text"
+            :disabled="!canRedo"
+            @click="redo"
+          >
+            重做
+          </a-button>
         </div>
       </section>
 

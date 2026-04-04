@@ -2,7 +2,12 @@ import type { CommandEnvelope, CommandSource, EditorCommand } from "./commands";
 import type { AdapterEvent } from "./events";
 import type { CoursewareDocument, EditorSnapshot } from "./schema";
 import { createCommandEnvelope, createCoursewareDocument } from "./factories";
-import { type EditorEventListener, EditorStore, type SnapshotListener } from "./store";
+import {
+  type EditorEventListener,
+  type EditorHistoryState,
+  EditorStore,
+  type SnapshotListener,
+} from "./store";
 
 export type AdapterEventListener = (event: AdapterEvent) => void;
 
@@ -29,6 +34,40 @@ export class EditorController {
 
   execute(command: EditorCommand, source: CommandSource = "ui"): EditorSnapshot {
     return this.store.dispatch(createCommandEnvelope(command, source));
+  }
+
+  undo(source: CommandSource = "ui"): EditorSnapshot {
+    return this.store.dispatch(
+      createCommandEnvelope(
+        {
+          type: "history.undo",
+        },
+        source,
+      ),
+    );
+  }
+
+  redo(source: CommandSource = "ui"): EditorSnapshot {
+    return this.store.dispatch(
+      createCommandEnvelope(
+        {
+          type: "history.redo",
+        },
+        source,
+      ),
+    );
+  }
+
+  canUndo(): boolean {
+    return this.store.canUndo();
+  }
+
+  canRedo(): boolean {
+    return this.store.canRedo();
+  }
+
+  getHistoryState(): EditorHistoryState {
+    return this.store.getHistoryState();
   }
 
   dispatchEnvelope(envelope: CommandEnvelope): EditorSnapshot {

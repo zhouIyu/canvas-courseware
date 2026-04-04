@@ -88,6 +88,19 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     ),
   }));
 
+  /** 当前撤销/重做可用状态摘要。 */
+  const historyState = computed(() => {
+    /** 通过快照建立依赖，确保每次命令后都能刷新可用状态。 */
+    snapshot.value;
+    return controller.getHistoryState();
+  });
+
+  /** 当前是否允许执行撤销。 */
+  const canUndo = computed(() => historyState.value.canUndo);
+
+  /** 当前是否允许执行重做。 */
+  const canRedo = computed(() => historyState.value.canRedo);
+
   /**
    * 在 canvas DOM 可用之后挂载 Fabric 适配器。
    * 这一步只做挂载，不直接改动业务文档。
@@ -271,6 +284,16 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     });
   };
 
+  /** 执行一次撤销。 */
+  const undo = () => {
+    controller.undo();
+  };
+
+  /** 执行一次重做。 */
+  const redo = () => {
+    controller.redo();
+  };
+
   /** 更新当前页面元信息，例如名称、尺寸和背景色。 */
   const updateSlide = (
     slideId: string,
@@ -359,10 +382,13 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     addSlide,
     addText,
     applyingExternalDocument,
+    canRedo,
+    canUndo,
     controller,
     clearSelection,
     editorCanvasRef,
     mountAdapter,
+    redo,
     reorderNode,
     removeSelected,
     removeTimelineAnimation,
@@ -373,6 +399,7 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     selectNodes,
     snapshot,
     stats,
+    undo,
     activateSlide,
     upsertTimelineAnimation,
     upsertTimelineStep,
