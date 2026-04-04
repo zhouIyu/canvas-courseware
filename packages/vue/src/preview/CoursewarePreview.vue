@@ -317,23 +317,10 @@ onBeforeUnmount(() => {
             :aria-pressed="slide.id === state.slideId"
             @click="activateSlide(slide.id)"
           >
-            <div class="preview-slide-card-top">
-              <span class="preview-slide-index">{{ String(index + 1).padStart(2, '0') }}</span>
-            </div>
-            <div class="preview-slide-card-main">
-              <div class="preview-slide-thumbnail" :style="{ background: slide.background.fill }">
-                <span class="preview-thumb-line long" />
-                <span class="preview-thumb-line short" />
-                <span class="preview-thumb-dots">
-                  <i />
-                  <i />
-                  <i />
-                </span>
-              </div>
-              <div class="preview-slide-meta">
-                <strong>{{ slide.name }}</strong>
-                <small>{{ slide.timeline.steps.length }} 个步骤</small>
-              </div>
+            <span class="preview-slide-index">{{ String(index + 1).padStart(2, '0') }}</span>
+            <div class="preview-slide-meta">
+              <strong>{{ slide.name }}</strong>
+              <small>{{ slide.timeline.steps.length }} 个步骤</small>
             </div>
           </a-button>
         </div>
