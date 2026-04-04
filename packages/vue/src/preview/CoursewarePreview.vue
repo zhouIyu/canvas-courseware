@@ -351,7 +351,6 @@ onBeforeUnmount(() => {
           <div class="stage-head-actions">
             <div class="status-badges">
               <a-tag :color="playbackStatusTagColor" bordered>{{ playbackStatusLabel }}</a-tag>
-              <a-tag bordered>{{ stepPositionLabel }}</a-tag>
               <a-tag bordered>{{ nextTriggerLabel }}</a-tag>
             </div>
           </div>
