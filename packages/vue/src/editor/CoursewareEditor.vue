@@ -9,7 +9,10 @@ import type {
   Slide,
   TimelineStep,
 } from "@canvas-courseware/core";
-import { createSlideNodeTimelineSummaryMap } from "@canvas-courseware/core";
+import {
+  cloneTimelineStep,
+  createSlideNodeTimelineSummaryMap,
+} from "@canvas-courseware/core";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { DEFAULT_EDITOR_HEIGHT } from "../shared";
 import InspectorPanel from "./InspectorPanel.vue";
@@ -45,6 +48,30 @@ interface SlideRailReorderPayload {
   index: number;
 }
 
+/** 时间轴步骤排序事件的载荷。 */
+interface TimelineStepReorderPayload {
+  /** 需要移动的步骤 id。 */
+  stepId: string;
+  /** 排序后的目标索引。 */
+  index: number;
+}
+
+/** 时间轴步骤复制事件的载荷。 */
+interface TimelineStepDuplicatePayload {
+  /** 需要复制的源步骤。 */
+  step: TimelineStep;
+  /** 源步骤当前所处的索引。 */
+  index: number;
+}
+
+/** 时间轴发起预览请求时抛给 app 层的载荷。 */
+interface TimelinePreviewRequestPayload {
+  /** 需要对齐到的 slide id。 */
+  slideId: string;
+  /** 需要作为下一步焦点的步骤索引。 */
+  stepIndex: number;
+}
+
 /** 编辑器组件的显示参数。 */
 const props = withDefaults(
   defineProps<{
@@ -66,6 +93,8 @@ const props = withDefaults(
 const emit = defineEmits<{
   /** 向外同步最新编辑快照，供 app 层接管产品状态。 */
   "snapshot-change": [snapshot: EditorSnapshot];
+  /** 通知外层从某个时间轴步骤切入预览模式。 */
+  "timeline-preview-request": [payload: TimelinePreviewRequestPayload];
 }>();
 
 /** 编辑器通过 v-model 接收并回传标准课件文档。 */
@@ -143,6 +172,7 @@ const {
   redo,
   reorderNode,
   reorderSlide,
+  reorderTimelineStep,
   replaceDocument,
   selectedNode,
   selectedNodeId,
@@ -486,6 +516,37 @@ const handleTimelineStepRemove = (stepId: string) => {
   removeTimelineStep(activeSlide.value.id, stepId);
 };
 
+/** 调整当前页面中某个时间轴步骤的顺序。 */
+const handleTimelineStepReorder = (payload: TimelineStepReorderPayload) => {
+  if (!activeSlide.value) {
+    return;
+  }
+
+  reorderTimelineStep(activeSlide.value.id, payload.stepId, payload.index);
+};
+
+/** 复制一个时间轴步骤，并把副本插入到原步骤后面。 */
+const handleTimelineStepDuplicate = (payload: TimelineStepDuplicatePayload) => {
+  if (!activeSlide.value) {
+    return;
+  }
+
+  const duplicatedStep = cloneTimelineStep(payload.step);
+  upsertTimelineStep(activeSlide.value.id, duplicatedStep, payload.index + 1);
+};
+
+/** 请求外层切换到预览模式，并从当前步骤开始播放。 */
+const handleTimelinePreviewRequest = (stepIndex: number) => {
+  if (!activeSlide.value) {
+    return;
+  }
+
+  emit("timeline-preview-request", {
+    slideId: activeSlide.value.id,
+    stepIndex,
+  });
+};
+
 /** 时间轴动画资源的新增与更新统一从这里进入标准命令层。 */
 const handleTimelineAnimationUpsert = (animation: NodeAnimation) => {
   if (!activeSlide.value) {
@@ -728,6 +789,9 @@ onBeforeUnmount(() => {
               v-else
               :slide="activeSlide ?? null"
               :selected-node-id="selectedNodeId"
+              @duplicate-step="handleTimelineStepDuplicate"
+              @preview-step="handleTimelinePreviewRequest"
+              @reorder-step="handleTimelineStepReorder"
               @upsert-step="handleTimelineStepUpsert"
               @remove-step="handleTimelineStepRemove"
             />

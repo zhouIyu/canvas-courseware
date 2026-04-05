@@ -267,6 +267,7 @@ function shouldTrackHistoryCommand(command: EditorCommand): boolean {
     case "node.reorder":
     case "timeline.step.upsert":
     case "timeline.step.remove":
+    case "timeline.step.reorder":
     case "timeline.animation.upsert":
     case "timeline.animation.remove":
       return true;

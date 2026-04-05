@@ -11,8 +11,10 @@ import type {
 import { activateSlide, createSnapshotForDocument, deleteSlide, insertSlide, reorderSlide, updateSlide } from "./reducer/slide";
 import {
   applyNodePatch,
+  clamp,
   createNodePatchMap,
   findSlide,
+  insertAt,
   isSelectionEqual,
   resolveReorderIndex,
   unique,
@@ -60,9 +62,11 @@ export function reduceSnapshot(
         command.targetNodeId,
       );
     case "timeline.step.upsert":
-      return upsertTimelineStep(snapshot, command.slideId, command.step);
+      return upsertTimelineStep(snapshot, command.slideId, command.step, command.index);
     case "timeline.step.remove":
       return removeTimelineStep(snapshot, command.slideId, command.stepId);
+    case "timeline.step.reorder":
+      return reorderTimelineStep(snapshot, command.slideId, command.stepId, command.index);
     case "timeline.animation.upsert":
       return upsertAnimation(snapshot, command.slideId, command.animation);
     case "timeline.animation.remove":
@@ -253,14 +257,20 @@ function upsertTimelineStep(
   snapshot: EditorSnapshot,
   slideId: string,
   step: TimelineStep,
+  index?: number,
 ): EditorSnapshot {
-  return updateDocumentSlide(snapshot, slideId, (slide) => ({
-    ...slide,
-    timeline: {
-      ...slide.timeline,
-      steps: upsertById(slide.timeline.steps, step),
-    },
-  }));
+  return updateDocumentSlide(snapshot, slideId, (slide) => {
+    const stepExists = slide.timeline.steps.some((item) => item.id === step.id);
+    return {
+      ...slide,
+      timeline: {
+        ...slide.timeline,
+        steps: stepExists
+          ? upsertById(slide.timeline.steps, step)
+          : insertAt(slide.timeline.steps, step, index),
+      },
+    };
+  });
 }
 
 /** 删除指定的 timeline 步骤。 */
@@ -272,6 +282,38 @@ function removeTimelineStep(
   return updateDocumentSlide(snapshot, slideId, (slide) => {
     const nextSteps = slide.timeline.steps.filter((step) => step.id !== stepId);
     if (nextSteps.length === slide.timeline.steps.length) {
+      return slide;
+    }
+
+    return {
+      ...slide,
+      timeline: {
+        ...slide.timeline,
+        steps: nextSteps,
+      },
+    };
+  });
+}
+
+/** 调整指定 timeline 步骤在当前 slide 中的位置。 */
+function reorderTimelineStep(
+  snapshot: EditorSnapshot,
+  slideId: string,
+  stepId: string,
+  index: number,
+): EditorSnapshot {
+  return updateDocumentSlide(snapshot, slideId, (slide) => {
+    const currentIndex = slide.timeline.steps.findIndex((step) => step.id === stepId);
+    if (currentIndex === -1) {
+      return slide;
+    }
+
+    const nextSteps = [...slide.timeline.steps];
+    const [targetStep] = nextSteps.splice(currentIndex, 1);
+    const nextIndex = clamp(index, 0, nextSteps.length);
+    nextSteps.splice(nextIndex, 0, targetStep);
+
+    if (nextSteps.every((step, stepIndex) => step.id === slide.timeline.steps[stepIndex]?.id)) {
       return slide;
     }
 

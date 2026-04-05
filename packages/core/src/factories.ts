@@ -117,6 +117,14 @@ export interface CloneSlideOptions {
   name?: string;
 }
 
+/** 复制 timeline 步骤时允许覆盖的字段。 */
+export interface CloneTimelineStepOptions {
+  /** 复制后步骤的 id。 */
+  id?: string;
+  /** 复制后步骤的名称。 */
+  name?: string;
+}
+
 export function createId(prefix = "id"): string {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return `${prefix}-${crypto.randomUUID()}`;
@@ -375,6 +383,45 @@ export function cloneSlide(sourceSlide: Slide, options: CloneSlideOptions = {}):
         }),
       })),
     },
+  };
+}
+
+/** 复制一个 timeline 步骤，并为内部动作重新生成唯一 id。 */
+export function cloneTimelineStep(
+  sourceStep: TimelineStep,
+  options: CloneTimelineStepOptions = {},
+): TimelineStep {
+  return {
+    id: options.id ?? createId("step"),
+    name: options.name ?? `${sourceStep.name} 副本`,
+    trigger:
+      sourceStep.trigger.type === "page-click"
+        ? {
+            type: "page-click",
+          }
+        : {
+            ...sourceStep.trigger,
+          },
+    actions: sourceStep.actions.map((action) => {
+      switch (action.type) {
+        case "hide-node":
+          return {
+            ...action,
+            id: createId("action"),
+          };
+        case "play-animation":
+          return {
+            ...action,
+            id: createId("action"),
+          };
+        case "show-node":
+        default:
+          return {
+            ...action,
+            id: createId("action"),
+          };
+      }
+    }),
   };
 }
 

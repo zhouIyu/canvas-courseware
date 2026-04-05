@@ -352,11 +352,12 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
   };
 
   /** 新增或更新某个时间轴步骤。 */
-  const upsertTimelineStep = (slideId: string, step: TimelineStep) => {
+  const upsertTimelineStep = (slideId: string, step: TimelineStep, index?: number) => {
     controller.execute({
       type: "timeline.step.upsert",
       slideId,
       step,
+      index,
     });
   };
 
@@ -366,6 +367,16 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
       type: "timeline.step.remove",
       slideId,
       stepId,
+    });
+  };
+
+  /** 调整某个时间轴步骤在当前页面中的顺序。 */
+  const reorderTimelineStep = (slideId: string, stepId: string, index: number) => {
+    controller.execute({
+      type: "timeline.step.reorder",
+      slideId,
+      stepId,
+      index,
     });
   };
 
@@ -426,6 +437,7 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     removeSelected,
     removeTimelineAnimation,
     removeTimelineStep,
+    reorderTimelineStep,
     replaceDocument,
     selectedNode,
     selectedNodeId,

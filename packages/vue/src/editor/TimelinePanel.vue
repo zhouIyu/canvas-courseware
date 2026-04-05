@@ -13,6 +13,22 @@ import {
   formatTimelineActionLabel,
 } from "../shared";
 
+/** 时间轴步骤排序事件的载荷。 */
+interface TimelineStepReorderPayload {
+  /** 需要移动的步骤 id。 */
+  stepId: string;
+  /** 调整后的目标索引。 */
+  index: number;
+}
+
+/** 时间轴步骤复制事件的载荷。 */
+interface TimelineStepDuplicatePayload {
+  /** 需要复制的步骤快照。 */
+  step: TimelineStep;
+  /** 源步骤的当前索引。 */
+  index: number;
+}
+
 /** 时间轴步骤触发方式选项。 */
 const triggerOptions = [
   {
@@ -65,6 +81,12 @@ const emit = defineEmits<{
   "upsert-step": [step: TimelineStep];
   /** 删除一个时间轴步骤。 */
   "remove-step": [stepId: string];
+  /** 调整一个时间轴步骤的顺序。 */
+  "reorder-step": [payload: TimelineStepReorderPayload];
+  /** 复制一个时间轴步骤。 */
+  "duplicate-step": [payload: TimelineStepDuplicatePayload];
+  /** 从某个步骤开始切入预览。 */
+  "preview-step": [stepIndex: number];
 }>();
 
 /** 当前是否已经有激活页面。 */
@@ -280,6 +302,34 @@ function handleRemoveStep(stepId: string): void {
   emit("remove-step", stepId);
 }
 
+/** 上移或下移某个步骤。 */
+function handleStepMove(stepId: string, stepIndex: number, offset: number): void {
+  const stepCount = props.slide?.timeline.steps.length ?? 0;
+  const nextIndex = Math.min(Math.max(stepIndex + offset, 0), Math.max(stepCount - 1, 0));
+
+  if (nextIndex === stepIndex) {
+    return;
+  }
+
+  emit("reorder-step", {
+    stepId,
+    index: nextIndex,
+  });
+}
+
+/** 复制某个步骤，供外层在标准命令层中落盘。 */
+function handleDuplicateStep(step: TimelineStep, stepIndex: number): void {
+  emit("duplicate-step", {
+    step,
+    index: stepIndex,
+  });
+}
+
+/** 请求外层从当前步骤切入预览。 */
+function handlePreviewStep(stepIndex: number): void {
+  emit("preview-step", stepIndex);
+}
+
 /** 更新步骤名称。 */
 function handleStepNameInput(
   step: TimelineStep,
@@ -490,9 +540,51 @@ function handleActionAnimationChange(
                 <span class="card-index">步骤 {{ String(stepIndex + 1).padStart(2, "0") }}</span>
               </div>
 
-              <a-button class="danger-text-button" status="danger" type="text" @click="handleRemoveStep(step.id)">
-                删除
-              </a-button>
+              <div class="step-card-actions">
+                <a-button
+                  class="text-button"
+                  type="text"
+                  size="mini"
+                  :disabled="stepIndex === 0"
+                  @click="handleStepMove(step.id, stepIndex, -1)"
+                >
+                  上移
+                </a-button>
+                <a-button
+                  class="text-button"
+                  type="text"
+                  size="mini"
+                  :disabled="stepIndex >= (slide?.timeline.steps.length ?? 1) - 1"
+                  @click="handleStepMove(step.id, stepIndex, 1)"
+                >
+                  下移
+                </a-button>
+                <a-button
+                  class="text-button"
+                  type="text"
+                  size="mini"
+                  @click="handleDuplicateStep(step, stepIndex)"
+                >
+                  复制
+                </a-button>
+                <a-button
+                  class="text-button"
+                  type="text"
+                  size="mini"
+                  @click="handlePreviewStep(stepIndex)"
+                >
+                  从此预览
+                </a-button>
+                <a-button
+                  class="danger-text-button"
+                  status="danger"
+                  type="text"
+                  size="mini"
+                  @click="handleRemoveStep(step.id)"
+                >
+                  删除
+                </a-button>
+              </div>
             </header>
 
             <div class="field-grid step-field-grid">
@@ -722,6 +814,13 @@ function handleActionAnimationChange(
   display: grid;
   gap: var(--cw-space-2);
   min-width: 0;
+}
+
+.step-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 2px;
 }
 
 .field-grid {

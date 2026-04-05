@@ -9,6 +9,16 @@ import {
 } from "../shared";
 import { useCoursewarePreview } from "./useCoursewarePreview";
 
+/** 外部触发预览跳转时使用的请求结构。 */
+interface PreviewPlaybackRequest {
+  /** 用来区分同一步骤的重复请求。 */
+  key: number;
+  /** 需要对齐到的目标 slide。 */
+  slideId: string | null;
+  /** 需要作为下一步焦点的步骤索引。 */
+  stepIndex: number;
+}
+
 /** 预览器组件的展示参数。 */
 const props = withDefaults(
   defineProps<{
@@ -20,6 +30,8 @@ const props = withDefaults(
     height?: number;
     /** 初始预览页。 */
     slideId?: string | null;
+    /** 外部触发的预览跳转请求。 */
+    previewRequest?: PreviewPlaybackRequest | null;
     /** 是否展示组件内部头部。 */
     showHeader?: boolean;
   }>(),
@@ -27,6 +39,7 @@ const props = withDefaults(
     title: "课件预览工作台",
     height: DEFAULT_PREVIEW_HEIGHT,
     slideId: null,
+    previewRequest: null,
     showHeader: true,
   },
 );
@@ -40,6 +53,7 @@ const {
   replaceDocument,
   resetPreview,
   state,
+  startPreviewFromStep,
   stepCount,
 } = useCoursewarePreview({
   document: props.document,
@@ -63,6 +77,21 @@ watch(
     }
 
     void activateSlide(slideId);
+  },
+);
+
+/** 外部请求从指定步骤开始预览时，直接同步到底层播放器。 */
+watch(
+  () => props.previewRequest?.key,
+  () => {
+    if (!props.previewRequest) {
+      return;
+    }
+
+    void startPreviewFromStep(
+      props.previewRequest.stepIndex,
+      props.previewRequest.slideId,
+    );
   },
 );
 

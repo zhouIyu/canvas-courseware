@@ -143,6 +143,11 @@ export function useCoursewarePreview(options: UseCoursewarePreviewOptions = {}) 
     await adapter.reset();
   };
 
+  /** 从指定步骤开始预览，并自动对齐目标 slide。 */
+  const startPreviewFromStep = async (stepIndex: number, slideId?: string | null) => {
+    await adapter.seekToStep(stepIndex, slideId);
+  };
+
   return {
     activeSlide,
     adapter,
@@ -154,6 +159,7 @@ export function useCoursewarePreview(options: UseCoursewarePreviewOptions = {}) 
     replaceDocument,
     resetPreview,
     state,
+    startPreviewFromStep,
     stepCount,
   };
 }

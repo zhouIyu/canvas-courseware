@@ -26,6 +26,16 @@ type IoFeedbackTone = "success" | "error";
 /** 模式切换控件传回值的兼容类型。 */
 type WorkspaceModeToggleValue = string | number | boolean;
 
+/** 外部驱动预览器从指定步骤开始播放的请求结构。 */
+interface PreviewPlaybackRequest {
+  /** 用来区分重复请求的唯一 key。 */
+  key: number;
+  /** 需要切入的 slide id。 */
+  slideId: string | null;
+  /** 需要作为下一步焦点的步骤索引。 */
+  stepIndex: number;
+}
+
 /** 当前路由实例。 */
 const route = useRoute();
 
@@ -40,6 +50,9 @@ const documentModel = ref<CoursewareDocument>();
 
 /** 当前编辑器快照，用于同步预览页面的 slide 对齐。 */
 const editorSnapshot = ref<EditorSnapshot | null>(null);
+
+/** 外部发给预览器的跳转请求。 */
+const previewPlaybackRequest = ref<PreviewPlaybackRequest | null>(null);
 
 /** 工作区内容容器引用，用来计算可用高度。 */
 const workspaceStageRef = ref<HTMLElement | null>(null);
@@ -242,6 +255,7 @@ const loadProject = () => {
   projectTitle.value = projectRecord.title;
   documentModel.value = projectRecord.document;
   editorSnapshot.value = null;
+  previewPlaybackRequest.value = null;
   lastSavedAt.value = projectRecord.updatedAt;
   saveStatus.value = "saved";
   isLoading.value = false;
@@ -387,6 +401,20 @@ const handleProjectTitleInput = (nextValue: string | number) => {
 /** 接收编辑器当前快照，用来同步预览模式的页面位置。 */
 const handleSnapshotChange = (snapshot: EditorSnapshot) => {
   editorSnapshot.value = snapshot;
+};
+
+/** 从编辑器时间轴发起预览请求，并切换到预览模式。 */
+const handleTimelinePreviewRequest = (payload: {
+  slideId: string;
+  stepIndex: number;
+}) => {
+  previewPlaybackRequest.value = {
+    key: (previewPlaybackRequest.value?.key ?? 0) + 1,
+    slideId: payload.slideId,
+    stepIndex: payload.stepIndex,
+  };
+
+  void switchWorkspaceMode("preview");
 };
 
 /** 刷新当前工作区可用高度，扣除容器内边距后再传给内部壳层。 */
@@ -554,12 +582,14 @@ onMounted(() => {
           :show-header="false"
           class="workspace-editor"
           @snapshot-change="handleSnapshotChange"
+          @timeline-preview-request="handleTimelinePreviewRequest"
         />
 
         <CoursewarePreview
           v-show="workspaceMode === 'preview'"
           :document="documentModel"
           :height="workspaceContentHeight"
+          :preview-request="previewPlaybackRequest"
           :show-header="false"
           :slide-id="activeSlideId"
           class="workspace-preview"

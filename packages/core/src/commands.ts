@@ -26,6 +26,7 @@ export type EditorCommand =
   | ReorderNodeCommand
   | UpsertTimelineStepCommand
   | RemoveTimelineStepCommand
+  | ReorderTimelineStepCommand
   | UpsertAnimationCommand
   | RemoveAnimationCommand
   | HistoryUndoCommand
@@ -133,12 +134,21 @@ export interface UpsertTimelineStepCommand {
   type: "timeline.step.upsert";
   slideId: string;
   step: TimelineStep;
+  index?: number;
 }
 
 export interface RemoveTimelineStepCommand {
   type: "timeline.step.remove";
   slideId: string;
   stepId: string;
+}
+
+/** 调整某个时间轴步骤在当前 slide 中的顺序。 */
+export interface ReorderTimelineStepCommand {
+  type: "timeline.step.reorder";
+  slideId: string;
+  stepId: string;
+  index: number;
 }
 
 export interface UpsertAnimationCommand {

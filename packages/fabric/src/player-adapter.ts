@@ -120,6 +120,59 @@ export class FabricPlayerAdapter {
     await this.reset();
   }
 
+  /**
+   * 把预览定位到指定步骤之前的状态。
+   * 这里会先回到初始画面，再即时应用目标步骤之前的所有动作，
+   * 让“从当前步骤开始预览”可以直接看到正确的前置场景。
+   */
+  async seekToStep(stepIndex: number, slideId?: string | null): Promise<FabricPlayerAdapterState> {
+    if (slideId !== undefined) {
+      this.currentSlideId = slideId;
+    }
+
+    await this.reset();
+    this.clearAutoTimer();
+    this.syncTriggerAffordance(null);
+
+    const slide = this.getCurrentSlide();
+    if (!slide) {
+      return this.state;
+    }
+
+    const targetStepIndex = clampStepIndex(stepIndex, slide.timeline.steps.length);
+    if (targetStepIndex === 0) {
+      return this.state;
+    }
+
+    const version = this.syncVersion;
+
+    for (let index = 0; index < targetStepIndex; index += 1) {
+      const targetStep = slide.timeline.steps[index];
+      if (!targetStep) {
+        break;
+      }
+
+      await this.executeStep(slide, targetStep, version, {
+        instant: true,
+      });
+
+      if (version !== this.syncVersion) {
+        return this.state;
+      }
+    }
+
+    this.setState({
+      ...this.state,
+      slideId: slide.id,
+      stepIndex: targetStepIndex,
+      status: "idle",
+      nextTrigger: null,
+    });
+
+    this.updateWaitingState(version);
+    return this.state;
+  }
+
   async reset(): Promise<FabricPlayerAdapterState> {
     this.clearAutoTimer();
 
@@ -416,13 +469,18 @@ export class FabricPlayerAdapter {
     slide: Slide,
     step: TimelineStep,
     version: number,
+    options: {
+      instant: boolean;
+    } = {
+      instant: false,
+    },
   ): Promise<void> {
     for (const action of step.actions) {
       if (version !== this.syncVersion) {
         return;
       }
 
-      await this.executeAction(slide, action, version);
+      await this.executeAction(slide, action, version, options);
     }
   }
 
@@ -430,6 +488,9 @@ export class FabricPlayerAdapter {
     slide: Slide,
     action: TimelineAction,
     version: number,
+    options: {
+      instant: boolean;
+    },
   ): Promise<void> {
     switch (action.type) {
       case "show-node": {
@@ -444,6 +505,7 @@ export class FabricPlayerAdapter {
           await this.playAnimation(slide, action.animationId, {
             reveal: true,
             version,
+            instant: options.instant,
           });
         } else {
           applyNodeState(object, node);
@@ -469,6 +531,7 @@ export class FabricPlayerAdapter {
         await this.playAnimation(slide, action.animationId, {
           reveal: false,
           version,
+          instant: options.instant,
         });
         return;
 
@@ -483,6 +546,7 @@ export class FabricPlayerAdapter {
     options: {
       reveal: boolean;
       version: number;
+      instant: boolean;
     },
   ): Promise<void> {
     const animation = slide.timeline.animations.find((item) => item.id === animationId);
@@ -495,6 +559,11 @@ export class FabricPlayerAdapter {
     const node = findNode(slide, animation.targetId);
 
     if (!object || !node || options.version !== this.syncVersion) {
+      return;
+    }
+
+    if (options.instant) {
+      this.applyAnimationFinalState(object, node, animation, options.reveal);
       return;
     }
 
@@ -514,6 +583,43 @@ export class FabricPlayerAdapter {
         return;
       case "slide-up":
         await this.playSlideUpAnimation(object, node, animation, options.reveal);
+        return;
+      default:
+        return;
+    }
+  }
+
+  /** 以无动画的方式直接落到动画执行完成后的最终状态。 */
+  private applyAnimationFinalState(
+    object: FabricPlaybackObject,
+    node: CoursewareNode,
+    animation: {
+      kind: AnimationKind;
+    },
+    reveal: boolean,
+  ): void {
+    switch (animation.kind) {
+      case "appear":
+        this.playAppearAnimation(object, node, reveal);
+        return;
+      case "fade":
+        applyNodeState(object, node);
+
+        if (!reveal && object.visible === false) {
+          this.canvas?.requestRenderAll();
+          return;
+        }
+
+        object.visible = true;
+        object.opacity = node.opacity;
+        object.setCoords?.();
+        this.canvas?.requestRenderAll();
+        return;
+      case "slide-up":
+        applyNodeState(object, node);
+        object.visible = true;
+        object.setCoords?.();
+        this.canvas?.requestRenderAll();
         return;
       default:
         return;
@@ -745,4 +851,8 @@ function sleep(delayMs: number): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(resolve, delayMs);
   });
+}
+
+function clampStepIndex(stepIndex: number, stepCount: number): number {
+  return Math.min(Math.max(stepIndex, 0), stepCount);
 }
