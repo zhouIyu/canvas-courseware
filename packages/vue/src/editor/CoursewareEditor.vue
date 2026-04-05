@@ -719,6 +719,7 @@ onBeforeUnmount(() => {
               :node-timeline-summary-map="nodeTimelineSummaryMap"
               :selected-node-ids="snapshot.selection.nodeIds"
               @select="handleLayerSelect"
+              @update-node="handleNodeUpdate"
               @align="handleLayerAlign"
               @distribute="handleLayerDistribute"
               @reorder="handleLayerReorder"
