@@ -2,7 +2,6 @@ import {
   createCoursewareDocument,
   createImageNode,
   createRectNode,
-  createSlide,
   createTextNode,
   EditorController,
   type CoursewareDocument,
@@ -16,6 +15,7 @@ import {
 import { FabricEditorAdapter } from "@canvas-courseware/fabric";
 import { useEditorBatchLayout } from "./useEditorBatchLayout";
 import { useEditorClipboardKeyboard } from "./useEditorClipboardKeyboard";
+import { useEditorSlideManagement } from "./useEditorSlideManagement";
 import {
   computed,
   onBeforeUnmount,
@@ -172,22 +172,18 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     void adapter.dispose();
   });
 
-  /** 新增 slide，并自动切换到新页。 */
-  const addSlide = () => {
-    const slide = createSlide({
-      name: `Slide ${snapshot.value.document.slides.length + 1}`,
-      backgroundFill: "#FFFFFF",
-    });
-
-    controller.execute({
-      type: "slide.create",
-      slide,
-    });
-    controller.execute({
-      type: "slide.activate",
-      slideId: slide.id,
-    });
-  };
+  /** 组合页面新增、复制、删除和拖拽排序能力。 */
+  const {
+    addSlide,
+    addSlideAfter,
+    duplicateSlideById,
+    removeSlide,
+    reorderSlide,
+  } = useEditorSlideManagement({
+    controller,
+    snapshot,
+    activeSlide,
+  });
 
   /** 在当前 slide 中新增文本节点。 */
   const addText = () => {
@@ -409,6 +405,7 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     addImage,
     addRect,
     addSlide,
+    addSlideAfter,
     addText,
     alignSelectedNodes,
     applyingExternalDocument,
@@ -423,7 +420,9 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     nudgeSelectedNodes,
     pasteClipboard,
     redo,
+    removeSlide,
     reorderNode,
+    reorderSlide,
     removeSelected,
     removeTimelineAnimation,
     removeTimelineStep,
@@ -434,6 +433,7 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     snapshot,
     stats,
     undo,
+    duplicateSlideById,
     distributeSelectedNodes,
     activateSlide,
     upsertTimelineAnimation,

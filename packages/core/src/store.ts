@@ -259,6 +259,7 @@ function shouldTrackHistoryCommand(command: EditorCommand): boolean {
     case "slide.create":
     case "slide.update":
     case "slide.delete":
+    case "slide.reorder":
     case "node.create":
     case "node.batch.update":
     case "node.update":

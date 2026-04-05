@@ -109,6 +109,14 @@ export interface CreateNodeAnimationOptions {
   offsetY?: number;
 }
 
+/** 复制 slide 时允许覆盖的字段。 */
+export interface CloneSlideOptions {
+  /** 复制后 slide 的 id。 */
+  id?: string;
+  /** 复制后 slide 的名称。 */
+  name?: string;
+}
+
 export function createId(prefix = "id"): string {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return `${prefix}-${crypto.randomUUID()}`;
@@ -301,6 +309,71 @@ export function createEditorSnapshot(document: CoursewareDocument): EditorSnapsh
       slideId: activeSlideId,
       stepIndex: 0,
       status: "idle",
+    },
+  };
+}
+
+/** 复制一个 slide，并为内部节点、步骤、动作和动画重新生成 id。 */
+export function cloneSlide(sourceSlide: Slide, options: CloneSlideOptions = {}): Slide {
+  const nodeIdMap = new Map(
+    sourceSlide.nodes.map((node) => [node.id, createId("node")] as const),
+  );
+  const animationIdMap = new Map(
+    sourceSlide.timeline.animations.map((animation) => [animation.id, createId("animation")] as const),
+  );
+
+  return {
+    id: options.id ?? createId("slide"),
+    name: options.name ?? `${sourceSlide.name} 副本`,
+    size: { ...sourceSlide.size },
+    background: { ...sourceSlide.background },
+    nodes: sourceSlide.nodes.map((node) => ({
+      ...cloneNode(node),
+      id: nodeIdMap.get(node.id) ?? node.id,
+    })),
+    timeline: {
+      animations: sourceSlide.timeline.animations.map((animation) => ({
+        ...animation,
+        id: animationIdMap.get(animation.id) ?? animation.id,
+        targetId: nodeIdMap.get(animation.targetId) ?? animation.targetId,
+      })),
+      steps: sourceSlide.timeline.steps.map((step) => ({
+        ...step,
+        id: createId("step"),
+        trigger:
+          step.trigger.type === "node-click"
+            ? {
+                ...step.trigger,
+                targetId: nodeIdMap.get(step.trigger.targetId) ?? step.trigger.targetId,
+              }
+            : { ...step.trigger },
+        actions: step.actions.map((action) => {
+          switch (action.type) {
+            case "hide-node":
+              return {
+                ...action,
+                id: createId("action"),
+                targetId: nodeIdMap.get(action.targetId) ?? action.targetId,
+              };
+            case "play-animation":
+              return {
+                ...action,
+                id: createId("action"),
+                animationId: animationIdMap.get(action.animationId) ?? action.animationId,
+              };
+            case "show-node":
+            default:
+              return {
+                ...action,
+                id: createId("action"),
+                targetId: nodeIdMap.get(action.targetId) ?? action.targetId,
+                animationId: action.animationId
+                  ? animationIdMap.get(action.animationId) ?? action.animationId
+                  : undefined,
+              };
+          }
+        }),
+      })),
     },
   };
 }

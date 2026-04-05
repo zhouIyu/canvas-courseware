@@ -15,6 +15,7 @@ export type EditorCommand =
   | CreateSlideCommand
   | UpdateSlideCommand
   | DeleteSlideCommand
+  | ReorderSlideCommand
   | ActivateSlideCommand
   | CreateNodeCommand
   | BatchUpdateNodesCommand
@@ -59,6 +60,13 @@ export interface UpdateSlideCommand {
 export interface DeleteSlideCommand {
   type: "slide.delete";
   slideId: string;
+}
+
+/** 调整 slide 在文档中的顺序。 */
+export interface ReorderSlideCommand {
+  type: "slide.reorder";
+  slideId: string;
+  index: number;
 }
 
 export interface ActivateSlideCommand {

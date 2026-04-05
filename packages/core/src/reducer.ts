@@ -1,26 +1,29 @@
+import type { NodeBatchUpdateEntry, ReorderPosition } from "./commands";
 import type {
-  EditorCommand,
-  NodeBatchUpdateEntry,
-  ReorderPosition,
-} from "./commands";
-import type {
-  CoursewareDocument,
   CoursewareNode,
   EditorSnapshot,
-  ImageNodeProps,
   NodeAnimation,
   NodePatch,
-  PlaybackState,
-  RectNodeProps,
   SelectionState,
   Slide,
-  TextNodeProps,
   TimelineStep,
 } from "./schema";
+import { activateSlide, createSnapshotForDocument, deleteSlide, insertSlide, reorderSlide, updateSlide } from "./reducer/slide";
+import {
+  applyNodePatch,
+  createNodePatchMap,
+  findSlide,
+  isSelectionEqual,
+  resolveReorderIndex,
+  unique,
+  updateDocumentSlide,
+  upsertById,
+} from "./reducer/shared";
 
+/** 按命令类型收敛 editor snapshot 的所有状态变更。 */
 export function reduceSnapshot(
   snapshot: EditorSnapshot,
-  command: EditorCommand,
+  command: import("./commands").EditorCommand,
 ): EditorSnapshot {
   switch (command.type) {
     case "document.replace":
@@ -31,6 +34,8 @@ export function reduceSnapshot(
       return updateSlide(snapshot, command.slideId, command.patch);
     case "slide.delete":
       return deleteSlide(snapshot, command.slideId);
+    case "slide.reorder":
+      return reorderSlide(snapshot, command.slideId, command.index);
     case "slide.activate":
       return activateSlide(snapshot, command.slideId);
     case "node.create":
@@ -73,133 +78,7 @@ export function reduceSnapshot(
   }
 }
 
-function createSnapshotForDocument(document: CoursewareDocument): EditorSnapshot {
-  const activeSlideId = document.slides[0]?.id ?? null;
-
-  return {
-    document,
-    activeSlideId,
-    selection: {
-      slideId: activeSlideId,
-      nodeIds: [],
-    },
-    playback: {
-      slideId: activeSlideId,
-      stepIndex: 0,
-      status: "idle",
-    },
-  };
-}
-
-function insertSlide(snapshot: EditorSnapshot, slide: Slide, index?: number): EditorSnapshot {
-  const nextSlides = insertAt(snapshot.document.slides, slide, index);
-  const nextDocument = { ...snapshot.document, slides: nextSlides };
-  const activeSlideId = snapshot.activeSlideId ?? slide.id;
-
-  return {
-    ...snapshot,
-    document: nextDocument,
-    activeSlideId,
-    selection: snapshot.activeSlideId
-      ? snapshot.selection
-      : {
-          slideId: slide.id,
-          nodeIds: [],
-        },
-    playback: snapshot.playback.slideId
-      ? snapshot.playback
-      : {
-          slideId: slide.id,
-          stepIndex: 0,
-          status: "idle",
-        },
-  };
-}
-
-function updateSlide(
-  snapshot: EditorSnapshot,
-  slideId: string,
-  patch: Partial<Pick<Slide, "name" | "size" | "background">>,
-): EditorSnapshot {
-  let changed = false;
-  const nextSlides = snapshot.document.slides.map((slide) => {
-    if (slide.id !== slideId) {
-      return slide;
-    }
-
-    changed = true;
-    return {
-      ...slide,
-      name: patch.name ?? slide.name,
-      size: patch.size ? { ...slide.size, ...patch.size } : slide.size,
-      background: patch.background
-        ? { ...slide.background, ...patch.background }
-        : slide.background,
-    };
-  });
-
-  if (!changed) {
-    return snapshot;
-  }
-
-  return {
-    ...snapshot,
-    document: { ...snapshot.document, slides: nextSlides },
-  };
-}
-
-function deleteSlide(snapshot: EditorSnapshot, slideId: string): EditorSnapshot {
-  const index = snapshot.document.slides.findIndex((slide) => slide.id === slideId);
-
-  if (index === -1) {
-    return snapshot;
-  }
-
-  const nextSlides = snapshot.document.slides.filter((slide) => slide.id !== slideId);
-  const nextDocument = { ...snapshot.document, slides: nextSlides };
-  const fallbackSlideId = nextSlides[Math.min(index, nextSlides.length - 1)]?.id ?? null;
-  const activeSlideId =
-    snapshot.activeSlideId === slideId ? fallbackSlideId : snapshot.activeSlideId;
-  const selection =
-    snapshot.selection.slideId === slideId
-      ? {
-          slideId: activeSlideId,
-          nodeIds: [],
-        }
-      : snapshot.selection;
-  const playback =
-    snapshot.playback.slideId === slideId
-      ? ({
-          slideId: fallbackSlideId,
-          stepIndex: 0,
-          status: "idle",
-        } satisfies PlaybackState)
-      : snapshot.playback;
-
-  return {
-    ...snapshot,
-    document: nextDocument,
-    activeSlideId,
-    selection,
-    playback,
-  };
-}
-
-function activateSlide(snapshot: EditorSnapshot, slideId: string): EditorSnapshot {
-  if (snapshot.activeSlideId === slideId || !findSlide(snapshot.document, slideId)) {
-    return snapshot;
-  }
-
-  return {
-    ...snapshot,
-    activeSlideId: slideId,
-    selection: {
-      slideId,
-      nodeIds: [],
-    },
-  };
-}
-
+/** 在指定 slide 中新增一个节点。 */
 function createNode(
   snapshot: EditorSnapshot,
   slideId: string,
@@ -208,10 +87,11 @@ function createNode(
 ): EditorSnapshot {
   return updateDocumentSlide(snapshot, slideId, (slide) => ({
     ...slide,
-    nodes: insertAt(slide.nodes, node, index),
+    nodes: insertNodeAt(slide.nodes, node, index),
   }));
 }
 
+/** 更新单个节点的标准属性。 */
 function updateNode(
   snapshot: EditorSnapshot,
   slideId: string,
@@ -260,6 +140,7 @@ function updateNodes(
   });
 }
 
+/** 删除单个节点，并同步清理当前选择态。 */
 function deleteNode(snapshot: EditorSnapshot, slideId: string, nodeId: string): EditorSnapshot {
   const nextSnapshot = updateDocumentSlide(snapshot, slideId, (slide) => {
     const nextNodes = slide.nodes.filter((node) => node.id !== nodeId);
@@ -288,13 +169,13 @@ function deleteNode(snapshot: EditorSnapshot, slideId: string, nodeId: string): 
   };
 }
 
+/** 设置当前 slide 的选中节点列表。 */
 function setSelection(
   snapshot: EditorSnapshot,
   slideId: string,
   nodeIds: string[],
 ): EditorSnapshot {
   const slide = findSlide(snapshot.document, slideId);
-
   if (!slide) {
     return snapshot;
   }
@@ -314,6 +195,7 @@ function setSelection(
       };
 }
 
+/** 清空当前页面的节点选择。 */
 function clearSelection(snapshot: EditorSnapshot, slideId?: string): EditorSnapshot {
   const nextSelection: SelectionState = {
     slideId: slideId ?? snapshot.activeSlideId,
@@ -328,6 +210,7 @@ function clearSelection(snapshot: EditorSnapshot, slideId?: string): EditorSnaps
       };
 }
 
+/** 调整节点层级顺序。 */
 function reorderNode(
   snapshot: EditorSnapshot,
   slideId: string,
@@ -338,7 +221,6 @@ function reorderNode(
 ): EditorSnapshot {
   return updateDocumentSlide(snapshot, slideId, (slide) => {
     const currentIndex = slide.nodes.findIndex((node) => node.id === nodeId);
-
     if (currentIndex === -1) {
       return slide;
     }
@@ -366,6 +248,7 @@ function reorderNode(
   });
 }
 
+/** 新增或更新某个 timeline 步骤。 */
 function upsertTimelineStep(
   snapshot: EditorSnapshot,
   slideId: string,
@@ -380,6 +263,7 @@ function upsertTimelineStep(
   }));
 }
 
+/** 删除指定的 timeline 步骤。 */
 function removeTimelineStep(
   snapshot: EditorSnapshot,
   slideId: string,
@@ -387,7 +271,6 @@ function removeTimelineStep(
 ): EditorSnapshot {
   return updateDocumentSlide(snapshot, slideId, (slide) => {
     const nextSteps = slide.timeline.steps.filter((step) => step.id !== stepId);
-
     if (nextSteps.length === slide.timeline.steps.length) {
       return slide;
     }
@@ -402,6 +285,7 @@ function removeTimelineStep(
   });
 }
 
+/** 新增或更新某个节点动画资源。 */
 function upsertAnimation(
   snapshot: EditorSnapshot,
   slideId: string,
@@ -416,6 +300,7 @@ function upsertAnimation(
   }));
 }
 
+/** 删除指定的节点动画资源。 */
 function removeAnimation(
   snapshot: EditorSnapshot,
   slideId: string,
@@ -440,6 +325,7 @@ function removeAnimation(
   });
 }
 
+/** 切换播放态所在的 slide，并重置播放进度。 */
 function setPlaybackSlide(snapshot: EditorSnapshot, slideId: string): EditorSnapshot {
   if (!findSlide(snapshot.document, slideId)) {
     return snapshot;
@@ -463,16 +349,15 @@ function setPlaybackSlide(snapshot: EditorSnapshot, slideId: string): EditorSnap
   };
 }
 
+/** 推进当前 slide 的播放步骤。 */
 function advancePlaybackStep(snapshot: EditorSnapshot): EditorSnapshot {
   const slideId = snapshot.playback.slideId ?? snapshot.activeSlideId;
   const slide = slideId ? findSlide(snapshot.document, slideId) : undefined;
-
   if (!slide) {
     return snapshot;
   }
 
   const totalSteps = slide.timeline.steps.length;
-
   if (totalSteps === 0) {
     return snapshot.playback.status === "completed"
       ? snapshot
@@ -507,6 +392,7 @@ function advancePlaybackStep(snapshot: EditorSnapshot): EditorSnapshot {
   };
 }
 
+/** 重置指定 slide 的播放进度。 */
 function resetPlayback(snapshot: EditorSnapshot, slideId?: string): EditorSnapshot {
   const targetSlideId = slideId ?? snapshot.playback.slideId ?? snapshot.activeSlideId;
 
@@ -532,188 +418,10 @@ function resetPlayback(snapshot: EditorSnapshot, slideId?: string): EditorSnapsh
   };
 }
 
-function updateDocumentSlide(
-  snapshot: EditorSnapshot,
-  slideId: string,
-  updater: (slide: Slide) => Slide,
-): EditorSnapshot {
-  let changed = false;
-  const nextSlides = snapshot.document.slides.map((slide) => {
-    if (slide.id !== slideId) {
-      return slide;
-    }
-
-    const nextSlide = updater(slide);
-    if (nextSlide !== slide) {
-      changed = true;
-    }
-    return nextSlide;
-  });
-
-  if (!changed) {
-    return snapshot;
-  }
-
-  return {
-    ...snapshot,
-    document: {
-      ...snapshot.document,
-      slides: nextSlides,
-    },
-  };
-}
-
-function applyNodePatch(node: CoursewareNode, patch: NodePatch): CoursewareNode {
-  const nextProps = patch.props
-    ? {
-        ...node.props,
-        ...patch.props,
-      }
-    : node.props;
-
-  switch (node.type) {
-    case "text":
-      return {
-        ...node,
-        name: patch.name ?? node.name,
-        x: patch.x ?? node.x,
-        y: patch.y ?? node.y,
-        width: patch.width ?? node.width,
-        height: patch.height ?? node.height,
-        rotation: patch.rotation ?? node.rotation,
-        opacity: patch.opacity ?? node.opacity,
-        visible: patch.visible ?? node.visible,
-        locked: patch.locked ?? node.locked,
-        props: nextProps as TextNodeProps,
-      };
-    case "image":
-      return {
-        ...node,
-        name: patch.name ?? node.name,
-        x: patch.x ?? node.x,
-        y: patch.y ?? node.y,
-        width: patch.width ?? node.width,
-        height: patch.height ?? node.height,
-        rotation: patch.rotation ?? node.rotation,
-        opacity: patch.opacity ?? node.opacity,
-        visible: patch.visible ?? node.visible,
-        locked: patch.locked ?? node.locked,
-        props: nextProps as ImageNodeProps,
-      };
-    case "rect":
-      return {
-        ...node,
-        name: patch.name ?? node.name,
-        x: patch.x ?? node.x,
-        y: patch.y ?? node.y,
-        width: patch.width ?? node.width,
-        height: patch.height ?? node.height,
-        rotation: patch.rotation ?? node.rotation,
-        opacity: patch.opacity ?? node.opacity,
-        visible: patch.visible ?? node.visible,
-        locked: patch.locked ?? node.locked,
-        props: nextProps as RectNodeProps,
-      };
-    default:
-      return node;
-  }
-}
-
-/** 将批量命令里的节点补丁按节点 id 合并，保证每个节点最终只应用一次补丁。 */
-function createNodePatchMap(updates: NodeBatchUpdateEntry[]): Map<string, NodePatch> {
-  const patchMap = new Map<string, NodePatch>();
-
-  for (const update of updates) {
-    const previousPatch = patchMap.get(update.nodeId);
-    patchMap.set(
-      update.nodeId,
-      previousPatch ? mergeNodePatch(previousPatch, update.patch) : update.patch,
-    );
-  }
-
-  return patchMap;
-}
-
-/** 合并同一个节点的连续补丁，后一次值覆盖前一次值，同时保留属性级合并。 */
-function mergeNodePatch(previousPatch: NodePatch, nextPatch: NodePatch): NodePatch {
-  const mergedProps =
-    previousPatch.props || nextPatch.props
-      ? {
-          ...(previousPatch.props ?? {}),
-          ...(nextPatch.props ?? {}),
-        }
-      : undefined;
-
-  return {
-    ...previousPatch,
-    ...nextPatch,
-    props: mergedProps,
-  };
-}
-
-function findSlide(document: CoursewareDocument, slideId: string): Slide | undefined {
-  return document.slides.find((slide) => slide.id === slideId);
-}
-
-function insertAt<TItem>(items: TItem[], item: TItem, index?: number): TItem[] {
-  const nextItems = [...items];
-  const targetIndex = clamp(index ?? nextItems.length, 0, nextItems.length);
-  nextItems.splice(targetIndex, 0, item);
-  return nextItems;
-}
-
-function upsertById<TItem extends { id: string }>(items: TItem[], item: TItem): TItem[] {
-  const index = items.findIndex((current) => current.id === item.id);
-
-  if (index === -1) {
-    return [...items, item];
-  }
-
-  return items.map((current) => (current.id === item.id ? item : current));
-}
-
-function resolveReorderIndex<TItem extends { id: string }>(
-  items: TItem[],
-  currentIndex: number,
-  position: ReorderPosition,
-  index?: number,
-  targetNodeId?: string,
-): number {
-  if (targetNodeId) {
-    const targetIndex = items.findIndex((item) => item.id === targetNodeId);
-    if (targetIndex !== -1) {
-      return targetIndex;
-    }
-  }
-
-  switch (position) {
-    case "front":
-      return items.length;
-    case "back":
-      return 0;
-    case "forward":
-      return clamp(currentIndex + 1, 0, items.length);
-    case "backward":
-      return clamp(currentIndex - 1, 0, items.length);
-    case "index":
-      return clamp(index ?? currentIndex, 0, items.length);
-    default:
-      return currentIndex;
-  }
-}
-
-function unique(values: string[]): string[] {
-  return [...new Set(values)];
-}
-
-function isSelectionEqual(a: SelectionState, b: SelectionState): boolean {
-  return (
-    a.slideId === b.slideId &&
-    a.nodeIds.length === b.nodeIds.length &&
-    a.nodeIds.every((id, index) => id === b.nodeIds[index])
-  );
-}
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max);
+/** 在节点数组中按目标索引插入新节点。 */
+function insertNodeAt<TNode>(nodes: TNode[], node: TNode, index?: number): TNode[] {
+  const nextNodes = [...nodes];
+  const targetIndex = Math.min(Math.max(index ?? nextNodes.length, 0), nextNodes.length);
+  nextNodes.splice(targetIndex, 0, node);
+  return nextNodes;
 }

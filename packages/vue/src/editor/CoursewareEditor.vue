@@ -14,6 +14,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { DEFAULT_EDITOR_HEIGHT } from "../shared";
 import InspectorPanel from "./InspectorPanel.vue";
 import LayerPanel from "./LayerPanel.vue";
+import SlideRailPanel from "./SlideRailPanel.vue";
 import SlideSettingsPanel from "./SlideSettingsPanel.vue";
 import TimelinePanel from "./TimelinePanel.vue";
 import type {
@@ -27,6 +28,22 @@ type EditorSideTab = "slide" | "node" | "layers" | "timeline";
 
 /** 标签切换控件传回值的兼容类型。 */
 type EditorSideTabValue = string | number;
+
+/** 页面栏重命名事件的载荷。 */
+interface SlideRailRenamePayload {
+  /** 被重命名的 slide id。 */
+  slideId: string;
+  /** 更新后的页面名称。 */
+  name: string;
+}
+
+/** 页面栏拖拽排序事件的载荷。 */
+interface SlideRailReorderPayload {
+  /** 被拖拽的 slide id。 */
+  slideId: string;
+  /** 放下后的最终索引。 */
+  index: number;
+}
 
 /** 编辑器组件的显示参数。 */
 const props = withDefaults(
@@ -110,6 +127,7 @@ const {
   addImage,
   addRect,
   addSlide,
+  addSlideAfter,
   addText,
   alignSelectedNodes,
   applyingExternalDocument,
@@ -118,10 +136,13 @@ const {
   canUndo,
   distributeSelectedNodes,
   editorCanvasRef,
+  duplicateSlideById,
   removeTimelineAnimation,
   removeTimelineStep,
+  removeSlide,
   redo,
   reorderNode,
+  reorderSlide,
   replaceDocument,
   selectedNode,
   selectedNodeId,
@@ -382,6 +403,33 @@ const handleSlideUpdate = (patch: Partial<Pick<Slide, "name" | "size" | "backgro
   updateSlide(activeSlide.value.id, patch);
 };
 
+/** 页面栏内快速重命名 slide。 */
+const handleSlideRename = (payload: SlideRailRenamePayload) => {
+  updateSlide(payload.slideId, {
+    name: payload.name,
+  });
+};
+
+/** 从指定页面后快速新增下一页。 */
+const handleSlideCreateAfter = (slideId: string) => {
+  addSlideAfter(slideId);
+};
+
+/** 复制指定页面。 */
+const handleSlideDuplicate = (slideId: string) => {
+  duplicateSlideById(slideId);
+};
+
+/** 删除指定页面。 */
+const handleSlideRemove = (slideId: string) => {
+  removeSlide(slideId);
+};
+
+/** 更新页面列表中的拖拽排序结果。 */
+const handleSlideReorder = (payload: SlideRailReorderPayload) => {
+  reorderSlide(payload.slideId, payload.index);
+};
+
 /** 当前单选节点的更新入口。 */
 const handleNodeUpdate = (nodeId: string, patch: NodePatch) => {
   const slideId = snapshot.value.selection.slideId ?? activeSlide.value?.id;
@@ -604,43 +652,18 @@ onBeforeUnmount(() => {
           {{ isEditorSideCollapsed ? "‹" : "›" }}
         </a-button>
 
-        <aside v-show="!isSlideRailCollapsed" class="slide-rail panel-shell">
-          <div class="rail-toolbar">
-            <a-button
-              class="secondary-button rail-create-button"
-              size="small"
-              type="outline"
-              @click="addSlide"
-            >
-              + 新建页面
-            </a-button>
-          </div>
-
-          <div class="slide-list">
-            <a-button
-              v-for="(slide, index) in snapshot.document.slides"
-              :key="slide.id"
-              class="slide-card"
-              :class="{ 'is-active': slide.id === snapshot.activeSlideId }"
-              type="text"
-              :aria-pressed="slide.id === snapshot.activeSlideId"
-              @click="activateSlide(slide.id)"
-            >
-              <div class="slide-card-top">
-                <span class="slide-index">{{ String(index + 1).padStart(2, "0") }}</span>
-              </div>
-
-              <div class="slide-thumbnail" :style="{ background: slide.background.fill }">
-                <span class="thumb-line long" />
-                <span class="thumb-line short" />
-                <span class="thumb-dots">
-                  <i />
-                  <i />
-                  <i />
-                </span>
-              </div>
-            </a-button>
-          </div>
+        <aside v-show="!isSlideRailCollapsed" class="slide-rail-host">
+          <SlideRailPanel
+            :active-slide-id="snapshot.activeSlideId"
+            :slides="snapshot.document.slides"
+            @activate="activateSlide"
+            @create="addSlide"
+            @create-after="handleSlideCreateAfter"
+            @duplicate="handleSlideDuplicate"
+            @remove="handleSlideRemove"
+            @rename="handleSlideRename"
+            @reorder="handleSlideReorder"
+          />
         </aside>
 
         <section class="workspace-shell panel-shell">
