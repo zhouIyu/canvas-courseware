@@ -1,0 +1,729 @@
+[
+  {
+    "id": "document-de4753d8-9d60-4331-8543-63c227204eda",
+    "title": "VNext-06 图层管理测试 1775404502",
+    "updatedAt": "2026-04-05T15:55:08.414Z",
+    "thumbnail": "#FFFFFF",
+    "document": {
+      "version": "1.0.0",
+      "meta": {
+        "id": "document-de4753d8-9d60-4331-8543-63c227204eda",
+        "title": "VNext-06 图层管理测试 1775404502"
+      },
+      "slides": [
+        {
+          "id": "slide-ecc866f9-9e43-40c5-a76f-8caa026feb05",
+          "name": "第1页",
+          "size": {
+            "width": 1280,
+            "height": 720
+          },
+          "background": {
+            "fill": "#FFFFFF"
+          },
+          "nodes": [
+            {
+              "id": "node-1e59b28b-d37a-49d5-a6ee-c09a86dc0bb0",
+              "type": "text",
+              "name": "标题文案",
+              "x": 110,
+              "y": 110,
+              "width": 420,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": false,
+              "locked": false,
+              "props": {
+                "text": "新建文本",
+                "fontSize": 32,
+                "color": "#172033",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-c4e89f84-0ac4-4e10-8f3b-d33ba6081e20",
+              "type": "text",
+              "name": "Text",
+              "x": 110,
+              "y": 110,
+              "width": 420,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "text": "新建文本",
+                "fontSize": 32,
+                "color": "#172033",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-5ab8df38-a0f9-4f9c-bf47-018b0c3efa91",
+              "type": "text",
+              "name": "Text",
+              "x": 110,
+              "y": 110,
+              "width": 420,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "text": "新建文本",
+                "fontSize": 32,
+                "color": "#172033",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-02025029-e13e-4600-9d92-ddf9ccb6091e",
+              "type": "text",
+              "name": "Text",
+              "x": 110,
+              "y": 110,
+              "width": 420,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "text": "新建文本",
+                "fontSize": 32,
+                "color": "#172033",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-571bc1cd-39a2-471f-8d9a-58ffd904a0eb",
+              "type": "text",
+              "name": "Text",
+              "x": 110,
+              "y": 110,
+              "width": 420,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "text": "新建文本",
+                "fontSize": 32,
+                "color": "#172033",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-c41869d6-2aa7-494a-b092-5df6a6218d36",
+              "type": "text",
+              "name": "Text",
+              "x": 110,
+              "y": 110,
+              "width": 420,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "text": "新建文本",
+                "fontSize": 32,
+                "color": "#172033",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-8bf9a62e-b3ac-43a6-8772-69db420914ab",
+              "type": "text",
+              "name": "Text",
+              "x": 110,
+              "y": 110,
+              "width": 420,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "text": "新建文本",
+                "fontSize": 32,
+                "color": "#172033",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-cf2d8d30-4e5d-451a-8a5f-b5eb79975549",
+              "type": "text",
+              "name": "Text",
+              "x": 110,
+              "y": 110,
+              "width": 420,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "text": "新建文本",
+                "fontSize": 32,
+                "color": "#172033",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-b05188f7-a94b-4d09-adcb-e3e7a72a062f",
+              "type": "text",
+              "name": "Text",
+              "x": 110,
+              "y": 110,
+              "width": 420,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "text": "新建文本",
+                "fontSize": 32,
+                "color": "#172033",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-1d1a87cf-6e0b-4f45-a6c7-2755b46b305c",
+              "type": "text",
+              "name": "Text",
+              "x": 110,
+              "y": 110,
+              "width": 420,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "text": "新建文本",
+                "fontSize": 32,
+                "color": "#172033",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-b7550d6c-fbdb-44d2-ad40-2fe2678150ac",
+              "type": "text",
+              "name": "Text",
+              "x": 110,
+              "y": 110,
+              "width": 420,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "text": "新建文本",
+                "fontSize": 32,
+                "color": "#172033",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-b322b594-a2bc-4ba1-b81e-1eda0701d349",
+              "type": "text",
+              "name": "Text",
+              "x": 110,
+              "y": 110,
+              "width": 420,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "text": "新建文本",
+                "fontSize": 32,
+                "color": "#172033",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-2b20967b-70cc-45da-9239-ea36191b6b7b",
+              "type": "text",
+              "name": "Text",
+              "x": 110,
+              "y": 110,
+              "width": 420,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "text": "新建文本",
+                "fontSize": 32,
+                "color": "#172033",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-b2ac3c9b-38b5-4e65-8f16-aab920f07dc5",
+              "type": "text",
+              "name": "Text",
+              "x": 110,
+              "y": 110,
+              "width": 420,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "text": "新建文本",
+                "fontSize": 32,
+                "color": "#172033",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-95b9c413-5022-4c0f-ac82-a7ada0f267c7",
+              "type": "text",
+              "name": "Text",
+              "x": 110,
+              "y": 110,
+              "width": 420,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "text": "新建文本",
+                "fontSize": 32,
+                "color": "#172033",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-7229b81f-689a-4ac4-ba4f-ba63e44c86ff",
+              "type": "text",
+              "name": "Text",
+              "x": 110,
+              "y": 110,
+              "width": 420,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "text": "新建文本",
+                "fontSize": 32,
+                "color": "#172033",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-b1aa52e1-02a4-4447-809b-c5ef3ef0dbe5",
+              "type": "text",
+              "name": "Text",
+              "x": 110,
+              "y": 110,
+              "width": 420,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "text": "新建文本",
+                "fontSize": 32,
+                "color": "#172033",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-184161d1-c20e-4f62-a022-451d73b3784b",
+              "type": "text",
+              "name": "Text",
+              "x": 110,
+              "y": 110,
+              "width": 420,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "text": "新建文本",
+                "fontSize": 32,
+                "color": "#172033",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-8d5ab382-76bc-470d-b297-6808ad54f124",
+              "type": "rect",
+              "name": "Rectangle",
+              "x": 160,
+              "y": 180,
+              "width": 280,
+              "height": 180,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "fill": "#99F6E4",
+                "stroke": "#4B7BE5",
+                "strokeWidth": 1,
+                "radius": 16
+              }
+            },
+            {
+              "id": "node-a3acd822-dd38-4b36-8ad9-a04752c585f3",
+              "type": "image",
+              "name": "Image",
+              "x": 220,
+              "y": 140,
+              "width": 260,
+              "height": 220,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "src": "",
+                "objectFit": "cover"
+              }
+            }
+          ],
+          "timeline": {
+            "steps": [],
+            "animations": []
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "document-4c2b2c54-42be-4c50-9866-a608aeed0dba",
+    "title": "古诗讲解示例",
+    "updatedAt": "2026-04-05T15:55:01.937Z",
+    "thumbnail": "#FFFFFF",
+    "document": {
+      "version": "1.0.0",
+      "meta": {
+        "id": "document-4c2b2c54-42be-4c50-9866-a608aeed0dba",
+        "title": "古诗讲解示例"
+      },
+      "slides": [
+        {
+          "id": "slide-9be2072a-3488-4aea-9695-758779158ce4",
+          "name": "课程封面",
+          "size": {
+            "width": 1280,
+            "height": 720
+          },
+          "background": {
+            "fill": "#FFFFFF"
+          },
+          "nodes": [
+            {
+              "id": "node-33099352-9561-4d5e-8a4c-994c698806f4",
+              "type": "text",
+              "name": "Course Title",
+              "x": 176,
+              "y": 104,
+              "width": 480,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "text": "送杜少府之任蜀州",
+                "fontSize": 42,
+                "color": "#6B4D2E",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-1d0132ed-4d7f-4b02-9173-0274db759251",
+              "type": "text",
+              "name": "Author Name",
+              "x": 304,
+              "y": 168,
+              "width": 220,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "text": "唐 · 王勃",
+                "fontSize": 24,
+                "color": "#9A6B44",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-2922efea-c3f9-46db-b35d-9253c3274633",
+              "type": "rect",
+              "name": "Poem Card",
+              "x": 144,
+              "y": 232,
+              "width": 548,
+              "height": 338,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "fill": "#FFF9ED",
+                "stroke": "#D6B489",
+                "strokeWidth": 2,
+                "radius": 28
+              }
+            },
+            {
+              "id": "node-cd948b2d-897d-4bd3-b12d-03842b4b13b6",
+              "type": "text",
+              "name": "Poem Body",
+              "x": 214,
+              "y": 292,
+              "width": 414,
+              "height": 242,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": false,
+              "locked": false,
+              "props": {
+                "text": "城阙辅三秦，风烟望五津。\n与君离别意，同是宦游人。\n海内存知己，天涯若比邻。\n无为在歧路，儿女共沾巾。",
+                "fontSize": 28,
+                "color": "#7E5834",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.9,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-fa661361-7a2a-4bf6-9005-b80024567c33",
+              "type": "image",
+              "name": "Voice Button",
+              "x": 870,
+              "y": 258,
+              "width": 96,
+              "height": 96,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": false,
+              "locked": false,
+              "props": {
+                "src": "",
+                "objectFit": "cover"
+              }
+            }
+          ],
+          "timeline": {
+            "steps": [
+              {
+                "id": "step-d328c227-3b3d-4b7c-b67b-a510865e25ef",
+                "name": "展示诗句内容",
+                "trigger": {
+                  "type": "page-click"
+                },
+                "actions": [
+                  {
+                    "id": "action-dff1d735-1c89-4703-9679-e28361e5db6b",
+                    "type": "show-node",
+                    "targetId": "node-cd948b2d-897d-4bd3-b12d-03842b4b13b6",
+                    "animationId": "animation-b582194d-3757-4f03-89f9-0d4fcd24d253"
+                  }
+                ]
+              },
+              {
+                "id": "step-7b588062-a273-4cca-9e68-ed99fa5a5938",
+                "name": "展示语音按钮",
+                "trigger": {
+                  "type": "auto",
+                  "delayMs": 900
+                },
+                "actions": [
+                  {
+                    "id": "action-9c2d9f58-790f-43f3-ac3b-89350c6a72fe",
+                    "type": "show-node",
+                    "targetId": "node-fa661361-7a2a-4bf6-9005-b80024567c33",
+                    "animationId": "animation-a16ca29b-f00c-468a-bccd-c2de4ba8f273"
+                  }
+                ]
+              }
+            ],
+            "animations": [
+              {
+                "id": "animation-b582194d-3757-4f03-89f9-0d4fcd24d253",
+                "targetId": "node-cd948b2d-897d-4bd3-b12d-03842b4b13b6",
+                "kind": "fade",
+                "durationMs": 320,
+                "easing": "ease-out"
+              },
+              {
+                "id": "animation-a16ca29b-f00c-468a-bccd-c2de4ba8f273",
+                "targetId": "node-fa661361-7a2a-4bf6-9005-b80024567c33",
+                "kind": "slide-up",
+                "durationMs": 360,
+                "easing": "ease-out",
+                "offsetY": 28
+              }
+            ]
+          }
+        },
+        {
+          "id": "slide-76da63b7-fef9-4f49-bbe9-299f8f128468",
+          "name": "教学流程",
+          "size": {
+            "width": 1280,
+            "height": 720
+          },
+          "background": {
+            "fill": "#F8FAFC"
+          },
+          "nodes": [
+            {
+              "id": "node-82f26009-d803-4845-beea-6b6b43923e39",
+              "type": "text",
+              "name": "Process Title",
+              "x": 110,
+              "y": 96,
+              "width": 340,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "text": "教学流程拆解",
+                "fontSize": 40,
+                "color": "#134E4A",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-bfbdb3e7-771a-4924-8567-61e12992edcb",
+              "type": "rect",
+              "name": "Process Card",
+              "x": 110,
+              "y": 190,
+              "width": 560,
+              "height": 280,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "fill": "#FFFFFF",
+                "stroke": "#CBD5E1",
+                "strokeWidth": 2,
+                "radius": 28
+              }
+            },
+            {
+              "id": "node-3afbb05c-2faa-4062-92eb-05f896ce1db4",
+              "type": "text",
+              "name": "Process Hint",
+              "x": 154,
+              "y": 264,
+              "width": 420,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": false,
+              "locked": false,
+              "props": {
+                "text": "点击继续后，再通过自动步骤补齐讲解节奏。",
+                "fontSize": 24,
+                "color": "#0F766E",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            }
+          ],
+          "timeline": {
+            "steps": [
+              {
+                "id": "step-a2ff35b0-5d8b-4d51-bbdb-338e4a418bb1",
+                "name": "显示流程提示",
+                "trigger": {
+                  "type": "page-click"
+                },
+                "actions": [
+                  {
+                    "id": "action-1ab1bc9e-5efb-4c76-8286-d83aaa8c829d",
+                    "type": "show-node",
+                    "targetId": "node-3afbb05c-2faa-4062-92eb-05f896ce1db4",
+                    "animationId": "animation-bc327dd7-7d29-42b5-b7b9-b8c956a682b8"
+                  }
+                ]
+              }
+            ],
+            "animations": [
+              {
+                "id": "animation-bc327dd7-7d29-42b5-b7b9-b8c956a682b8",
+                "targetId": "node-3afbb05c-2faa-4062-92eb-05f896ce1db4",
+                "kind": "fade",
+                "durationMs": 260,
+                "easing": "ease-out"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+]
