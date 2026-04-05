@@ -1,0 +1,114 @@
+{
+  "version": "1.0.0",
+  "meta": {
+    "id": "document-ca106b28-c31a-42d5-99e4-d58e958b189b",
+    "title": "MVP主流程烟测Round13"
+  },
+  "slides": [
+    {
+      "id": "slide-4acd9e5d-5325-4321-992e-685e3a525c3e",
+      "name": "第1页",
+      "size": {
+        "width": 1280,
+        "height": 720
+      },
+      "background": {
+        "fill": "#FFFFFF"
+      },
+      "nodes": [
+        {
+          "id": "node-39cd020b-6f61-43d6-848a-fea8b01d6f3e",
+          "type": "text",
+          "name": "Text",
+          "x": 110,
+          "y": 110,
+          "width": 420,
+          "height": 72,
+          "rotation": 0,
+          "opacity": 1,
+          "visible": true,
+          "locked": false,
+          "props": {
+            "text": "新建文本",
+            "fontSize": 32,
+            "color": "#172033",
+            "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+            "lineHeight": 1.5,
+            "textAlign": "left"
+          }
+        },
+        {
+          "id": "node-88f959c9-c8ec-4399-864c-5881e36900e0",
+          "type": "rect",
+          "name": "Rectangle",
+          "x": 160,
+          "y": 180,
+          "width": 280,
+          "height": 180,
+          "rotation": 0,
+          "opacity": 1,
+          "visible": true,
+          "locked": false,
+          "props": {
+            "fill": "#99F6E4",
+            "stroke": "#4B7BE5",
+            "strokeWidth": 1,
+            "radius": 16
+          }
+        },
+        {
+          "id": "node-6f6de4ee-ee1f-4b6e-8468-aa6c353e3eda",
+          "type": "image",
+          "name": "Image",
+          "x": 220,
+          "y": 140,
+          "width": 260,
+          "height": 220,
+          "rotation": 0,
+          "opacity": 1,
+          "visible": true,
+          "locked": false,
+          "props": {
+            "src": "",
+            "objectFit": "cover"
+          }
+        }
+      ],
+      "timeline": {
+        "steps": [
+          {
+            "id": "step-fe85707b-ad07-4b32-970a-f054443464ae",
+            "name": "步骤 1",
+            "trigger": {
+              "type": "page-click"
+            },
+            "actions": [
+              {
+                "id": "action-9fd3b5c1-3e8d-4962-8e3f-8ef454fa7b0d",
+                "type": "show-node",
+                "targetId": "node-6f6de4ee-ee1f-4b6e-8468-aa6c353e3eda"
+              }
+            ]
+          }
+        ],
+        "animations": []
+      }
+    },
+    {
+      "id": "slide-0ef27440-2cca-4004-ba02-1896b1c6c4f9",
+      "name": "Slide 2",
+      "size": {
+        "width": 1280,
+        "height": 720
+      },
+      "background": {
+        "fill": "#FFFFFF"
+      },
+      "nodes": [],
+      "timeline": {
+        "steps": [],
+        "animations": []
+      }
+    }
+  ]
+}
