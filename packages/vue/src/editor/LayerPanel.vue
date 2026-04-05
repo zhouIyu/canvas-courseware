@@ -10,6 +10,10 @@ import {
   formatNodeTimelineSummaryLabel,
   formatNodeTypeLabel,
 } from "../shared";
+import type {
+  LayerAlignMode,
+  LayerDistributeMode,
+} from "./useEditorBatchLayout";
 
 /** 图层面板的只读输入。 */
 const props = withDefaults(
@@ -34,6 +38,10 @@ const emit = defineEmits<{
   select: [nodeId: string];
   /** 调整当前选中节点的层级。 */
   reorder: [nodeId: string, position: ReorderPosition];
+  /** 对当前多选节点执行对齐。 */
+  align: [mode: LayerAlignMode];
+  /** 对当前多选节点执行分布。 */
+  distribute: [mode: LayerDistributeMode];
 }>();
 
 /** 当前首个选中的节点 id。 */
@@ -70,6 +78,12 @@ const canMoveFront = computed(() => canMoveForward.value);
 /** 当前选中节点是否可以直接置底。 */
 const canMoveBack = computed(() => canMoveBackward.value);
 
+/** 当前是否是多选态。 */
+const hasMultiSelection = computed(() => props.selectedNodeIds.length > 1);
+
+/** 当前是否满足分布操作条件。 */
+const canDistributeSelection = computed(() => props.selectedNodeIds.length > 2);
+
 /** 选中某个图层项。 */
 const handleSelect = (nodeId: string) => {
   emit("select", nodeId);
@@ -82,6 +96,24 @@ const handleReorder = (position: ReorderPosition) => {
   }
 
   emit("reorder", primarySelectedNode.value.id, position);
+};
+
+/** 派发批量对齐动作。 */
+const handleAlign = (mode: LayerAlignMode) => {
+  if (!hasMultiSelection.value) {
+    return;
+  }
+
+  emit("align", mode);
+};
+
+/** 派发批量分布动作。 */
+const handleDistribute = (mode: LayerDistributeMode) => {
+  if (!canDistributeSelection.value) {
+    return;
+  }
+
+  emit("distribute", mode);
 };
 
 /** 读取某个节点的步骤归属摘要。 */
@@ -156,6 +188,73 @@ const resolveNodeMetaLine = (node: CoursewareNode): string =>
         @click="handleReorder('back')"
       >
         置底
+      </a-button>
+    </div>
+
+    <div class="layer-actions layer-actions-advanced">
+      <a-button
+        class="layer-action-button"
+        type="outline"
+        :disabled="!hasMultiSelection"
+        @click="handleAlign('left')"
+      >
+        左对齐
+      </a-button>
+      <a-button
+        class="layer-action-button"
+        type="outline"
+        :disabled="!hasMultiSelection"
+        @click="handleAlign('h-center')"
+      >
+        水平居中
+      </a-button>
+      <a-button
+        class="layer-action-button"
+        type="outline"
+        :disabled="!hasMultiSelection"
+        @click="handleAlign('right')"
+      >
+        右对齐
+      </a-button>
+      <a-button
+        class="layer-action-button"
+        type="outline"
+        :disabled="!hasMultiSelection"
+        @click="handleAlign('top')"
+      >
+        顶对齐
+      </a-button>
+      <a-button
+        class="layer-action-button"
+        type="outline"
+        :disabled="!hasMultiSelection"
+        @click="handleAlign('v-center')"
+      >
+        垂直居中
+      </a-button>
+      <a-button
+        class="layer-action-button"
+        type="outline"
+        :disabled="!hasMultiSelection"
+        @click="handleAlign('bottom')"
+      >
+        底对齐
+      </a-button>
+      <a-button
+        class="layer-action-button"
+        type="outline"
+        :disabled="!canDistributeSelection"
+        @click="handleDistribute('horizontal')"
+      >
+        水平分布
+      </a-button>
+      <a-button
+        class="layer-action-button"
+        type="outline"
+        :disabled="!canDistributeSelection"
+        @click="handleDistribute('vertical')"
+      >
+        垂直分布
       </a-button>
     </div>
   </section>
@@ -285,6 +384,10 @@ const resolveNodeMetaLine = (node: CoursewareNode): string =>
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--cw-space-2);
+}
+
+.layer-actions-advanced {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .layer-action-button {

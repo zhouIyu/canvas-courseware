@@ -16,6 +16,10 @@ import InspectorPanel from "./InspectorPanel.vue";
 import LayerPanel from "./LayerPanel.vue";
 import SlideSettingsPanel from "./SlideSettingsPanel.vue";
 import TimelinePanel from "./TimelinePanel.vue";
+import type {
+  LayerAlignMode,
+  LayerDistributeMode,
+} from "./useEditorBatchLayout";
 import { useCoursewareEditor } from "./useCoursewareEditor";
 
 /** 编辑器右侧管理区的标签名。 */
@@ -107,10 +111,12 @@ const {
   addRect,
   addSlide,
   addText,
+  alignSelectedNodes,
   applyingExternalDocument,
   activateSlide,
   canRedo,
   canUndo,
+  distributeSelectedNodes,
   editorCanvasRef,
   removeTimelineAnimation,
   removeTimelineStep,
@@ -404,6 +410,16 @@ const handleLayerReorder = (nodeId: string, position: ReorderPosition) => {
   reorderNode(activeSlide.value.id, nodeId, position);
 };
 
+/** 图层面板批量对齐按钮的派发入口。 */
+const handleLayerAlign = (mode: LayerAlignMode) => {
+  alignSelectedNodes(mode);
+};
+
+/** 图层面板批量分布按钮的派发入口。 */
+const handleLayerDistribute = (mode: LayerDistributeMode) => {
+  distributeSelectedNodes(mode);
+};
+
 /** 时间轴步骤的新增与更新统一从这里进入标准命令层。 */
 const handleTimelineStepUpsert = (step: TimelineStep) => {
   if (!activeSlide.value) {
@@ -680,6 +696,8 @@ onBeforeUnmount(() => {
               :node-timeline-summary-map="nodeTimelineSummaryMap"
               :selected-node-ids="snapshot.selection.nodeIds"
               @select="handleLayerSelect"
+              @align="handleLayerAlign"
+              @distribute="handleLayerDistribute"
               @reorder="handleLayerReorder"
             />
             <TimelinePanel
