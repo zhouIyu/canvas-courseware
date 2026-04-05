@@ -50,6 +50,9 @@ const emit = defineEmits<{
 /** 编辑器通过 v-model 接收并回传标准课件文档。 */
 const documentModel = defineModel<CoursewareDocument | undefined>();
 
+/** 标记当前是否正在把内部快照回写给外层 v-model，避免误判成外部导入。 */
+const isSyncingDocumentModel = ref(false);
+
 /** 右侧标签列表，用于渲染管理区切换按钮。 */
 const sideTabs = [
   {
@@ -135,7 +138,12 @@ const {
 watch(
   () => documentModel.value,
   (document) => {
-    if (!document || applyingExternalDocument.value || document === snapshot.value.document) {
+    if (
+      !document ||
+      applyingExternalDocument.value ||
+      isSyncingDocumentModel.value ||
+      document === snapshot.value.document
+    ) {
       return;
     }
 
@@ -147,7 +155,16 @@ watch(
 watch(
   () => snapshot.value.document,
   (document) => {
+    /**
+     * 内部命令会先更新 snapshot，再通过 v-model 把最新文档抛给外层。
+     * 如果不把这轮回写显式标记出来，外层响应式代理对象回传后会被误认为“外部新文档”，
+     * 进而再次触发 `replaceDocument`，把撤销 / 重做历史栈重置掉。
+     */
+    isSyncingDocumentModel.value = true;
     documentModel.value = document;
+    queueMicrotask(() => {
+      isSyncingDocumentModel.value = false;
+    });
   },
   { immediate: true },
 );

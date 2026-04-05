@@ -4,6 +4,7 @@ import type { CoursewareDocument, EditorSnapshot } from "./schema";
 import { createCommandEnvelope, createCoursewareDocument } from "./factories";
 import {
   type EditorEventListener,
+  type HistoryStateListener,
   type EditorHistoryState,
   EditorStore,
   type SnapshotListener,
@@ -89,6 +90,11 @@ export class EditorController {
 
   subscribeEditorEvent(listener: EditorEventListener): () => void {
     return this.store.subscribeEvent(listener);
+  }
+
+  /** 订阅撤销 / 重做历史状态变化，供 UI 直接刷新按钮可用性。 */
+  subscribeHistoryState(listener: HistoryStateListener): () => void {
+    return this.store.subscribeHistoryState(listener);
   }
 
   subscribeAdapterEvent(listener: AdapterEventListener): () => void {

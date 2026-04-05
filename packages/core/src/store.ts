@@ -1,3 +1,4 @@
+import mitt, { type Emitter } from "mitt";
 import type { CommandEnvelope, EditorCommand } from "./commands";
 import type { EditorEvent } from "./events";
 import type {
@@ -26,6 +27,12 @@ export type EditorEventListener = (
   envelope: CommandEnvelope,
 ) => void;
 
+export type HistoryStateListener = (
+  historyState: EditorHistoryState,
+  snapshot: EditorSnapshot,
+  envelope: CommandEnvelope,
+) => void;
+
 /** 编辑器历史状态摘要。 */
 export interface EditorHistoryState {
   /** 当前是否仍可撤销。 */
@@ -38,6 +45,26 @@ export interface EditorHistoryState {
   redoDepth: number;
 }
 
+/** store 内部事件总线使用的 payload 映射。 */
+type StoreEmitterEvents = Record<"snapshot" | "editor" | "history", unknown> & {
+  /** 快照变更后的广播载荷。 */
+  snapshot: {
+    snapshot: EditorSnapshot;
+    envelope: CommandEnvelope;
+  };
+  /** 标准编辑事件的广播载荷。 */
+  editor: {
+    event: EditorEvent;
+    envelope: CommandEnvelope;
+  };
+  /** 撤销 / 重做历史状态变化的广播载荷。 */
+  history: {
+    historyState: EditorHistoryState;
+    snapshot: EditorSnapshot;
+    envelope: CommandEnvelope;
+  };
+};
+
 export class EditorStore {
   /** 当前正在对外提供的编辑快照。 */
   private snapshot: EditorSnapshot;
@@ -45,10 +72,8 @@ export class EditorStore {
   private readonly historyPast: EditorSnapshot[] = [];
   /** 最近的可重做快照栈，栈顶是最近一次被撤销的快照。 */
   private readonly historyFuture: EditorSnapshot[] = [];
-  /** 快照订阅者集合。 */
-  private readonly snapshotListeners = new Set<SnapshotListener>();
-  /** 编辑事件订阅者集合。 */
-  private readonly eventListeners = new Set<EditorEventListener>();
+  /** store 内部统一事件总线。 */
+  private readonly emitter: Emitter<StoreEmitterEvents> = mitt<StoreEmitterEvents>();
 
   constructor(document: CoursewareDocument = createCoursewareDocument()) {
     this.snapshot = createEditorSnapshot(document);
@@ -59,13 +84,33 @@ export class EditorStore {
   }
 
   subscribe(listener: SnapshotListener): () => void {
-    this.snapshotListeners.add(listener);
-    return () => this.snapshotListeners.delete(listener);
+    /** 统一通过 mitt 分发快照变化，避免多套订阅机制并存。 */
+    const handleSnapshotChange = (payload: StoreEmitterEvents["snapshot"]) => {
+      listener(payload.snapshot, payload.envelope);
+    };
+
+    this.emitter.on("snapshot", handleSnapshotChange);
+    return () => this.emitter.off("snapshot", handleSnapshotChange);
   }
 
   subscribeEvent(listener: EditorEventListener): () => void {
-    this.eventListeners.add(listener);
-    return () => this.eventListeners.delete(listener);
+    /** 标准编辑事件也改为走 mitt，总线层只保留一套订阅出口。 */
+    const handleEditorEvent = (payload: StoreEmitterEvents["editor"]) => {
+      listener(payload.event, payload.envelope);
+    };
+
+    this.emitter.on("editor", handleEditorEvent);
+    return () => this.emitter.off("editor", handleEditorEvent);
+  }
+
+  subscribeHistoryState(listener: HistoryStateListener): () => void {
+    /** 历史状态变化单独提供订阅入口，供 UI 精确监听撤销/重做按钮可用性。 */
+    const handleHistoryStateChange = (payload: StoreEmitterEvents["history"]) => {
+      listener(payload.historyState, payload.snapshot, payload.envelope);
+    };
+
+    this.emitter.on("history", handleHistoryStateChange);
+    return () => this.emitter.off("history", handleHistoryStateChange);
   }
 
   getHistoryState(): EditorHistoryState {
@@ -99,6 +144,7 @@ export class EditorStore {
     }
 
     const previousSnapshot = this.snapshot;
+    const previousHistoryState = this.getHistoryState();
     const nextSnapshot = reduceSnapshot(previousSnapshot, envelope.command);
 
     if (nextSnapshot === previousSnapshot) {
@@ -106,13 +152,14 @@ export class EditorStore {
     }
 
     this.updateHistoryForCommand(previousSnapshot, envelope.command);
-    this.commitSnapshot(previousSnapshot, nextSnapshot, envelope);
+    this.commitSnapshot(previousSnapshot, nextSnapshot, envelope, previousHistoryState);
     return nextSnapshot;
   }
 
   /** 执行一次撤销。 */
   private dispatchUndo(envelope: CommandEnvelope): EditorSnapshot {
     const previousSnapshot = this.snapshot;
+    const previousHistoryState = this.getHistoryState();
     const undoSnapshot = this.historyPast.pop();
 
     if (!undoSnapshot) {
@@ -120,13 +167,14 @@ export class EditorStore {
     }
 
     this.pushHistoryEntry(this.historyFuture, previousSnapshot);
-    this.commitSnapshot(previousSnapshot, undoSnapshot, envelope);
+    this.commitSnapshot(previousSnapshot, undoSnapshot, envelope, previousHistoryState);
     return undoSnapshot;
   }
 
   /** 执行一次重做。 */
   private dispatchRedo(envelope: CommandEnvelope): EditorSnapshot {
     const previousSnapshot = this.snapshot;
+    const previousHistoryState = this.getHistoryState();
     const redoSnapshot = this.historyFuture.pop();
 
     if (!redoSnapshot) {
@@ -134,7 +182,7 @@ export class EditorStore {
     }
 
     this.pushHistoryEntry(this.historyPast, previousSnapshot);
-    this.commitSnapshot(previousSnapshot, redoSnapshot, envelope);
+    this.commitSnapshot(previousSnapshot, redoSnapshot, envelope, previousHistoryState);
     return redoSnapshot;
   }
 
@@ -173,17 +221,34 @@ export class EditorStore {
     previousSnapshot: EditorSnapshot,
     nextSnapshot: EditorSnapshot,
     envelope: CommandEnvelope,
+    previousHistoryState: EditorHistoryState,
   ): void {
     this.snapshot = nextSnapshot;
+    const nextHistoryState = this.getHistoryState();
     const events = createEditorEvents(previousSnapshot, nextSnapshot);
-    for (const listener of this.snapshotListeners) {
-      listener(nextSnapshot, envelope);
-    }
+    this.emitter.emit("snapshot", {
+      snapshot: nextSnapshot,
+      envelope,
+    });
 
     for (const event of events) {
-      for (const listener of this.eventListeners) {
-        listener(event, envelope);
-      }
+      this.emitter.emit("editor", {
+        event,
+        envelope,
+      });
+    }
+
+    /**
+     * 历史状态变化与快照变化不是一回事。
+     * 这里显式比较前后历史摘要，只在撤销/重做可用性真的变化时才广播，
+     * 让 UI 可以稳定监听按钮状态，而不必再借助快照读取副作用。
+     */
+    if (!isHistoryStateEqual(previousHistoryState, nextHistoryState)) {
+      this.emitter.emit("history", {
+        historyState: nextHistoryState,
+        snapshot: nextSnapshot,
+        envelope,
+      });
     }
   }
 }
@@ -211,6 +276,18 @@ function shouldTrackHistoryCommand(command: EditorCommand): boolean {
 /** 判断命令是否需要重置历史栈。 */
 function shouldResetHistory(command: EditorCommand): boolean {
   return command.type === "document.replace";
+}
+
+function isHistoryStateEqual(
+  previousHistoryState: EditorHistoryState,
+  nextHistoryState: EditorHistoryState,
+): boolean {
+  return (
+    previousHistoryState.canUndo === nextHistoryState.canUndo &&
+    previousHistoryState.canRedo === nextHistoryState.canRedo &&
+    previousHistoryState.undoDepth === nextHistoryState.undoDepth &&
+    previousHistoryState.redoDepth === nextHistoryState.redoDepth
+  );
 }
 
 function createEditorEvents(
