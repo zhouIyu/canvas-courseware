@@ -29,6 +29,14 @@ interface UseEditorBatchLayoutOptions {
   controller: EditorController;
 }
 
+/** 批量坐标回写时使用的最小补丁条目。 */
+interface NodePositionUpdateEntry {
+  /** 需要更新的节点 id。 */
+  nodeId: string;
+  /** 节点新的坐标补丁。 */
+  patch: Pick<NodePatch, "x" | "y">;
+}
+
 /**
  * 组合多选后的对齐与分布能力。
  * 这里只负责把批量排版意图转换成标准节点更新命令，不直接碰 Fabric 对象。
@@ -60,23 +68,16 @@ export function useEditorBatchLayout(options: UseEditorBatchLayoutOptions) {
       return;
     }
 
-    const bounds = resolveSelectionBounds(selectedNodes);
-    const centerX = (bounds.left + bounds.right) / 2;
-    const centerY = (bounds.top + bounds.bottom) / 2;
-
-    for (const node of selectedNodes) {
-      const alignedPosition = resolveAlignedPosition(node, mode, bounds, centerX, centerY);
-      if (alignedPosition.x === node.x && alignedPosition.y === node.y) {
-        continue;
-      }
-
-      options.controller.execute({
-        type: "node.update",
-        slideId: slide.id,
-        nodeId: node.id,
-        patch: alignedPosition satisfies Pick<NodePatch, "x" | "y">,
-      });
+    const updates = resolveAlignUpdates(selectedNodes, mode);
+    if (updates.length === 0) {
+      return;
     }
+
+    options.controller.execute({
+      type: "node.batch.update",
+      slideId: slide.id,
+      updates,
+    });
   };
 
   /** 对当前多选节点执行批量分布。 */
@@ -87,48 +88,73 @@ export function useEditorBatchLayout(options: UseEditorBatchLayoutOptions) {
       return;
     }
 
-    const sortedNodes =
-      mode === "horizontal"
-        ? [...selectedNodes].sort((a, b) => a.x + a.width / 2 - (b.x + b.width / 2))
-        : [...selectedNodes].sort((a, b) => a.y + a.height / 2 - (b.y + b.height / 2));
-
-    const firstNode = sortedNodes[0];
-    const lastNode = sortedNodes[sortedNodes.length - 1];
-    const firstCenter =
-      mode === "horizontal"
-        ? firstNode.x + firstNode.width / 2
-        : firstNode.y + firstNode.height / 2;
-    const lastCenter =
-      mode === "horizontal"
-        ? lastNode.x + lastNode.width / 2
-        : lastNode.y + lastNode.height / 2;
-    const gap = (lastCenter - firstCenter) / (sortedNodes.length - 1);
-
-    for (let index = 1; index < sortedNodes.length - 1; index += 1) {
-      const node = sortedNodes[index];
-      const targetCenter = firstCenter + gap * index;
-      const nextPosition =
-        mode === "horizontal"
-          ? { x: targetCenter - node.width / 2, y: node.y }
-          : { x: node.x, y: targetCenter - node.height / 2 };
-
-      if (nextPosition.x === node.x && nextPosition.y === node.y) {
-        continue;
-      }
-
-      options.controller.execute({
-        type: "node.update",
-        slideId: slide.id,
-        nodeId: node.id,
-        patch: nextPosition satisfies Pick<NodePatch, "x" | "y">,
-      });
+    const updates = resolveDistributeUpdates(selectedNodes, mode);
+    if (updates.length === 0) {
+      return;
     }
+
+    options.controller.execute({
+      type: "node.batch.update",
+      slideId: slide.id,
+      updates,
+    });
   };
 
   return {
     alignSelectedNodes,
     distributeSelectedNodes,
   };
+}
+
+/** 计算批量对齐后真正需要写回的节点坐标补丁。 */
+function resolveAlignUpdates(
+  nodes: CoursewareNode[],
+  mode: LayerAlignMode,
+): NodePositionUpdateEntry[] {
+  const bounds = resolveSelectionBounds(nodes);
+  const centerX = (bounds.left + bounds.right) / 2;
+  const centerY = (bounds.top + bounds.bottom) / 2;
+
+  return filterChangedPositionUpdates(
+    nodes,
+    nodes.map((node) => ({
+      nodeId: node.id,
+      patch: resolveAlignedPosition(node, mode, bounds, centerX, centerY),
+    })),
+  );
+}
+
+/** 计算批量分布后真正需要写回的节点坐标补丁。 */
+function resolveDistributeUpdates(
+  nodes: CoursewareNode[],
+  mode: LayerDistributeMode,
+): NodePositionUpdateEntry[] {
+  const sortedNodes =
+    mode === "horizontal"
+      ? [...nodes].sort((a, b) => a.x + a.width / 2 - (b.x + b.width / 2))
+      : [...nodes].sort((a, b) => a.y + a.height / 2 - (b.y + b.height / 2));
+  const firstNode = sortedNodes[0];
+  const lastNode = sortedNodes[sortedNodes.length - 1];
+  const firstCenter =
+    mode === "horizontal"
+      ? firstNode.x + firstNode.width / 2
+      : firstNode.y + firstNode.height / 2;
+  const lastCenter =
+    mode === "horizontal"
+      ? lastNode.x + lastNode.width / 2
+      : lastNode.y + lastNode.height / 2;
+  const gap = (lastCenter - firstCenter) / (sortedNodes.length - 1);
+
+  return filterChangedPositionUpdates(
+    sortedNodes,
+    sortedNodes.slice(1, -1).map((node, index) => ({
+      nodeId: node.id,
+      patch:
+        mode === "horizontal"
+          ? { x: firstCenter + gap * (index + 1) - node.width / 2, y: node.y }
+          : { x: node.x, y: firstCenter + gap * (index + 1) - node.height / 2 },
+    })),
+  );
 }
 
 /** 读取一组节点的最小包围盒。 */
@@ -144,6 +170,19 @@ function resolveSelectionBounds(nodes: CoursewareNode[]) {
     right,
     bottom,
   };
+}
+
+/** 过滤掉位置没有变化的批量补丁，避免无意义历史记录。 */
+function filterChangedPositionUpdates(
+  nodes: CoursewareNode[],
+  updates: NodePositionUpdateEntry[],
+): NodePositionUpdateEntry[] {
+  const nodeMap = new Map(nodes.map((node) => [node.id, node]));
+
+  return updates.filter((update) => {
+    const node = nodeMap.get(update.nodeId);
+    return node ? update.patch.x !== node.x || update.patch.y !== node.y : false;
+  });
 }
 
 /** 根据对齐动作计算节点的新坐标。 */

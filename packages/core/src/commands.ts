@@ -17,6 +17,7 @@ export type EditorCommand =
   | DeleteSlideCommand
   | ActivateSlideCommand
   | CreateNodeCommand
+  | BatchUpdateNodesCommand
   | UpdateNodeCommand
   | DeleteNodeCommand
   | SetSelectionCommand
@@ -70,6 +71,21 @@ export interface CreateNodeCommand {
   slideId: string;
   node: CoursewareNode;
   index?: number;
+}
+
+/** 单次批量更新中的节点补丁条目。 */
+export interface NodeBatchUpdateEntry {
+  /** 需要更新的节点 id。 */
+  nodeId: string;
+  /** 需要写回该节点的标准补丁。 */
+  patch: NodePatch;
+}
+
+/** 以一次标准命令批量更新多个节点，避免多选操作拆成多条历史记录。 */
+export interface BatchUpdateNodesCommand {
+  type: "node.batch.update";
+  slideId: string;
+  updates: NodeBatchUpdateEntry[];
 }
 
 export interface UpdateNodeCommand {

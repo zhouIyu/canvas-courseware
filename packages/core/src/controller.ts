@@ -123,6 +123,8 @@ export function mapAdapterEventToCommand(event: AdapterEvent): EditorCommand | n
           y: event.y,
         },
       };
+    case "adapter.nodes.translated":
+      return createTranslatedNodesCommand(event);
     case "adapter.node.resized":
       return {
         type: "node.update",
@@ -153,4 +155,21 @@ export function mapAdapterEventToCommand(event: AdapterEvent): EditorCommand | n
     default:
       return null;
   }
+}
+
+/** 把适配层的批量拖拽结果收敛成一次标准批量更新命令。 */
+function createTranslatedNodesCommand(
+  event: Extract<AdapterEvent, { type: "adapter.nodes.translated" }>,
+): EditorCommand {
+  return {
+    type: "node.batch.update",
+    slideId: event.slideId,
+    updates: event.updates.map((update) => ({
+      nodeId: update.nodeId,
+      patch: {
+        x: update.x,
+        y: update.y,
+      },
+    })),
+  };
 }

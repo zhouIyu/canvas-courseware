@@ -1,4 +1,8 @@
-import type { EditorCommand, ReorderPosition } from "./commands";
+import type {
+  EditorCommand,
+  NodeBatchUpdateEntry,
+  ReorderPosition,
+} from "./commands";
 import type {
   CoursewareDocument,
   CoursewareNode,
@@ -31,6 +35,8 @@ export function reduceSnapshot(
       return activateSlide(snapshot, command.slideId);
     case "node.create":
       return createNode(snapshot, command.slideId, command.node, command.index);
+    case "node.batch.update":
+      return updateNodes(snapshot, command.slideId, command.updates);
     case "node.update":
       return updateNode(snapshot, command.slideId, command.nodeId, command.patch);
     case "node.delete":
@@ -216,6 +222,33 @@ function updateNode(
     let changed = false;
     const nextNodes = slide.nodes.map((node) => {
       if (node.id !== nodeId) {
+        return node;
+      }
+
+      changed = true;
+      return applyNodePatch(node, patch);
+    });
+
+    return changed ? { ...slide, nodes: nextNodes } : slide;
+  });
+}
+
+/** 把同一页面上的多个节点补丁合并为一次文档更新，供多选排版和批量拖拽复用。 */
+function updateNodes(
+  snapshot: EditorSnapshot,
+  slideId: string,
+  updates: NodeBatchUpdateEntry[],
+): EditorSnapshot {
+  const patchMap = createNodePatchMap(updates);
+  if (patchMap.size === 0) {
+    return snapshot;
+  }
+
+  return updateDocumentSlide(snapshot, slideId, (slide) => {
+    let changed = false;
+    const nextNodes = slide.nodes.map((node) => {
+      const patch = patchMap.get(node.id);
+      if (!patch) {
         return node;
       }
 
@@ -584,6 +617,38 @@ function applyNodePatch(node: CoursewareNode, patch: NodePatch): CoursewareNode 
     default:
       return node;
   }
+}
+
+/** 将批量命令里的节点补丁按节点 id 合并，保证每个节点最终只应用一次补丁。 */
+function createNodePatchMap(updates: NodeBatchUpdateEntry[]): Map<string, NodePatch> {
+  const patchMap = new Map<string, NodePatch>();
+
+  for (const update of updates) {
+    const previousPatch = patchMap.get(update.nodeId);
+    patchMap.set(
+      update.nodeId,
+      previousPatch ? mergeNodePatch(previousPatch, update.patch) : update.patch,
+    );
+  }
+
+  return patchMap;
+}
+
+/** 合并同一个节点的连续补丁，后一次值覆盖前一次值，同时保留属性级合并。 */
+function mergeNodePatch(previousPatch: NodePatch, nextPatch: NodePatch): NodePatch {
+  const mergedProps =
+    previousPatch.props || nextPatch.props
+      ? {
+          ...(previousPatch.props ?? {}),
+          ...(nextPatch.props ?? {}),
+        }
+      : undefined;
+
+  return {
+    ...previousPatch,
+    ...nextPatch,
+    props: mergedProps,
+  };
 }
 
 function findSlide(document: CoursewareDocument, slideId: string): Slide | undefined {

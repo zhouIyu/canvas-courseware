@@ -273,32 +273,50 @@ export class FabricEditorAdapter {
     }
 
     if (target instanceof ActiveSelection) {
-      const action = (event.action ?? event.transform?.action ?? "").toLowerCase();
-      if (
-        action.includes("scale") ||
-        action.includes("resize") ||
-        action.includes("skew") ||
-        action.includes("rotate")
-      ) {
-        return;
-      }
+      this.handleActiveSelectionModified(event, target);
+      return;
+    }
 
-      this.clearRetainedSelection();
-      const translatedNodes = resolveActiveSelectionNodeTranslations(
-        this.controller.getSnapshot(),
-        this.currentSlideId,
-        target,
-      );
+    this.handleSingleObjectModified(event, target);
+  }
 
-      for (const node of translatedNodes) {
-        this.controller.handleAdapterEvent({
-          type: "adapter.node.translated",
-          slideId: this.currentSlideId,
-          nodeId: node.nodeId,
-          x: node.x,
-          y: node.y,
-        });
-      }
+  /** 处理多选整体变换结束后的文档回写，确保批量拖拽只生成一次历史记录。 */
+  private handleActiveSelectionModified(
+    event: ModifiedEvent,
+    target: ActiveSelection,
+  ): void {
+    if (!this.controller || !this.currentSlideId) {
+      return;
+    }
+
+    const action = (event.action ?? event.transform?.action ?? "").toLowerCase();
+    if (isSelectionTransformAction(action)) {
+      return;
+    }
+
+    this.clearRetainedSelection();
+    const translatedNodes = resolveActiveSelectionNodeTranslations(
+      this.controller.getSnapshot(),
+      this.currentSlideId,
+      target,
+    );
+    if (translatedNodes.length === 0) {
+      return;
+    }
+
+    this.controller.handleAdapterEvent({
+      type: "adapter.nodes.translated",
+      slideId: this.currentSlideId,
+      updates: translatedNodes,
+    });
+  }
+
+  /** 处理单个对象的拖拽、缩放和旋转落盘。 */
+  private handleSingleObjectModified(
+    event: ModifiedEvent,
+    target: FabricNodeObject,
+  ): void {
+    if (!this.controller || !this.currentSlideId) {
       return;
     }
 
@@ -315,45 +333,17 @@ export class FabricEditorAdapter {
       previousNode.width !== nextGeometry.width ||
       previousNode.height !== nextGeometry.height;
     const didRotate = !previousNode || previousNode.rotation !== nextGeometry.rotation;
-    const didTranslate = !previousNode || previousNode.x !== nextGeometry.x || previousNode.y !== nextGeometry.y;
+    const didTranslate =
+      !previousNode ||
+      previousNode.x !== nextGeometry.x ||
+      previousNode.y !== nextGeometry.y;
     this.retainSelection(meta.nodeId);
 
-    /**
-     * 缩放结束后的事件 action 在不同对象和命中路径下并不总是稳定带上 `scale/resize`。
-     * 这里优先根据几何尺寸是否真的变化来判断“是否发生了缩放”，
-     * 避免对象已经被拉伸，但因为 action 为空而错过尺寸落盘。
-     */
-    if (
-      didResize &&
-      (
-        action.includes("scale") ||
-        action.includes("resize") ||
-        action.includes("skew") ||
-        !action
-      )
-    ) {
-      this.controller.handleAdapterEvent({
-        type: "adapter.node.resized",
-        slideId: this.currentSlideId,
-        nodeId: meta.nodeId,
-        patch: nextGeometry,
-      });
-      this.syncRetainedSelection();
-      this.scheduleSelectionRestore(meta.nodeId);
+    if (this.handleResizeModification(action, didResize, meta.nodeId, nextGeometry)) {
       return;
     }
 
-    if (action.includes("rotate")) {
-      if (didRotate) {
-        this.controller.handleAdapterEvent({
-          type: "adapter.node.rotated",
-          slideId: this.currentSlideId,
-          nodeId: meta.nodeId,
-          rotation: nextGeometry.rotation,
-        });
-      }
-      this.syncRetainedSelection();
-      this.scheduleSelectionRestore(meta.nodeId);
+    if (this.handleRotationModification(action, didRotate, meta.nodeId, nextGeometry.rotation)) {
       return;
     }
 
@@ -369,6 +359,57 @@ export class FabricEditorAdapter {
 
     this.syncRetainedSelection();
     this.scheduleSelectionRestore(meta.nodeId);
+  }
+
+  /** 在缩放命中路径不稳定时，仍然根据几何变化准确回写尺寸。 */
+  private handleResizeModification(
+    action: string,
+    didResize: boolean,
+    nodeId: string,
+    nextGeometry: ReturnType<typeof readObjectGeometry>,
+  ): boolean {
+    if (!this.controller || !this.currentSlideId) {
+      return false;
+    }
+
+    if (!didResize || !isResizeAction(action)) {
+      return false;
+    }
+
+    this.controller.handleAdapterEvent({
+      type: "adapter.node.resized",
+      slideId: this.currentSlideId,
+      nodeId,
+      patch: nextGeometry,
+    });
+    this.syncRetainedSelection();
+    this.scheduleSelectionRestore(nodeId);
+    return true;
+  }
+
+  /** 单独收口旋转回写和后续选中态恢复，避免主流程继续膨胀。 */
+  private handleRotationModification(
+    action: string,
+    didRotate: boolean,
+    nodeId: string,
+    rotation: number,
+  ): boolean {
+    if (!this.controller || !this.currentSlideId || !action.includes("rotate")) {
+      return false;
+    }
+
+    if (didRotate) {
+      this.controller.handleAdapterEvent({
+        type: "adapter.node.rotated",
+        slideId: this.currentSlideId,
+        nodeId,
+        rotation,
+      });
+    }
+
+    this.syncRetainedSelection();
+    this.scheduleSelectionRestore(nodeId);
+    return true;
   }
   private handleTextChanged(target: FabricNodeObject | undefined): void {
     if (this.isSyncing || !this.controller || !this.currentSlideId || !target) {
@@ -490,4 +531,24 @@ export class FabricEditorAdapter {
       });
     }, 0);
   }
+}
+
+/** 判断多选整体变换是否属于不应回写平移结果的缩放/旋转类动作。 */
+function isSelectionTransformAction(action: string): boolean {
+  return (
+    action.includes("scale") ||
+    action.includes("resize") ||
+    action.includes("skew") ||
+    action.includes("rotate")
+  );
+}
+
+/** 缩放动作的命中标识并不稳定，这里统一收口判断逻辑。 */
+function isResizeAction(action: string): boolean {
+  return (
+    action.includes("scale") ||
+    action.includes("resize") ||
+    action.includes("skew") ||
+    !action
+  );
 }
