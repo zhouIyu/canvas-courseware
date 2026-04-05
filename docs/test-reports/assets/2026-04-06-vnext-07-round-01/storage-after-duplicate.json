@@ -1,0 +1,423 @@
+[
+  {
+    "id": "document-f6f531d7-4b7f-433f-818b-ff3bb5d9750e",
+    "title": "VNext-07 自动化测试 1775406985",
+    "updatedAt": "2026-04-05T16:36:29.699Z",
+    "thumbnail": "#FFFFFF",
+    "document": {
+      "version": "1.0.0",
+      "meta": {
+        "id": "document-f6f531d7-4b7f-433f-818b-ff3bb5d9750e",
+        "title": "VNext-07 自动化测试 1775406985"
+      },
+      "slides": [
+        {
+          "id": "slide-942a7cc5-6b86-4285-81d4-0d65c71ab2e2",
+          "name": "第1页",
+          "size": {
+            "width": 1280,
+            "height": 720
+          },
+          "background": {
+            "fill": "#FFFFFF"
+          },
+          "nodes": [
+            {
+              "id": "node-b05b01a0-2b83-41e5-ab95-bd573fa962fc",
+              "type": "text",
+              "name": "标题",
+              "x": 110,
+              "y": 110,
+              "width": 420,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "text": "新建文本",
+                "fontSize": 32,
+                "color": "#172033",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-db38cc51-72b8-4ffd-af6b-d849f7f22146",
+              "type": "text",
+              "name": "章节说明",
+              "x": 110,
+              "y": 110,
+              "width": 420,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": false,
+              "locked": false,
+              "props": {
+                "text": "新建文本",
+                "fontSize": 32,
+                "color": "#172033",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-dac4cac1-deed-455e-beb5-94041aa31659",
+              "type": "text",
+              "name": "课堂提问",
+              "x": 110,
+              "y": 110,
+              "width": 420,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": false,
+              "locked": false,
+              "props": {
+                "text": "新建文本",
+                "fontSize": 32,
+                "color": "#172033",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            }
+          ],
+          "timeline": {
+            "steps": [
+              {
+                "id": "step-11f36d09-5f48-4bbe-a654-375c80bc0ef4",
+                "name": "显示章节说明",
+                "trigger": {
+                  "type": "page-click"
+                },
+                "actions": [
+                  {
+                    "id": "action-315ee361-58ab-41ad-b4fd-cf816420a2f7",
+                    "type": "show-node",
+                    "targetId": "node-db38cc51-72b8-4ffd-af6b-d849f7f22146"
+                  }
+                ]
+              },
+              {
+                "id": "step-5a5c040c-7e0a-454f-b6af-813e27ea00bf",
+                "name": "显示课堂提问",
+                "trigger": {
+                  "type": "auto",
+                  "delayMs": 3000
+                },
+                "actions": [
+                  {
+                    "id": "action-5fc29a3d-e776-41b9-b3e4-5b274dd3f41e",
+                    "type": "show-node",
+                    "targetId": "node-dac4cac1-deed-455e-beb5-94041aa31659"
+                  }
+                ]
+              },
+              {
+                "id": "step-6e8dcfee-d659-48d8-a102-3b975965c100",
+                "name": "显示课堂提问 副本",
+                "trigger": {
+                  "type": "auto",
+                  "delayMs": 3000
+                },
+                "actions": [
+                  {
+                    "id": "action-bfd8e270-988a-476a-b271-884d788445b6",
+                    "type": "show-node",
+                    "targetId": "node-dac4cac1-deed-455e-beb5-94041aa31659"
+                  }
+                ]
+              }
+            ],
+            "animations": []
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "document-685945a0-d8ab-4ca0-a5ea-5de5f95d678f",
+    "title": "古诗讲解示例",
+    "updatedAt": "2026-04-05T16:36:25.231Z",
+    "thumbnail": "#FFFFFF",
+    "document": {
+      "version": "1.0.0",
+      "meta": {
+        "id": "document-685945a0-d8ab-4ca0-a5ea-5de5f95d678f",
+        "title": "古诗讲解示例"
+      },
+      "slides": [
+        {
+          "id": "slide-caf68daf-9d6a-4400-bcb6-5c02c6b15655",
+          "name": "课程封面",
+          "size": {
+            "width": 1280,
+            "height": 720
+          },
+          "background": {
+            "fill": "#FFFFFF"
+          },
+          "nodes": [
+            {
+              "id": "node-2d85b395-226e-495e-870f-b96b73c15589",
+              "type": "text",
+              "name": "Course Title",
+              "x": 176,
+              "y": 104,
+              "width": 480,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "text": "送杜少府之任蜀州",
+                "fontSize": 42,
+                "color": "#6B4D2E",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-90a11b58-f260-4eb7-a6c1-2f811fcb8f29",
+              "type": "text",
+              "name": "Author Name",
+              "x": 304,
+              "y": 168,
+              "width": 220,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "text": "唐 · 王勃",
+                "fontSize": 24,
+                "color": "#9A6B44",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-fd27d295-9ed1-4067-a768-2f574ba38fe1",
+              "type": "rect",
+              "name": "Poem Card",
+              "x": 144,
+              "y": 232,
+              "width": 548,
+              "height": 338,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "fill": "#FFF9ED",
+                "stroke": "#D6B489",
+                "strokeWidth": 2,
+                "radius": 28
+              }
+            },
+            {
+              "id": "node-8d8f20bb-3495-49e2-b838-28126ce777b4",
+              "type": "text",
+              "name": "Poem Body",
+              "x": 214,
+              "y": 292,
+              "width": 414,
+              "height": 242,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": false,
+              "locked": false,
+              "props": {
+                "text": "城阙辅三秦，风烟望五津。\n与君离别意，同是宦游人。\n海内存知己，天涯若比邻。\n无为在歧路，儿女共沾巾。",
+                "fontSize": 28,
+                "color": "#7E5834",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.9,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-66e825db-f764-4de3-ae44-245e2a84317d",
+              "type": "image",
+              "name": "Voice Button",
+              "x": 870,
+              "y": 258,
+              "width": 96,
+              "height": 96,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": false,
+              "locked": false,
+              "props": {
+                "src": "",
+                "objectFit": "cover"
+              }
+            }
+          ],
+          "timeline": {
+            "steps": [
+              {
+                "id": "step-8e368041-93d1-4c07-ae66-501053385267",
+                "name": "展示诗句内容",
+                "trigger": {
+                  "type": "page-click"
+                },
+                "actions": [
+                  {
+                    "id": "action-c64e303d-731e-4ee9-9df0-aeb0d786ecc5",
+                    "type": "show-node",
+                    "targetId": "node-8d8f20bb-3495-49e2-b838-28126ce777b4",
+                    "animationId": "animation-3cc46a61-77f8-4c70-83f8-be1b8cc894c6"
+                  }
+                ]
+              },
+              {
+                "id": "step-5edd0e89-8e36-4cd4-9efd-963a3a8366cc",
+                "name": "展示语音按钮",
+                "trigger": {
+                  "type": "auto",
+                  "delayMs": 900
+                },
+                "actions": [
+                  {
+                    "id": "action-d30ac24d-4791-47ce-80e0-c603c90726d4",
+                    "type": "show-node",
+                    "targetId": "node-66e825db-f764-4de3-ae44-245e2a84317d",
+                    "animationId": "animation-8552484b-c9f0-4eaf-80d7-5ce94831c351"
+                  }
+                ]
+              }
+            ],
+            "animations": [
+              {
+                "id": "animation-3cc46a61-77f8-4c70-83f8-be1b8cc894c6",
+                "targetId": "node-8d8f20bb-3495-49e2-b838-28126ce777b4",
+                "kind": "fade",
+                "durationMs": 320,
+                "easing": "ease-out"
+              },
+              {
+                "id": "animation-8552484b-c9f0-4eaf-80d7-5ce94831c351",
+                "targetId": "node-66e825db-f764-4de3-ae44-245e2a84317d",
+                "kind": "slide-up",
+                "durationMs": 360,
+                "easing": "ease-out",
+                "offsetY": 28
+              }
+            ]
+          }
+        },
+        {
+          "id": "slide-7c847347-b630-48aa-97af-a994213fcff1",
+          "name": "教学流程",
+          "size": {
+            "width": 1280,
+            "height": 720
+          },
+          "background": {
+            "fill": "#F8FAFC"
+          },
+          "nodes": [
+            {
+              "id": "node-9f9b4757-729d-4747-8bae-6571ad6b7e92",
+              "type": "text",
+              "name": "Process Title",
+              "x": 110,
+              "y": 96,
+              "width": 340,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "text": "教学流程拆解",
+                "fontSize": 40,
+                "color": "#134E4A",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-345ca778-8eba-4754-a793-21e613bba7e4",
+              "type": "rect",
+              "name": "Process Card",
+              "x": 110,
+              "y": 190,
+              "width": 560,
+              "height": 280,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "fill": "#FFFFFF",
+                "stroke": "#CBD5E1",
+                "strokeWidth": 2,
+                "radius": 28
+              }
+            },
+            {
+              "id": "node-8eda1145-88a2-4144-8871-2aeec96c9296",
+              "type": "text",
+              "name": "Process Hint",
+              "x": 154,
+              "y": 264,
+              "width": 420,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": false,
+              "locked": false,
+              "props": {
+                "text": "点击继续后，再通过自动步骤补齐讲解节奏。",
+                "fontSize": 24,
+                "color": "#0F766E",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            }
+          ],
+          "timeline": {
+            "steps": [
+              {
+                "id": "step-b268d1c9-85dc-42f9-8e48-20dedf48bb36",
+                "name": "显示流程提示",
+                "trigger": {
+                  "type": "page-click"
+                },
+                "actions": [
+                  {
+                    "id": "action-5219f907-5e19-4873-826e-2383d5424387",
+                    "type": "show-node",
+                    "targetId": "node-8eda1145-88a2-4144-8871-2aeec96c9296",
+                    "animationId": "animation-085b335a-5377-4de6-8d85-ab036b99de65"
+                  }
+                ]
+              }
+            ],
+            "animations": [
+              {
+                "id": "animation-085b335a-5377-4de6-8d85-ab036b99de65",
+                "targetId": "node-8eda1145-88a2-4144-8871-2aeec96c9296",
+                "kind": "fade",
+                "durationMs": 260,
+                "easing": "ease-out"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+]

@@ -198,6 +198,15 @@
   gap: var(--cw-space-2);
 }
 
+.embedded-preview-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.embedded-preview-button {
+  padding-inline: 0;
+}
+
 .status-badges {
   display: flex;
   flex-wrap: wrap;

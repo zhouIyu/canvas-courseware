@@ -222,6 +222,9 @@ const activeSlideIndex = computed(() => {
 /** 当前是否以内嵌工作台模式渲染。 */
 const isEmbedded = computed(() => !props.showHeader);
 
+/** 内嵌模式下是否展示就地播放控制入口。 */
+const showEmbeddedPlaybackActions = computed(() => isEmbedded.value);
+
 /** 内嵌模式下固定预览器总高度，避免把页面继续撑高。 */
 const previewShellStyle = computed(() =>
   isEmbedded.value
@@ -367,6 +370,16 @@ onBeforeUnmount(() => {
             <h3>当前画布</h3>
           </div>
           <div class="stage-head-actions">
+            <div v-if="showEmbeddedPlaybackActions" class="embedded-preview-actions">
+              <a-button
+                class="preview-text-button embedded-preview-button"
+                type="text"
+                :disabled="!activeSlide"
+                @click="resetPreview"
+              >
+                重置播放
+              </a-button>
+            </div>
             <div class="status-badges">
               <a-tag :color="playbackStatusTagColor" bordered>{{ playbackStatusLabel }}</a-tag>
               <a-tag bordered>{{ nextTriggerLabel }}</a-tag>
