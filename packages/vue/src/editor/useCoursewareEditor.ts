@@ -186,8 +186,8 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     activeSlide,
   });
 
-  /** 组合本地图片导入能力，统一转换成标准图片节点命令。 */
-  const { addImageFromFile } = useEditorLocalImage({
+  /** 组合本地图片插入与换图能力，统一转换成标准图片节点命令。 */
+  const { addImageFromFile, replaceImageNodeFromFile } = useEditorLocalImage({
     snapshot,
     controller,
     activeSlide,
@@ -248,7 +248,7 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     });
   };
 
-  /** 在当前 slide 中新增图片节点。 */
+  /** 在当前 slide 中新增一个可后续粘贴地址或换图的占位图片节点。 */
   const addImage = () => {
     const slideId = snapshot.value.activeSlideId;
     if (!slideId) {
@@ -256,6 +256,7 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     }
 
     const node = createImageNode({
+      name: "占位图",
       x: 220,
       y: 140,
       width: 260,
@@ -448,6 +449,7 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     removeTimelineStep,
     reorderTimelineStep,
     replaceDocument,
+    replaceImageNodeFromFile,
     selectedNode,
     selectedNodeId,
     selectNodes,

@@ -16,6 +16,7 @@ import {
   formatStepIndexLabel,
   formatTriggerLabel,
 } from "../shared";
+import LocalImageFileTrigger from "./LocalImageFileTrigger.vue";
 
 /** 属性面板需要的只读状态输入。 */
 const props = withDefaults(
@@ -45,6 +46,8 @@ const emit = defineEmits<{
   "upsert-animation": [animation: NodeAnimation];
   /** 删除当前节点关联的动画资源。 */
   "remove-animation": [animationId: string];
+  /** 使用本地文件替换当前图片节点资源。 */
+  "replace-image-file": [file: File];
 }>();
 
 /** 文字对齐选项。 */
@@ -312,6 +315,15 @@ const handleImageObjectFitChange = (value: string | number | boolean | undefined
         | "cover",
     },
   });
+};
+
+/** 触发当前图片节点的本地换图。 */
+const handleImageFileReplace = (file: File) => {
+  if (props.selectedNode?.type !== "image") {
+    return;
+  }
+
+  emit("replace-image-file", file);
 };
 
 /** 更新矩形填充色。 */
@@ -681,8 +693,26 @@ const handleAnimationOffsetYChange = (
 
         <div class="field-grid">
           <div class="field field-span-2">
-            <span class="field-label">图片地址</span>
-            <a-input class="field-input" :model-value="selectedNode.props.src" @input="handleImageSourceInput" />
+            <span class="field-label">图片资源</span>
+            <a-input
+              class="field-input"
+              :model-value="selectedNode.props.src"
+              placeholder="粘贴图片地址，或使用下方按钮更换本地图片"
+              @input="handleImageSourceInput"
+            />
+          </div>
+
+          <div class="field field-span-2">
+            <span class="field-label">快速换图</span>
+            <div class="image-action-row">
+              <LocalImageFileTrigger
+                aria-label="更换当前图片资源"
+                label="更换图片"
+                variant="panel"
+                @select="handleImageFileReplace"
+              />
+              <span class="field-note">保留当前位置、尺寸、层级和时间轴配置</span>
+            </div>
           </div>
 
           <div class="field field-span-2">
@@ -1072,6 +1102,20 @@ const handleAnimationOffsetYChange = (
 
 .field-input {
   width: 100%;
+}
+
+.field-note {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--cw-color-muted);
+}
+
+.image-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cw-space-3);
+  min-height: 44px;
 }
 
 .field-input:deep(.arco-input-wrapper),

@@ -175,7 +175,7 @@ const {
   reorderSlide,
   reorderTimelineStep,
   replaceDocument,
-  selectedNode,
+  replaceImageNodeFromFile,
   selectedNodeId,
   selectNodes,
   snapshot,
@@ -566,14 +566,32 @@ const handleTimelineAnimationRemove = (animationId: string) => {
   removeTimelineAnimation(activeSlide.value.id, animationId);
 };
 
-/** 从工具条导入一张本地图片，并在失败时给出明确反馈。 */
+/** 统一展示图片文件链路的失败反馈，避免工具条与属性面板各自维护一套提示。 */
+const handleImageFileOperationError = (error: unknown, fallbackMessage: string) => {
+  const message = error instanceof Error ? error.message : fallbackMessage;
+  window.alert(message);
+  console.error(error);
+};
+
+/** 从工具条插入一张本地图片，并在失败时给出明确反馈。 */
 const handleLocalImageImport = async (file: File) => {
   try {
     await addImageFromFile(file);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "图片导入失败，请重试";
-    window.alert(message);
-    console.error(error);
+    handleImageFileOperationError(error, "图片插入失败，请重试");
+  }
+};
+
+/** 在属性面板中直接替换当前图片节点的资源。 */
+const handleInspectorImageReplace = async (file: File) => {
+  if (!inspectorNode.value || inspectorNode.value.type !== "image") {
+    return;
+  }
+
+  try {
+    await replaceImageNodeFromFile(inspectorNode.value.id, file);
+  } catch (error) {
+    handleImageFileOperationError(error, "图片更换失败，请重试");
   }
 };
 
@@ -764,6 +782,7 @@ onBeforeUnmount(() => {
               :selected-node="inspectorNode"
               :selected-animations="selectedNodeAnimations"
               :timeline-summary="selectedNodeTimelineSummary"
+              @replace-image-file="handleInspectorImageReplace"
               @update-node="handleNodeUpdate"
               @upsert-animation="handleTimelineAnimationUpsert"
               @remove-animation="handleTimelineAnimationRemove"
