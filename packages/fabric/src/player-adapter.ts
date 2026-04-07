@@ -17,6 +17,11 @@ import {
   createFabricNodeObject,
   type FabricRenderableObject,
 } from "./object-factory";
+import {
+  resetCanvasBackground,
+  syncCanvasBackgroundImage,
+  syncCanvasFrame,
+} from "./background";
 
 type FabricPlaybackObject = FabricRenderableObject & {
   getScaledWidth?: () => number;
@@ -193,6 +198,7 @@ export class FabricPlayerAdapter {
 
       if (canvas) {
         canvas.clear();
+        resetCanvasBackground(canvas);
         canvas.backgroundColor = "#FFFFFF";
         canvas.requestRenderAll();
       }
@@ -396,7 +402,12 @@ export class FabricPlayerAdapter {
   private async renderSlide(canvas: Canvas, slide: Slide, version: number): Promise<void> {
     this.objectMap.clear();
     canvas.clear();
-    this.syncCanvasFrame(canvas, slide);
+    syncCanvasFrame(canvas, slide);
+    await syncCanvasBackgroundImage(canvas, slide);
+
+    if (version !== this.syncVersion || !this.canvas) {
+      return;
+    }
 
     const objects: FabricPlaybackObject[] = [];
 
@@ -456,15 +467,6 @@ export class FabricPlayerAdapter {
 
     return this.objectNodeMap.get(target) ?? null;
   }
-
-  private syncCanvasFrame(canvas: Canvas, slide: Slide): void {
-    canvas.setDimensions({
-      width: slide.size.width,
-      height: slide.size.height,
-    });
-    canvas.backgroundColor = slide.background.fill;
-  }
-
   private async executeStep(
     slide: Slide,
     step: TimelineStep,

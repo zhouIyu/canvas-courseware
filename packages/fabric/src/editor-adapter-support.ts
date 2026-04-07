@@ -9,6 +9,11 @@ import {
   createFabricNodeObject,
   type FabricRenderableObject,
 } from "./object-factory";
+import {
+  resetCanvasBackground,
+  syncCanvasFrame,
+  syncCanvasBackgroundImage,
+} from "./background";
 
 /** Fabric 对象上挂载节点元信息的私有字段。 */
 const NODE_META_KEY = "__coursewareNodeMeta";
@@ -41,14 +46,7 @@ export function resolveSlide(
     : undefined;
 }
 
-/** 同步当前 Fabric 画布尺寸和页面背景。 */
-export function syncCanvasFrame(canvas: Canvas, slide: Slide): void {
-  canvas.setDimensions({
-    width: slide.size.width,
-    height: slide.size.height,
-  });
-  canvas.backgroundColor = slide.background.fill;
-}
+export { syncCanvasFrame, syncCanvasBackgroundImage };
 
 /** 在没有可渲染页面时，重置 Fabric 画布到空白状态。 */
 export function renderEmptyCanvas(
@@ -57,6 +55,7 @@ export function renderEmptyCanvas(
 ): void {
   objectMap.clear();
   canvas.clear();
+  resetCanvasBackground(canvas);
   canvas.backgroundColor = "#FFFFFF";
   canvas.renderAll();
 }

@@ -13,7 +13,11 @@
         "height": 720
       },
       "background": {
-        "fill": "#F5F7FB"
+        "fill": "#F5F7FB",
+        "image": {
+          "src": "https://example.com/demo-background.png",
+          "fit": "cover"
+        }
       },
       "nodes": [
         {

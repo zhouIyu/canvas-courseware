@@ -84,7 +84,6 @@ export function parseCoursewareDocumentData(value: unknown): CoursewareDocument 
 function parseSlide(value: unknown, path: string): Slide {
   const slideRecord = expectRecord(value, path);
   const sizeRecord = expectRecord(slideRecord.size, `${path}.size`);
-  const backgroundRecord = expectRecord(slideRecord.background, `${path}.background`);
   const nodes = readArray(slideRecord, "nodes", `${path}.nodes`).map((nodeValue, index) =>
     parseNode(nodeValue, `${path}.nodes[${index}]`),
   );
@@ -110,14 +109,41 @@ function parseSlide(value: unknown, path: string): Slide {
       width: readNumber(sizeRecord, "width", `${path}.size.width`, 1),
       height: readNumber(sizeRecord, "height", `${path}.size.height`, 1),
     },
-    background: {
-      fill: readString(backgroundRecord, "fill", `${path}.background.fill`),
-    },
+    background: parseSlideBackground(slideRecord.background, `${path}.background`),
     nodes,
     timeline: {
       steps,
       animations,
     },
+  };
+}
+
+/**
+ * 解析 slide 背景配置。
+ * 这里兼容旧文档里只有纯色 fill 的结构，并为新增背景图补齐默认填充方式。
+ */
+function parseSlideBackground(
+  value: unknown,
+  path: string,
+): Slide["background"] {
+  const backgroundRecord = expectRecord(value, path);
+  const imageValue = backgroundRecord.image;
+  const imageRecord =
+    imageValue === undefined || imageValue === null ? null : expectRecord(imageValue, `${path}.image`);
+
+  return {
+    fill: readString(backgroundRecord, "fill", `${path}.fill`),
+    image: imageRecord
+      ? {
+          src: readString(imageRecord, "src", `${path}.image.src`),
+          fit:
+            readOptionalEnum<ObjectFit>(imageRecord, "fit", `${path}.image.fit`, [
+              "fill",
+              "contain",
+              "cover",
+            ]) ?? "cover",
+        }
+      : null,
   };
 }
 

@@ -32,6 +32,8 @@ export function useEditorSlideManagement(options: UseEditorSlideManagementOption
       width: referenceSlide?.size.width,
       height: referenceSlide?.size.height,
       backgroundFill: referenceSlide?.background.fill ?? "#FFFFFF",
+      backgroundImageSrc: referenceSlide?.background.image?.src ?? undefined,
+      backgroundImageFit: referenceSlide?.background.image?.fit ?? "cover",
     });
 
   /** 统一派发 slide 创建并切到新页，避免各个入口重复写两条命令。 */

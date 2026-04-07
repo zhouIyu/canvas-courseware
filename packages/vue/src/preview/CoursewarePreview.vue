@@ -3,6 +3,7 @@ import type { CoursewareDocument } from "@canvas-courseware/core";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import {
   DEFAULT_PREVIEW_HEIGHT,
+  createSlideBackgroundStyle,
   formatPlaybackStatus,
   formatPlaybackSummary,
   formatTriggerLabel,
@@ -219,6 +220,10 @@ const activeSlideIndex = computed(() => {
   return slides.findIndex((slide) => slide.id === state.value.slideId);
 });
 
+/** 生成预览侧栏缩略页背景样式。 */
+const resolveSlideThumbnailStyle = (slide: CoursewareDocument["slides"][number]) =>
+  createSlideBackgroundStyle(slide.background);
+
 /** 当前是否以内嵌工作台模式渲染。 */
 const isEmbedded = computed(() => !props.showHeader);
 
@@ -347,7 +352,7 @@ onBeforeUnmount(() => {
               <span class="slide-index">{{ String(index + 1).padStart(2, '0') }}</span>
             </div>
 
-            <div class="slide-thumbnail" :style="{ background: slide.background.fill }">
+            <div class="slide-thumbnail" :style="resolveSlideThumbnailStyle(slide)">
               <span class="thumb-line long" />
               <span class="thumb-line short" />
               <span class="thumb-dots">

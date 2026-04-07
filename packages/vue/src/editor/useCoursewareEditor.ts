@@ -327,7 +327,7 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     controller.redo();
   };
 
-  /** 更新当前页面元信息，例如名称、尺寸和背景色。 */
+  /** 更新当前页面元信息，例如名称、尺寸和完整背景配置。 */
   const updateSlide = (
     slideId: string,
     patch: Partial<Pick<Slide, "name" | "size" | "background">>,

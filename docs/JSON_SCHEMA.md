@@ -55,9 +55,13 @@
         "height": 720
       },
 
-      // 背景配置，MVP 先支持纯色
+      // 背景配置，支持纯色底与可选背景图
       "background": {
-        "fill": "#F5F7FB"
+        "fill": "#F5F7FB",
+        "image": {
+          "src": "https://example.com/demo-background.png",
+          "fit": "cover"
+        }
       },
 
       // 元素列表，数组顺序即图层顺序
@@ -214,6 +218,10 @@
 - `name`: slide 名称
 - `size`: 画布尺寸
 - `background`: 背景配置
+  - `fill`: 纯色背景值
+  - `image`: 可选背景图配置；为空时仅渲染纯色背景
+    - `src`: 背景图地址，支持远程 URL 或本地 data URL
+    - `fit`: 背景图填充方式，支持 `fill / contain / cover`
 - `nodes`: 元素数组，顺序即图层顺序
 - `timeline`: 播放时间线
 

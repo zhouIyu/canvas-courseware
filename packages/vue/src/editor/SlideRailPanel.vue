@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Slide } from "@canvas-courseware/core";
 import { computed, ref } from "vue";
+import { createSlideBackgroundStyle } from "../shared";
 
 /** slide 重命名事件的载荷。 */
 interface SlideRenamePayload {
@@ -76,6 +77,9 @@ const dropState = ref<SlideDropState | null>(null);
 const slideSummary = computed(() =>
   props.slides.length > 0 ? `共 ${props.slides.length} 页，可拖拽排序` : "还没有页面，先新建一页",
 );
+
+/** 生成 slide 缩略图背景样式。 */
+const resolveSlideThumbnailStyle = (slide: Slide) => createSlideBackgroundStyle(slide.background);
 
 /** 激活指定页面。 */
 const activateSlide = (slideId: string) => {
@@ -277,7 +281,7 @@ const resolveDropIndex = (
             <span class="slide-drag-caption">拖拽排序</span>
           </div>
 
-          <div class="slide-thumbnail" :style="{ background: slide.background.fill }">
+          <div class="slide-thumbnail" :style="resolveSlideThumbnailStyle(slide)">
             <span class="thumb-line long" />
             <span class="thumb-line short" />
             <span class="thumb-dots">

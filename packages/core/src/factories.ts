@@ -5,6 +5,7 @@ import type {
   EditorSnapshot,
   ImageNode,
   NodeAnimation,
+  ObjectFit,
   RectNode,
   Slide,
   StepTrigger,
@@ -31,6 +32,10 @@ export interface CreateSlideOptions {
   width?: number;
   height?: number;
   backgroundFill?: string;
+  /** 背景图地址，可传远程 URL 或本地 data URL。 */
+  backgroundImageSrc?: string;
+  /** 背景图的初始填充方式。 */
+  backgroundImageFit?: ObjectFit;
 }
 
 export interface CreateTextNodeOptions {
@@ -159,6 +164,12 @@ export function createSlide(options: CreateSlideOptions = {}): Slide {
     },
     background: {
       fill: options.backgroundFill ?? "#FFFFFF",
+      image: options.backgroundImageSrc
+        ? {
+            src: options.backgroundImageSrc,
+            fit: options.backgroundImageFit ?? "cover",
+          }
+        : null,
     },
     nodes: [],
     timeline: {

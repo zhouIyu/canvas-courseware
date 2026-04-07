@@ -35,8 +35,18 @@ export interface SlideSize {
   height: number;
 }
 
+export interface SlideBackgroundImage {
+  /** 背景图资源地址，可为远程 URL 或本地 data URL。 */
+  src: string;
+  /** 背景图的基础填充方式。 */
+  fit: ObjectFit;
+}
+
 export interface SlideBackground {
+  /** 页面背景底色，在背景图加载失败或留白区域时兜底显示。 */
   fill: string;
+  /** 当前页面的背景图配置；为空时仅渲染纯色背景。 */
+  image: SlideBackgroundImage | null;
 }
 
 export interface BaseNode<TType extends CoursewareNodeType, TProps> {

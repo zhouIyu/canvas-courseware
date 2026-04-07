@@ -13,6 +13,7 @@ import {
   resolveActiveSelectionNodeTranslations,
   resolveSlide,
   resolveTextNodeChange,
+  syncCanvasBackgroundImage,
   syncCanvasFrame,
 } from "./editor-adapter-support";
 /**
@@ -214,6 +215,11 @@ export class FabricEditorAdapter {
       this.objectMap.clear();
       canvas.clear();
       syncCanvasFrame(canvas, slide);
+      await syncCanvasBackgroundImage(canvas, slide);
+
+      if (syncVersion !== this.syncVersion || !this.canvas) {
+        return;
+      }
 
       const objects: FabricNodeObject[] = [];
 
