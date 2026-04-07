@@ -392,12 +392,20 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
   };
 
   /** 调整节点层级顺序，图层面板只需要传入位置语义。 */
-  const reorderNode = (slideId: string, nodeId: string, position: ReorderPosition) => {
+  const reorderNode = (
+    slideId: string,
+    nodeId: string,
+    position: ReorderPosition,
+    index?: number,
+    targetNodeId?: string,
+  ) => {
     controller.execute({
       type: "node.reorder",
       slideId,
       nodeId,
       position,
+      index,
+      targetNodeId,
     });
   };
 

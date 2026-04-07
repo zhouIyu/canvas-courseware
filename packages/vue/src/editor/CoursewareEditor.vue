@@ -17,8 +17,8 @@ import type { FabricEditorContextMenuRequest } from "@canvas-courseware/fabric";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { DEFAULT_EDITOR_HEIGHT } from "../shared";
 import EditorToolbar from "./EditorToolbar.vue";
+import FloatingLayerManager from "./FloatingLayerManager.vue";
 import InspectorPanel from "./InspectorPanel.vue";
-import LayerPanel from "./LayerPanel.vue";
 import LocalImageFileTrigger from "./LocalImageFileTrigger.vue";
 import SlideRailPanel from "./SlideRailPanel.vue";
 import SlideSettingsPanel from "./SlideSettingsPanel.vue";
@@ -29,7 +29,7 @@ import type {
 } from "./useEditorBatchLayout";
 import { useCoursewareEditor } from "./useCoursewareEditor";
 /** 编辑器右侧管理区的标签名。 */
-type EditorSideTab = "slide" | "node" | "layers" | "timeline";
+type EditorSideTab = "node" | "timeline";
 
 /** 标签切换控件传回值的兼容类型。 */
 type EditorSideTabValue = string | number;
@@ -72,6 +72,14 @@ interface TimelinePreviewRequestPayload {
   slideId: string;
   /** 需要作为下一步焦点的步骤索引。 */
   stepIndex: number;
+}
+
+/** 浮层图层拖拽排序事件的载荷。 */
+interface LayerReorderToIndexPayload {
+  /** 被拖拽的节点 id。 */
+  nodeId: string;
+  /** 放下后的目标索引。 */
+  index: number;
 }
 
 /** 编辑器向应用层抛出的 slide 缩略图截图结果。 */
@@ -197,16 +205,8 @@ const handleCanvasContextMenuRequest = (payload: FabricEditorContextMenuRequest)
 /** 右侧标签列表，用于渲染管理区切换按钮。 */
 const sideTabs = [
   {
-    key: "slide" as const,
-    label: "页面设置",
-  },
-  {
     key: "node" as const,
     label: "组件属性",
-  },
-  {
-    key: "layers" as const,
-    label: "组件列表",
   },
   {
     key: "timeline" as const,
@@ -215,13 +215,16 @@ const sideTabs = [
 ];
 
 /** 当前右侧激活的管理标签。 */
-const activeSideTab = ref<EditorSideTab>("slide");
+const activeSideTab = ref<EditorSideTab>("node");
 
 /** 当前左侧页面栏是否已收起。 */
 const isSlideRailCollapsed = ref(false);
 
 /** 当前右侧管理栏是否已收起。 */
 const isEditorSideCollapsed = ref(false);
+
+/** 当前页面设置抽屉是否打开。 */
+const isSlideSettingsDrawerVisible = ref(false);
 
 /** 属性面板最近一次稳定选中的节点 id。 */
 const retainedInspectorNodeId = ref<string | null>(null);
@@ -338,8 +341,8 @@ watch(
 );
 
 /**
- * 当选中对象变化时，自动把右侧标签切换到对应区块。
- * 单选切到属性，多选切到组件列表，切页后回到页面设置。
+ * 当选中对象变化时，尽量把右侧管理区保持在对象编辑语义中。
+ * 如果用户当前停在时间轴，就尊重该上下文，不强制回跳到属性面板。
  */
 watch(
   [
@@ -350,13 +353,9 @@ watch(
     /** `immediate` 首次执行时旧值为空，这里统一做一次安全展开。 */
     const [previousSlideId, previousSelectionCount] = previousValues ?? [];
 
-    /**
-     * 只有真正切页时，才强制回到“页面设置”。
-     * 这样时间轴步骤、动画等与选中态无关的更新，就不会把用户手动停留的标签覆盖掉。
-     */
     if (activeSlideId !== previousSlideId) {
       retainedInspectorNodeId.value = null;
-      activeSideTab.value = "slide";
+      isSlideSettingsDrawerVisible.value = false;
       return;
     }
 
@@ -368,14 +367,8 @@ watch(
       return;
     }
 
-    if (selectionCount > 1) {
-      activeSideTab.value = "layers";
-      return;
-    }
-
-    if (selectionCount === 1 && activeSideTab.value === "slide") {
+    if (selectionCount > 0 && activeSideTab.value !== "timeline") {
       activeSideTab.value = "node";
-      return;
     }
   },
   { immediate: true },
@@ -665,6 +658,15 @@ const handleLayerReorder = (nodeId: string, position: ReorderPosition) => {
   reorderNode(activeSlide.value.id, nodeId, position);
 };
 
+/** 独立浮层拖拽排序后的统一写回入口。 */
+const handleLayerReorderToIndex = (payload: LayerReorderToIndexPayload) => {
+  if (!activeSlide.value) {
+    return;
+  }
+
+  reorderNode(activeSlide.value.id, payload.nodeId, "index", payload.index);
+};
+
 /** 图层面板批量对齐按钮的派发入口。 */
 const handleLayerAlign = (mode: LayerAlignMode) => {
   alignSelectedNodes(mode);
@@ -758,7 +760,7 @@ const handleBackgroundImageImport = async (file: File) => {
   try {
     closeContextMenu();
     await setSlideBackgroundImageFromFile(file);
-    activateSideTab("slide");
+    isSlideSettingsDrawerVisible.value = true;
   } catch (error) {
     const message = error instanceof Error ? error.message : "背景图设置失败，请重试";
     window.alert(message);
@@ -833,13 +835,23 @@ const activateSideTab = (tab: EditorSideTab) => {
 
 /** 判断当前值是否为受支持的右侧标签 key。 */
 const isEditorSideTab = (value: EditorSideTabValue): value is EditorSideTab =>
-  value === "slide" || value === "node" || value === "layers" || value === "timeline";
+  value === "node" || value === "timeline";
 
 /** 处理 Arco Tabs 标签切换。 */
 const handleSideTabChange = (key: EditorSideTabValue) => {
   if (isEditorSideTab(key)) {
     activateSideTab(key);
   }
+};
+
+/** 打开当前页面的设置抽屉。 */
+const openSlideSettingsDrawer = () => {
+  isSlideSettingsDrawerVisible.value = true;
+};
+
+/** 关闭当前页面的设置抽屉。 */
+const closeSlideSettingsDrawer = () => {
+  isSlideSettingsDrawerVisible.value = false;
 };
 /** 切换左侧页面栏显隐。 */
 const toggleSlideRail = () => {
@@ -1022,6 +1034,25 @@ defineExpose({
         </aside>
 
         <section ref="workspaceShellRef" class="workspace-shell panel-shell">
+          <div class="stage-floating-tools">
+            <a-button class="stage-floating-button" size="small" type="outline" @click="openSlideSettingsDrawer">
+              页面设置
+            </a-button>
+            <FloatingLayerManager
+              :nodes="activeSlide?.nodes ?? []"
+              :node-timeline-summary-map="nodeTimelineSummaryMap"
+              :selected-node-ids="snapshot.selection.nodeIds"
+              @select="handleLayerSelect"
+              @update-node="handleNodeUpdate"
+              @reorder="handleLayerReorder"
+              @reorder-to-index="handleLayerReorderToIndex"
+              @align="handleLayerAlign"
+              @distribute="handleLayerDistribute"
+              @open-inspector="activateSideTab('node')"
+              @open-timeline="activateSideTab('timeline')"
+            />
+          </div>
+
           <div
             ref="stageViewportRef"
             class="stage-scroll"
@@ -1105,13 +1136,8 @@ defineExpose({
           </div>
 
           <div class="editor-side-body">
-            <SlideSettingsPanel
-              v-if="activeSideTab === 'slide'"
-              :slide="activeSlide ?? null"
-              @update-slide="handleSlideUpdate"
-            />
             <InspectorPanel
-              v-else-if="activeSideTab === 'node'"
+              v-if="activeSideTab === 'node'"
               :selected-count="inspectorSelectedCount"
               :selected-node="inspectorNode"
               :selected-animations="selectedNodeAnimations"
@@ -1120,17 +1146,6 @@ defineExpose({
               @update-node="handleNodeUpdate"
               @upsert-animation="handleTimelineAnimationUpsert"
               @remove-animation="handleTimelineAnimationRemove"
-            />
-            <LayerPanel
-              v-else-if="activeSideTab === 'layers'"
-              :nodes="activeSlide?.nodes ?? []"
-              :node-timeline-summary-map="nodeTimelineSummaryMap"
-              :selected-node-ids="snapshot.selection.nodeIds"
-              @select="handleLayerSelect"
-              @update-node="handleNodeUpdate"
-              @align="handleLayerAlign"
-              @distribute="handleLayerDistribute"
-              @reorder="handleLayerReorder"
             />
             <TimelinePanel
               v-else
@@ -1146,6 +1161,25 @@ defineExpose({
         </aside>
       </div>
     </main>
+
+    <a-drawer
+      :closable="true"
+      :footer="false"
+      :mask="false"
+      :visible="isSlideSettingsDrawerVisible"
+      class="slide-settings-drawer"
+      placement="right"
+      title="页面设置"
+      width="360px"
+      @cancel="closeSlideSettingsDrawer"
+    >
+      <div class="slide-settings-drawer__body">
+        <SlideSettingsPanel
+          :slide="activeSlide ?? null"
+          @update-slide="handleSlideUpdate"
+        />
+      </div>
+    </a-drawer>
   </section>
 </template>
 
