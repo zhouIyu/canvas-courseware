@@ -330,13 +330,21 @@ const resolveNodeTypeIcon = (nodeType: CoursewareNode["type"]): string => {
   }
 };
 
-/** 根据当前列表索引返回更贴近设计语义的图层序号。 */
-const resolveLayerOrderLabel = (index: number): string => `Z ${props.nodes.length - index - 1}`;
+/** 生成图层列表中展示的“类型-名称”文案。 */
+const resolveNodeDisplayLabel = (node: CoursewareNode): string =>
+  `${formatNodeTypeLabel(node.type)}-${node.name}`;
 
 /** 切换某个节点在预览态中的默认显隐状态。 */
 const handleNodeVisibilityToggle = (node: CoursewareNode) => {
   emit("update-node", node.id, {
     visible: !node.visible,
+  });
+};
+
+/** 切换某个节点的锁定状态。 */
+const handleNodeLockToggle = (node: CoursewareNode) => {
+  emit("update-node", node.id, {
+    locked: !node.locked,
   });
 };
 
@@ -492,7 +500,7 @@ watch(
 
       <div v-if="nodes.length > 0" class="floating-layer-manager__list">
         <article
-          v-for="(node, index) in nodes"
+          v-for="node in nodes"
           :key="node.id"
           :ref="(element) => registerLayerItemElement(node.id, element)"
           class="floating-layer-item"
@@ -540,12 +548,8 @@ watch(
                 :title="node.name"
                 @dblclick.stop="startRename(node)"
               >
-                {{ node.name }}
+                {{ resolveNodeDisplayLabel(node) }}
               </strong>
-              <span class="floating-layer-item__order">{{ resolveLayerOrderLabel(index) }}</span>
-              <span v-if="node.locked" class="floating-layer-item__state-icon" title="已锁定">
-                <icon-lock />
-              </span>
               <a-button
                 class="floating-layer-item__visibility"
                 :aria-label="node.visible ? '预览隐藏' : '预览显示'"
@@ -554,6 +558,15 @@ watch(
                 @click.stop="handleNodeVisibilityToggle(node)"
               >
                 <component :is="node.visible ? 'icon-eye' : 'icon-eye-invisible'" />
+              </a-button>
+              <a-button
+                class="floating-layer-item__lock"
+                :aria-label="node.locked ? '解锁' : '锁定'"
+                size="mini"
+                type="text"
+                @click.stop="handleNodeLockToggle(node)"
+              >
+                <component :is="node.locked ? 'icon-lock' : 'icon-unlock'" />
               </a-button>
             </div>
           </div>
