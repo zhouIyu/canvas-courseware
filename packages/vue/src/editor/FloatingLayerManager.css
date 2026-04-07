@@ -193,9 +193,11 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 42px;
-  height: 42px;
-  border-radius: 999px;
+  width: auto;
+  min-width: 0;
+  height: auto;
+  padding: 0 2px;
+  border-radius: 0;
   color: #6f819d;
 }
 
@@ -207,7 +209,7 @@
 .floating-layer-item__visibility:hover,
 .floating-layer-item__lock:hover {
   color: var(--cw-color-primary);
-  background: rgba(22, 93, 255, 0.08);
+  background: transparent;
 }
 
 @media (max-width: 1240px) {
