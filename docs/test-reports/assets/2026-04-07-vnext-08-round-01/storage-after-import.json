@@ -1,0 +1,50 @@
+{
+  "id": "document-25ff643e-b7a2-4122-a66f-d4516fbd9264",
+  "title": "未命名课件",
+  "updatedAt": "2026-04-07T07:19:29.705Z",
+  "thumbnail": "#FFFFFF",
+  "document": {
+    "version": "1.0.0",
+    "meta": {
+      "id": "document-25ff643e-b7a2-4122-a66f-d4516fbd9264",
+      "title": "未命名课件"
+    },
+    "slides": [
+      {
+        "id": "slide-34a8fc62-f4d8-4239-8051-3faf1b984f66",
+        "name": "第1页",
+        "size": {
+          "width": 1280,
+          "height": 720
+        },
+        "background": {
+          "fill": "#FFFFFF"
+        },
+        "nodes": [
+          {
+            "id": "node-b00d5973-6853-432c-86e0-f1395f454bf4",
+            "type": "image",
+            "name": "vnext08-sample",
+            "x": 480,
+            "y": 270,
+            "width": 320,
+            "height": 180,
+            "rotation": 0,
+            "opacity": 1,
+            "visible": true,
+            "locked": false,
+            "props": {
+              "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUAAAAC0CAIAAABqhmJGAAACM0lEQVR42u3TwQ0AEBBFQRU46k55ilMFTUiWNT/vLlmZ0vqS9GjFCSSAJQEsCWAJYEkASwJYEsASwJIAlgSwBLAkgCUBLAlgCWBJAEsCWBLAEsCSAJYEsASwJIAlASwJYAlgSQBLAlgSwBLAkgCWBLAEsCSAJQEsCWAJYEkASwJYAjjsbbM0A9gMYIDNAAbYDGCADWCAzQAG2AxggM0ABtgABtgMYIDNAAbYAAbYDGCAzQAG2AxggA1ggM0ABtgMYIDNADYDGGAzgAE2AxhgAxhgM4ABNgMYYDOAATaAATYDGGAzgAE2A9gMYIDNAAbYDGCADWCAzQAG2AxggM0ABtgABtgMYIDNAAbYAAbYDGCAzQAG2AxggA1ggM0ABtgMYIDNAAbYAD4AuI4ZlV+3NItCBLAZwAAbwACbAQywGcAAmwEMsAEMsBnAAJsBDLAZwAAbwACbAQywGcAAG8AAmwEMsBnAAJsBDLABDLAZwACbAQywGcBmAANsBjDAZgADbAADbAYwwGYAA2wGMMAGMMBmAANsBjDAZgCbAQywGcAAmwEMsAEMsBnAAJsBDLAZwAAbwACbAQywGcAAG8AAmwEMsBnAAJsBDLABDLAZwACbAQyw2feAJQEsASwJYEkASwJYAlgSwJIAlgSwBLAkgCUBLAEsCWBJAEsCWAJYEsCSAJYEsASwJIAlASwBLAlgSQBLAlgCWBLAkgCWAHYFCWBJAEsCWAJYEsCSAJYEsASwpBva6Uq2pjoG1kMAAAAASUVORK5CYII=",
+              "objectFit": "contain",
+              "alt": "vnext08-sample.png"
+            }
+          }
+        ],
+        "timeline": {
+          "steps": [],
+          "animations": []
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "project_id": "document-25ff643e-b7a2-4122-a66f-d4516fbd9264",
+  "preview_url": "http://127.0.0.1:32173/projects/document-25ff643e-b7a2-4122-a66f-d4516fbd9264?mode=preview",
+  "dialogs": [],
+  "preview_canvas": {
+    "width": 1280,
+    "height": 720,
+    "pixel": [
+      22,
+      93,
+      255,
+      255
+    ]
+  },
+  "status": "ok"
+}
