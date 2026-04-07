@@ -193,15 +193,15 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 36px;
-  height: 36px;
+  width: 42px;
+  height: 42px;
   border-radius: 999px;
   color: #6f819d;
 }
 
 .floating-layer-item__visibility :deep(.arco-btn-icon),
 .floating-layer-item__lock :deep(.arco-btn-icon) {
-  font-size: 18px;
+  font-size: 22px;
 }
 
 .floating-layer-item__visibility:hover,
