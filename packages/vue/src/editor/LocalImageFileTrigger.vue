@@ -2,7 +2,7 @@
 import { computed, ref } from "vue";
 
 /** 文件触发按钮支持的视觉变体。 */
-type LocalImageFileTriggerVariant = "toolbar" | "panel";
+type LocalImageFileTriggerVariant = "toolbar" | "panel" | "menu";
 
 /** 文件选择触发器的显示参数。 */
 const props = withDefaults(
@@ -41,6 +41,7 @@ const buttonClassName = computed(() => ({
   "file-trigger-button": true,
   "is-toolbar": props.variant === "toolbar",
   "is-panel": props.variant === "panel",
+  "is-menu": props.variant === "menu",
 }));
 
 /** 主动打开系统文件选择器。 */
@@ -123,6 +124,20 @@ const handleFileChange = (event: Event) => {
 .file-trigger-button.is-panel:hover {
   color: #0f6bff;
   background: rgba(22, 93, 255, 0.12);
+}
+
+.file-trigger-button.is-menu {
+  justify-content: flex-start;
+  width: 100%;
+  min-height: 36px;
+  padding: 0 12px;
+  color: var(--cw-color-text);
+  background: transparent;
+}
+
+.file-trigger-button.is-menu:hover {
+  color: var(--cw-color-primary);
+  background: rgba(22, 93, 255, 0.08);
 }
 
 .file-input {

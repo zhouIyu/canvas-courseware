@@ -29,6 +29,18 @@ const SELECTION_RETENTION_WINDOW_MS = 180;
  */
 const EDITOR_TARGET_FIND_TOLERANCE = 6;
 
+/** 编辑器右键菜单请求的标准化载荷。 */
+export interface FabricEditorContextMenuRequest {
+  /** 右键时的视口 X 坐标。 */
+  clientX: number;
+  /** 右键时的视口 Y 坐标。 */
+  clientY: number;
+  /** 当前命中的 slide id。 */
+  slideId: string | null;
+  /** 当前命中的节点 id；空值表示点在空白区域。 */
+  nodeId: string | null;
+}
+
 export interface FabricEditorAdapterMountOptions {
   canvasElement: HTMLCanvasElement;
   slideId?: string;
@@ -37,7 +49,23 @@ export interface FabricEditorAdapterMountOptions {
 export interface FabricEditorAdapterOptions {
   controller?: EditorController;
   slideId?: string;
+  /** 当编辑器请求展示右键菜单时，向 UI 层抛出的标准化菜单事件。 */
+  onContextMenuRequest?: (payload: FabricEditorContextMenuRequest) => void;
 }
+
+/** 编辑态文本对象需要额外使用的 Fabric 能力。 */
+type EditableFabricTextObject = FabricNodeObject & {
+  /** 当前对象是否允许进入文本编辑。 */
+  editable: boolean;
+  /** 当前是否处于文本编辑中。 */
+  isEditing?: boolean;
+  /** 进入 Fabric 文本编辑态。 */
+  enterEditing?: (event?: Event) => void;
+  /** 退出 Fabric 文本编辑态。 */
+  exitEditing?: () => void;
+  /** Fabric 用于接收真实输入的隐藏 textarea。 */
+  hiddenTextarea?: HTMLTextAreaElement | null;
+};
 
 export class FabricEditorAdapter {
   /** 当前挂载的 Fabric 画布实例。 */
@@ -64,9 +92,12 @@ export class FabricEditorAdapter {
   private retainedSelectionExpiresAt = 0;
   /** 对象变换后的延迟重选计时器。 */
   private selectionRestoreTimer: ReturnType<typeof setTimeout> | null = null;
+  /** 适配层向 UI 层抛出的右键菜单回调。 */
+  private readonly onContextMenuRequest?: (payload: FabricEditorContextMenuRequest) => void;
 
   constructor(options: FabricEditorAdapterOptions = {}) {
     this.currentSlideId = options.slideId ?? null;
+    this.onContextMenuRequest = options.onContextMenuRequest;
 
     if (options.controller) {
       this.bindController(options.controller);
@@ -107,6 +138,8 @@ export class FabricEditorAdapter {
       selection: true,
       backgroundColor: "#FFFFFF",
       targetFindTolerance: EDITOR_TARGET_FIND_TOLERANCE,
+      fireRightClick: true,
+      stopContextMenu: true,
     });
 
     registerEditorCanvasEvents(this.canvas, {
@@ -114,6 +147,10 @@ export class FabricEditorAdapter {
       captureSelectionTarget: this.captureSelectionTarget.bind(this),
       handleObjectModified: this.handleObjectModified.bind(this),
       handleTextChanged: this.handleTextChanged.bind(this),
+      handleTextDoubleClick: this.handleTextDoubleClick.bind(this),
+      handleTextEditingEntered: this.handleTextEditingEntered.bind(this),
+      handleTextEditingExited: this.handleTextEditingExited.bind(this),
+      handleContextMenu: this.handleContextMenu.bind(this),
     });
 
     if (this.controller) {
@@ -424,7 +461,91 @@ export class FabricEditorAdapter {
     return true;
   }
   private handleTextChanged(target: FabricNodeObject | undefined): void {
-    if (this.isSyncing || !this.controller || !this.currentSlideId || !target) {
+    if (this.isSyncing || !target) {
+      return;
+    }
+
+    /**
+     * 画布内文本编辑采用“退出编辑后一次提交”策略。
+     * 如果在输入过程中实时回写文档，会触发适配器重渲染并打断当前编辑态。
+     */
+    const editableTarget = target as EditableFabricTextObject;
+    if (editableTarget.isEditing) {
+      return;
+    }
+  }
+
+  /** 双击文本对象后，直接进入 Fabric 自带的文本编辑态。 */
+  private handleTextDoubleClick(
+    target: FabricNodeObject | undefined,
+    nativeEvent?: Event,
+  ): void {
+    if (
+      this.isSyncing ||
+      !this.canvas ||
+      !this.controller ||
+      !this.currentSlideId ||
+      !target
+    ) {
+      return;
+    }
+
+    const meta = readNodeMeta(target);
+    if (!meta || meta.nodeType !== "text") {
+      return;
+    }
+
+    const editableTarget = target as EditableFabricTextObject;
+    if (editableTarget.isEditing || typeof editableTarget.enterEditing !== "function") {
+      return;
+    }
+
+    this.retainSelection(meta.nodeId);
+    this.controller.handleAdapterEvent({
+      type: "adapter.selection.changed",
+      slideId: this.currentSlideId,
+      nodeIds: [meta.nodeId],
+    });
+
+    this.isSyncing = true;
+    try {
+      this.canvas.setActiveObject(target);
+      this.canvas.renderAll();
+    } finally {
+      this.isSyncing = false;
+    }
+
+    editableTarget.editable = true;
+    queueMicrotask(() => {
+      if (!this.canvas || this.currentSlideId !== meta.slideId || editableTarget.isEditing) {
+        return;
+      }
+
+      editableTarget.enterEditing?.(nativeEvent);
+      editableTarget.hiddenTextarea?.focus();
+    });
+  }
+
+  /** 标记当前文本对象已经进入编辑态。 */
+  private handleTextEditingEntered(target: FabricNodeObject | undefined): void {
+    const editableTarget = target as EditableFabricTextObject | undefined;
+    if (!editableTarget) {
+      return;
+    }
+
+    editableTarget.editable = true;
+  }
+
+  /** 文本编辑完成后，统一回写最终内容并恢复到普通选中态。 */
+  private handleTextEditingExited(target: FabricNodeObject | undefined): void {
+    if (!target) {
+      return;
+    }
+
+    const editableTarget = target as EditableFabricTextObject;
+    editableTarget.editable = false;
+
+    if (this.isSyncing || !this.controller || !this.currentSlideId) {
       return;
     }
 
@@ -442,6 +563,42 @@ export class FabricEditorAdapter {
       slideId: this.currentSlideId,
       nodeId: textChange.nodeId,
       text: textChange.text,
+    });
+    this.scheduleSelectionRestore(textChange.nodeId);
+  }
+
+  /** 统一处理右键菜单请求，并把命中目标同步回标准选中态。 */
+  private handleContextMenu(
+    target: FabricNodeObject | undefined,
+    nativeEvent?: Event,
+  ): void {
+    const mouseEvent = nativeEvent instanceof MouseEvent ? nativeEvent : null;
+    if (!mouseEvent) {
+      return;
+    }
+
+    mouseEvent.preventDefault();
+
+    const meta = target ? readNodeMeta(target) : null;
+    if (this.controller && this.currentSlideId) {
+      this.controller.handleAdapterEvent({
+        type: "adapter.selection.changed",
+        slideId: this.currentSlideId,
+        nodeIds: meta ? [meta.nodeId] : [],
+      });
+    }
+
+    if (meta) {
+      this.retainSelection(meta.nodeId);
+    } else {
+      this.clearRetainedSelection();
+    }
+
+    this.onContextMenuRequest?.({
+      clientX: mouseEvent.clientX,
+      clientY: mouseEvent.clientY,
+      slideId: this.currentSlideId,
+      nodeId: meta?.nodeId ?? null,
     });
   }
 

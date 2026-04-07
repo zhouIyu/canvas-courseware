@@ -12,7 +12,10 @@ import {
   type Slide,
   type TimelineStep,
 } from "@canvas-courseware/core";
-import { FabricEditorAdapter } from "@canvas-courseware/fabric";
+import {
+  FabricEditorAdapter,
+  type FabricEditorContextMenuRequest,
+} from "@canvas-courseware/fabric";
 import { useEditorBatchLayout } from "./useEditorBatchLayout";
 import { useEditorClipboardKeyboard } from "./useEditorClipboardKeyboard";
 import { useEditorLocalImage } from "./useEditorLocalImage";
@@ -33,6 +36,8 @@ import {
 export interface UseCoursewareEditorOptions {
   /** 外部注入的初始课件文档。 */
   document?: CoursewareDocument;
+  /** 当编辑区请求打开右键菜单时，向外层抛出菜单定位与命中信息。 */
+  onContextMenuRequest?: (payload: FabricEditorContextMenuRequest) => void;
 }
 
 /**
@@ -47,7 +52,10 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
   const controller = new EditorController();
 
   /** Fabric 编辑态适配器，用于把 snapshot 同步到画布。 */
-  const adapter = new FabricEditorAdapter({ controller });
+  const adapter = new FabricEditorAdapter({
+    controller,
+    onContextMenuRequest: options.onContextMenuRequest,
+  });
 
   /** 当前快照，UI 只订阅这份标准状态。 */
   const snapshot = shallowRef<EditorSnapshot>(controller.getSnapshot());

@@ -13,11 +13,13 @@ import {
   cloneTimelineStep,
   createSlideNodeTimelineSummaryMap,
 } from "@canvas-courseware/core";
+import type { FabricEditorContextMenuRequest } from "@canvas-courseware/fabric";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { DEFAULT_EDITOR_HEIGHT } from "../shared";
 import EditorToolbar from "./EditorToolbar.vue";
 import InspectorPanel from "./InspectorPanel.vue";
 import LayerPanel from "./LayerPanel.vue";
+import LocalImageFileTrigger from "./LocalImageFileTrigger.vue";
 import SlideRailPanel from "./SlideRailPanel.vue";
 import SlideSettingsPanel from "./SlideSettingsPanel.vue";
 import TimelinePanel from "./TimelinePanel.vue";
@@ -72,6 +74,27 @@ interface TimelinePreviewRequestPayload {
   stepIndex: number;
 }
 
+/** 编辑区右键菜单在组件内维护的定位状态。 */
+interface EditorContextMenuState {
+  /** 菜单相对工作区的 X 坐标。 */
+  x: number;
+  /** 菜单相对工作区的 Y 坐标。 */
+  y: number;
+  /** 触发时命中的 slide id。 */
+  slideId: string | null;
+  /** 触发时命中的节点 id。 */
+  nodeId: string | null;
+}
+
+/** 右键菜单预估宽度，用于避免贴边溢出。 */
+const CONTEXT_MENU_WIDTH = 188;
+
+/** 右键菜单与边缘之间的安全距离。 */
+const CONTEXT_MENU_SAFE_MARGIN = 12;
+
+/** 右键菜单预估高度，用于首版定位。 */
+const CONTEXT_MENU_ESTIMATED_HEIGHT = 260;
+
 /** 编辑器组件的显示参数。 */
 const props = withDefaults(
   defineProps<{
@@ -102,6 +125,61 @@ const documentModel = defineModel<CoursewareDocument | undefined>();
 
 /** 标记当前是否正在把内部快照回写给外层 v-model，避免误判成外部导入。 */
 const isSyncingDocumentModel = ref(false);
+
+/** 工作区容器引用，用于挂载右键菜单。 */
+const workspaceShellRef = ref<HTMLElement | null>(null);
+
+/** 当前编辑区右键菜单状态。 */
+const contextMenuState = ref<EditorContextMenuState | null>(null);
+
+/** 把数值约束到指定区间内，避免菜单超出容器。 */
+const clamp = (value: number, minimum: number, maximum: number): number =>
+  Math.min(Math.max(value, minimum), maximum);
+
+/** 关闭当前右键菜单。 */
+const closeContextMenu = () => {
+  contextMenuState.value = null;
+};
+
+/** 按工作区可用空间规整右键菜单坐标。 */
+const normalizeContextMenuPosition = (clientX: number, clientY: number) => {
+  const hostRect = workspaceShellRef.value?.getBoundingClientRect();
+  if (!hostRect) {
+    return null;
+  }
+
+  return {
+    x: clamp(
+      clientX - hostRect.left,
+      CONTEXT_MENU_SAFE_MARGIN,
+      Math.max(hostRect.width - CONTEXT_MENU_WIDTH - CONTEXT_MENU_SAFE_MARGIN, CONTEXT_MENU_SAFE_MARGIN),
+    ),
+    y: clamp(
+      clientY - hostRect.top,
+      CONTEXT_MENU_SAFE_MARGIN,
+      Math.max(hostRect.height - CONTEXT_MENU_ESTIMATED_HEIGHT, CONTEXT_MENU_SAFE_MARGIN),
+    ),
+  };
+};
+
+/** 打开编辑区右键菜单。 */
+const openContextMenu = (payload: FabricEditorContextMenuRequest) => {
+  const normalizedPosition = normalizeContextMenuPosition(payload.clientX, payload.clientY);
+  if (!normalizedPosition) {
+    return;
+  }
+
+  contextMenuState.value = {
+    ...normalizedPosition,
+    slideId: payload.slideId,
+    nodeId: payload.nodeId,
+  };
+};
+
+/** 接收适配层发起的右键菜单请求。 */
+const handleCanvasContextMenuRequest = (payload: FabricEditorContextMenuRequest) => {
+  openContextMenu(payload);
+};
 
 /** 右侧标签列表，用于渲染管理区切换按钮。 */
 const sideTabs = [
@@ -164,13 +242,18 @@ const {
   activateSlide,
   canRedo,
   canUndo,
+  clearSelection,
+  copySelected,
+  duplicateSelected,
   distributeSelectedNodes,
   editorCanvasRef,
   duplicateSlideById,
   removeTimelineAnimation,
   removeTimelineStep,
   removeSlide,
+  removeSelected,
   redo,
+  pasteClipboard,
   setSlideBackgroundImageFromFile,
   replaceImageFromFile,
   reorderNode,
@@ -189,6 +272,7 @@ const {
   updateSlide,
 } = useCoursewareEditor({
   document: documentModel.value,
+  onContextMenuRequest: handleCanvasContextMenuRequest,
 });
 
 /**
@@ -291,6 +375,14 @@ watch(
     }
   },
   { immediate: true },
+);
+
+/** 切页后关闭旧位置的右键菜单，避免悬浮到错误页面。 */
+watch(
+  () => snapshot.value.activeSlideId,
+  () => {
+    closeContextMenu();
+  },
 );
 
 /** 外层工作区的高度样式。 */
@@ -426,6 +518,19 @@ const inspectorSelectedCount = computed(() =>
 const selectedNodeTimelineSummary = computed<NodeTimelineSummary | null>(() =>
   inspectorNode.value ? nodeTimelineSummaryMap.value[inspectorNode.value.id] ?? null : null,
 );
+
+/** 当前右键菜单的定位样式。 */
+const contextMenuStyle = computed(() =>
+  contextMenuState.value
+    ? {
+        left: `${contextMenuState.value.x}px`,
+        top: `${contextMenuState.value.y}px`,
+      }
+    : {},
+);
+
+/** 当前右键菜单是否应显示“所选对象”快捷操作。 */
+const contextMenuHasSelection = computed(() => snapshot.value.selection.nodeIds.length > 0);
 
 /** 当前 slide 的更新入口。 */
 const handleSlideUpdate = (patch: Partial<Pick<Slide, "name" | "size" | "background">>) => {
@@ -582,6 +687,7 @@ const handleLocalImageImport = async (file: File) => {
 /** 从工具条上传图片并直接设置为当前页面背景。 */
 const handleBackgroundImageImport = async (file: File) => {
   try {
+    closeContextMenu();
     await setSlideBackgroundImageFromFile(file);
     activateSideTab("slide");
   } catch (error) {
@@ -600,6 +706,54 @@ const handleImageReplace = async (nodeId: string, file: File) => {
     window.alert(message);
     console.error(error);
   }
+};
+
+/** 右键菜单中从当前点击位置快速插入文本。 */
+const handleContextMenuAddText = () => {
+  closeContextMenu();
+  addText();
+};
+
+/** 右键菜单中快速插入矩形。 */
+const handleContextMenuAddRect = () => {
+  closeContextMenu();
+  addRect();
+};
+
+/** 右键菜单中快速插入空图片框。 */
+const handleContextMenuAddImageFrame = () => {
+  closeContextMenu();
+  addImage();
+};
+
+/** 右键菜单中直接从本地插入图片。 */
+const handleContextMenuImageImport = async (file: File) => {
+  closeContextMenu();
+  await handleLocalImageImport(file);
+};
+
+/** 右键菜单中复制当前选区。 */
+const handleContextMenuCopy = () => {
+  closeContextMenu();
+  copySelected();
+};
+
+/** 右键菜单中快速重复当前选区。 */
+const handleContextMenuDuplicate = () => {
+  closeContextMenu();
+  duplicateSelected();
+};
+
+/** 右键菜单中删除当前选区。 */
+const handleContextMenuDelete = () => {
+  closeContextMenu();
+  removeSelected();
+};
+
+/** 右键菜单中执行一次粘贴。 */
+const handleContextMenuPaste = () => {
+  closeContextMenu();
+  pasteClipboard();
 };
 
 /** 切换右侧管理区标签。 */
@@ -628,6 +782,43 @@ const toggleEditorSide = () => {
   isEditorSideCollapsed.value = !isEditorSideCollapsed.value;
 };
 
+/** 在非画布区域右键时，仍然展示空白态编辑区菜单。 */
+const handleStageViewportContextMenu = (event: MouseEvent) => {
+  const target = event.target;
+  if (target instanceof HTMLElement && target.closest("canvas")) {
+    return;
+  }
+
+  clearSelection();
+  openContextMenu({
+    clientX: event.clientX,
+    clientY: event.clientY,
+    slideId: activeSlide.value?.id ?? null,
+    nodeId: null,
+  });
+};
+
+/** 点击菜单外区域时关闭右键菜单。 */
+const handleGlobalPointerDown = (event: PointerEvent) => {
+  if (!contextMenuState.value) {
+    return;
+  }
+
+  const target = event.target;
+  if (target instanceof HTMLElement && target.closest(".stage-context-menu")) {
+    return;
+  }
+
+  closeContextMenu();
+};
+
+/** 支持通过 Escape 关闭右键菜单。 */
+const handleContextMenuKeydown = (event: KeyboardEvent) => {
+  if (event.key === "Escape") {
+    closeContextMenu();
+  }
+};
+
 /** 读取当前工具条的真实高度。 */
 const updateToolbarHeight = () => {
   toolbarHeight.value = toolbarShellRef.value?.offsetHeight ?? 0;
@@ -647,6 +838,8 @@ let stageViewportResizeObserver: ResizeObserver | null = null;
 onMounted(() => {
   updateToolbarHeight();
   updateStageViewportSize();
+  window.addEventListener("pointerdown", handleGlobalPointerDown, true);
+  window.addEventListener("keydown", handleContextMenuKeydown);
 
   if (toolbarShellRef.value) {
     toolbarResizeObserver = new ResizeObserver(() => {
@@ -664,6 +857,8 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  window.removeEventListener("pointerdown", handleGlobalPointerDown, true);
+  window.removeEventListener("keydown", handleContextMenuKeydown);
   toolbarResizeObserver?.disconnect();
   toolbarResizeObserver = null;
   stageViewportResizeObserver?.disconnect();
@@ -747,8 +942,13 @@ onBeforeUnmount(() => {
           />
         </aside>
 
-        <section class="workspace-shell panel-shell">
-          <div ref="stageViewportRef" class="stage-scroll" :style="stageStyle">
+        <section ref="workspaceShellRef" class="workspace-shell panel-shell">
+          <div
+            ref="stageViewportRef"
+            class="stage-scroll"
+            :style="stageStyle"
+            @contextmenu.prevent="handleStageViewportContextMenu"
+          >
             <div class="stage-backdrop">
               <div v-if="activeSlide" class="stage-scale-frame" :style="canvasFrameStyle">
                 <div class="stage-surface" :style="canvasSurfaceStyle">
@@ -759,6 +959,53 @@ onBeforeUnmount(() => {
                 <strong>还没有可编辑的页面</strong>
                 <p>先新增一个 slide，再开始插入文本、矩形或图片。</p>
               </div>
+            </div>
+          </div>
+
+          <div
+            v-if="contextMenuState"
+            class="stage-context-menu"
+            :style="contextMenuStyle"
+            @contextmenu.prevent
+          >
+            <div class="stage-context-menu__group">
+              <a-button class="stage-context-menu__item" type="text" @click="handleContextMenuAddText">
+                插入文本
+              </a-button>
+              <a-button class="stage-context-menu__item" type="text" @click="handleContextMenuAddRect">
+                插入矩形
+              </a-button>
+              <LocalImageFileTrigger
+                aria-label="从右键菜单插入图片"
+                label="插入图片"
+                variant="menu"
+                @select="handleContextMenuImageImport"
+              />
+              <a-button class="stage-context-menu__item" type="text" @click="handleContextMenuAddImageFrame">
+                插入图片框
+              </a-button>
+            </div>
+
+            <template v-if="contextMenuHasSelection">
+              <div class="stage-context-menu__divider" />
+              <div class="stage-context-menu__group">
+                <a-button class="stage-context-menu__item" type="text" @click="handleContextMenuCopy">
+                  复制所选
+                </a-button>
+                <a-button class="stage-context-menu__item" type="text" @click="handleContextMenuDuplicate">
+                  重复所选
+                </a-button>
+                <a-button class="stage-context-menu__item danger" type="text" @click="handleContextMenuDelete">
+                  删除所选
+                </a-button>
+              </div>
+            </template>
+
+            <div class="stage-context-menu__divider" />
+            <div class="stage-context-menu__group">
+              <a-button class="stage-context-menu__item" type="text" @click="handleContextMenuPaste">
+                粘贴
+              </a-button>
             </div>
           </div>
         </section>
