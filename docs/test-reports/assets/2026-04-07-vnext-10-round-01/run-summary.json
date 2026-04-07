@@ -1,0 +1,110 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-04-07T11:23:06.705Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "home-overview",
+      "projectCardCount": 1,
+      "countLabel": "1 个项目",
+      "metrics": {
+        "innerWidth": 1440,
+        "innerHeight": 900,
+        "bodyScrollWidth": 1440,
+        "docScrollWidth": 1440,
+        "bodyScrollHeight": 572,
+        "horizontalOverflow": false
+      }
+    },
+    {
+      "id": "create-modal-default",
+      "summaryTitle": "未命名课件",
+      "summaryText": "1280 × 720 · 16:9",
+      "tag": "1280 × 720"
+    },
+    {
+      "id": "preset-switching",
+      "classicSummary": "1024 × 768 · 4:3",
+      "portraitSummary": "1080 × 1920 · 9:16",
+      "portraitHint": "适合移动端录课、竖屏讲义和短视频课件。"
+    },
+    {
+      "id": "portrait-workspace",
+      "url": "http://127.0.0.1:32173/projects/document-772ee221-94df-4464-b1e9-9bb716171ee2?mode=edit",
+      "titleInput": "VNext10 竖屏创建测试 1775560988959",
+      "metrics": {
+        "innerWidth": 1440,
+        "innerHeight": 900,
+        "bodyScrollWidth": 1440,
+        "docScrollWidth": 1440,
+        "bodyScrollHeight": 900,
+        "horizontalOverflow": false
+      },
+      "recordFound": true,
+      "storedSlideSize": {
+        "width": 1080,
+        "height": 1920
+      }
+    },
+    {
+      "id": "portrait-preview-smoke",
+      "url": "http://127.0.0.1:32173/projects/document-772ee221-94df-4464-b1e9-9bb716171ee2?mode=preview",
+      "metrics": {
+        "innerWidth": 1440,
+        "innerHeight": 900,
+        "bodyScrollWidth": 1440,
+        "docScrollWidth": 1440,
+        "bodyScrollHeight": 900,
+        "horizontalOverflow": false
+      },
+      "resetButtonVisible": true,
+      "stageTitleVisible": true
+    },
+    {
+      "id": "portrait-return-list",
+      "projectCardCount": 2,
+      "topCardTitle": "VNext10 竖屏创建测试 1775560988959",
+      "topCardMeta": "2026/04/07 19:231 页1080 × 1920"
+    },
+    {
+      "id": "custom-min-clamp",
+      "summaryText": "320 × 180 · 自定义画布",
+      "tag": "320 × 180",
+      "widthInputValue": "320",
+      "heightInputValue": "180"
+    },
+    {
+      "id": "custom-workspace",
+      "url": "http://127.0.0.1:32173/projects/document-c1b3ca25-72f3-4d3c-9356-4c315aa6d241?mode=edit",
+      "titleInput": "未命名课件",
+      "recordFound": true,
+      "storedSlideSize": {
+        "width": 320,
+        "height": 180
+      }
+    },
+    {
+      "id": "final-list-state",
+      "projectCardCount": 3,
+      "countLabel": "3 个项目",
+      "topThreeTitles": [
+        "未命名课件",
+        "VNext10 竖屏创建测试 1775560988959",
+        "古诗讲解示例"
+      ],
+      "metrics": {
+        "innerWidth": 1440,
+        "innerHeight": 900,
+        "bodyScrollWidth": 1440,
+        "docScrollWidth": 1440,
+        "bodyScrollHeight": 601,
+        "horizontalOverflow": false
+      }
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}
