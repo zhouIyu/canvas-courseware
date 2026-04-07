@@ -73,7 +73,7 @@ const emit = defineEmits<{
 }>();
 
 /** 当前浮层是否处于展开态。 */
-const isExpanded = ref(true);
+const isExpanded = ref(false);
 
 /** 当前正在编辑名称的节点 id。 */
 const editingNodeId = ref<string | null>(null);
@@ -493,25 +493,29 @@ watch(
 </script>
 
 <template>
-  <section class="floating-layer-manager" :class="{ 'is-collapsed': !isExpanded }">
-    <div class="floating-layer-manager__header">
-      <div class="floating-layer-manager__heading">
-        <span class="floating-layer-manager__eyebrow">组件管理</span>
-        <strong>{{ nodes.length }} 个对象</strong>
-        <p v-if="isExpanded">{{ selectionSummary }}</p>
+  <section class="floating-layer-manager" :class="{ 'is-expanded': isExpanded }">
+    <a-button
+      class="floating-layer-manager__trigger"
+      :aria-label="isExpanded ? '收起图层管理' : '展开图层管理'"
+      shape="circle"
+      size="small"
+      type="outline"
+      @click="toggleExpanded"
+    >
+      <template #icon>
+        <icon-layers />
+      </template>
+    </a-button>
+
+    <div v-if="isExpanded" class="floating-layer-manager__panel">
+      <div class="floating-layer-manager__header">
+        <div class="floating-layer-manager__heading">
+          <span class="floating-layer-manager__eyebrow">组件管理</span>
+          <strong>{{ nodes.length }} 个对象</strong>
+          <p>{{ selectionSummary }}</p>
+        </div>
       </div>
 
-      <a-button
-        class="floating-layer-manager__toggle"
-        size="small"
-        type="text"
-        @click="toggleExpanded"
-      >
-        {{ isExpanded ? "收起" : "展开" }}
-      </a-button>
-    </div>
-
-    <template v-if="isExpanded">
       <div class="floating-layer-manager__actions">
         <a-button
           size="mini"
@@ -665,7 +669,7 @@ watch(
       <p v-else class="floating-layer-manager__empty">
         当前页面还没有组件，先从上方工具栏插入文本、矩形或图片。
       </p>
-    </template>
+    </div>
   </section>
 </template>
 
