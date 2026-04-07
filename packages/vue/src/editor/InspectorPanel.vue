@@ -16,6 +16,7 @@ import {
   formatStepIndexLabel,
   formatTriggerLabel,
 } from "../shared";
+import LocalImageFileTrigger from "./LocalImageFileTrigger.vue";
 
 /** 属性面板需要的只读状态输入。 */
 const props = withDefaults(
@@ -41,6 +42,8 @@ const props = withDefaults(
 const emit = defineEmits<{
   /** 更新当前选中节点。 */
   "update-node": [nodeId: string, patch: NodePatch];
+  /** 用本地文件替换当前图片节点。 */
+  "replace-image": [nodeId: string, file: File];
   /** 新增或更新当前节点关联的动画资源。 */
   "upsert-animation": [animation: NodeAnimation];
   /** 删除当前节点关联的动画资源。 */
@@ -104,6 +107,22 @@ const hasSelectedAnimations = computed(() => props.selectedAnimations.length > 0
 
 /** 当前已展开高级参数的动画 id 列表。 */
 const expandedAnimationIds = ref<string[]>([]);
+
+/** 当前图片节点的来源说明。 */
+const imageSourceHint = computed(() => {
+  if (props.selectedNode?.type !== "image") {
+    return "";
+  }
+
+  const source = props.selectedNode.props.src.trim();
+  if (!source) {
+    return "当前还是空图片框，点击“更换图片”可直接选择本地图片。";
+  }
+
+  return source.startsWith("data:")
+    ? "当前使用本地图片，保存后会随项目一起恢复。"
+    : "当前使用图片地址，也可以直接更换为本地图片。";
+});
 
 /** 读取文本输入框的字符串值。 */
 const readTextInputValue = (value: unknown, fallback = ""): string => {
@@ -312,6 +331,15 @@ const handleImageObjectFitChange = (value: string | number | boolean | undefined
         | "cover",
     },
   });
+};
+
+/** 从属性面板直接替换当前图片节点的本地资源。 */
+const handleImageFileSelect = (file: File) => {
+  if (props.selectedNode?.type !== "image") {
+    return;
+  }
+
+  emit("replace-image", props.selectedNode.id, file);
 };
 
 /** 更新矩形填充色。 */
@@ -680,6 +708,19 @@ const handleAnimationOffsetYChange = (
         </div>
 
         <div class="field-grid">
+          <div class="field field-span-2">
+            <span class="field-label">图片资源</span>
+            <div class="image-source-row">
+              <LocalImageFileTrigger
+                aria-label="更换当前图片"
+                label="更换图片"
+                variant="panel"
+                @select="handleImageFileSelect"
+              />
+              <span class="image-source-hint">{{ imageSourceHint }}</span>
+            </div>
+          </div>
+
           <div class="field field-span-2">
             <span class="field-label">图片地址</span>
             <a-input class="field-input" :model-value="selectedNode.props.src" @input="handleImageSourceInput" />
@@ -1057,6 +1098,17 @@ const handleAnimationOffsetYChange = (
 .field {
   display: grid;
   gap: var(--cw-space-2);
+}
+
+.image-source-row {
+  display: grid;
+  gap: var(--cw-space-2);
+}
+
+.image-source-hint {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--cw-color-muted);
 }
 
 .field-span-2 {

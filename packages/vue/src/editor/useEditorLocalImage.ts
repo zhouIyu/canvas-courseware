@@ -21,6 +21,12 @@ export function useEditorLocalImage(options: UseEditorLocalImageOptions) {
   const resolveActiveSlideId = () =>
     options.snapshot.value.activeSlideId ?? options.activeSlide.value?.id ?? null;
 
+  /** 按节点 id 读取当前激活页面中的图片节点。 */
+  const resolveImageNode = (nodeId: string) => {
+    const imageNode = options.activeSlide.value?.nodes.find((node) => node.id === nodeId);
+    return imageNode?.type === "image" ? imageNode : null;
+  };
+
   /** 把本地图片文件转换成标准图片节点并插入当前页面。 */
   const addImageFromFile = async (file: File): Promise<string | null> => {
     const slideId = resolveActiveSlideId();
@@ -57,7 +63,38 @@ export function useEditorLocalImage(options: UseEditorLocalImageOptions) {
     return node.id;
   };
 
+  /** 用本地图片替换当前页面中的现有图片节点，同时保留布局与样式配置。 */
+  const replaceImageFromFile = async (nodeId: string, file: File): Promise<string | null> => {
+    const slideId = resolveActiveSlideId();
+    const imageNode = resolveImageNode(nodeId);
+    if (!slideId || !imageNode) {
+      return null;
+    }
+
+    const asset = await readLocalImageAsset(file);
+
+    options.controller.execute({
+      type: "node.update",
+      slideId,
+      nodeId,
+      patch: {
+        props: {
+          src: asset.dataUrl,
+          alt: asset.fileName,
+        },
+      },
+    });
+    options.controller.execute({
+      type: "selection.set",
+      slideId,
+      nodeIds: [nodeId],
+    });
+
+    return nodeId;
+  };
+
   return {
     addImageFromFile,
+    replaceImageFromFile,
   };
 }

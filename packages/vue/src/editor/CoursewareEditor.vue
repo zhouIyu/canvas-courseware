@@ -171,6 +171,7 @@ const {
   removeTimelineStep,
   removeSlide,
   redo,
+  replaceImageFromFile,
   reorderNode,
   reorderSlide,
   reorderTimelineStep,
@@ -577,6 +578,17 @@ const handleLocalImageImport = async (file: File) => {
   }
 };
 
+/** 从属性面板直接替换当前图片节点，并保留节点布局和当前选中态。 */
+const handleImageReplace = async (nodeId: string, file: File) => {
+  try {
+    await replaceImageFromFile(nodeId, file);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "图片替换失败，请重试";
+    window.alert(message);
+    console.error(error);
+  }
+};
+
 /** 切换右侧管理区标签。 */
 const activateSideTab = (tab: EditorSideTab) => {
   activeSideTab.value = tab;
@@ -764,6 +776,7 @@ onBeforeUnmount(() => {
               :selected-node="inspectorNode"
               :selected-animations="selectedNodeAnimations"
               :timeline-summary="selectedNodeTimelineSummary"
+              @replace-image="handleImageReplace"
               @update-node="handleNodeUpdate"
               @upsert-animation="handleTimelineAnimationUpsert"
               @remove-animation="handleTimelineAnimationRemove"

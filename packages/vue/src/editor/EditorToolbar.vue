@@ -43,13 +43,13 @@ const handleImageFileSelect = (file: File) => {
       <span class="toolbar-caption">插入</span>
       <a-button class="toolbar-action-button" type="text" @click="emit('add-text')">文本</a-button>
       <a-button class="toolbar-action-button" type="text" @click="emit('add-rect')">矩形</a-button>
-      <a-button class="toolbar-action-button" type="text" @click="emit('add-image')">图片</a-button>
       <LocalImageFileTrigger
-        aria-label="从本地导入图片"
-        label="导入图片"
+        aria-label="插入图片"
+        label="图片"
         variant="toolbar"
         @select="handleImageFileSelect"
       />
+      <a-button class="toolbar-action-button" type="text" @click="emit('add-image')">图片框</a-button>
     </div>
 
     <div class="toolbar-group toolbar-group-history">
