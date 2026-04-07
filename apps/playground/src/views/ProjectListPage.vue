@@ -58,18 +58,6 @@ const filteredProjects = computed(() => {
 /** 当前项目总数。 */
 const projectCountLabel = computed(() => `${projectSummaries.value.length} 个项目`);
 
-/** 最近一次更新项目的摘要。 */
-const latestProjectSummary = computed(() => projectSummaries.value[0] ?? null);
-
-/** 首屏辅助说明，优先强调最近一次编辑或创建入口能力。 */
-const heroHint = computed(() => {
-  if (!latestProjectSummary.value) {
-    return "支持在创建项目时直接设置项目名称和首张页面尺寸。";
-  }
-
-  return `最近更新：${formatUpdatedAt(latestProjectSummary.value.updatedAt)}`;
-});
-
 /** 打开新建项目弹窗。 */
 const openCreateProjectModal = () => {
   isCreateProjectModalVisible.value = true;
@@ -135,39 +123,22 @@ onMounted(() => {
 
 <template>
   <main class="project-list-page">
-    <section class="hero-shell">
-      <div class="hero-copy">
-        <span class="hero-eyebrow">Canvas Courseware</span>
-        <h1>从明确画布开始创建课件项目</h1>
-        <p class="hero-text">
-          新建时直接设定项目名称和首张页面尺寸，进入工作台后继续编辑、预览与保存，不再绕回额外设置面板。
-        </p>
-
-        <div class="hero-meta">
-          <span>{{ projectCountLabel }}</span>
-          <span>{{ heroHint }}</span>
-        </div>
-      </div>
-
-      <div class="hero-actions">
-        <a-button size="large" type="primary" @click="openCreateProjectModal">新建项目</a-button>
-        <span class="hero-action-hint">支持宽屏、4:3、竖屏与自定义尺寸</span>
-      </div>
-    </section>
-
     <section class="library-shell">
       <header class="section-head">
         <div class="section-copy">
           <h2>最近项目</h2>
-          <p>按最近更新时间排序，保留最常用的继续编辑入口。</p>
+          <p>{{ projectCountLabel }}</p>
         </div>
 
-        <a-input-search
-          v-model="searchQuery"
-          allow-clear
-          class="search-input"
-          placeholder="搜索项目名称..."
-        />
+        <div class="section-actions">
+          <a-input-search
+            v-model="searchQuery"
+            allow-clear
+            class="search-input"
+            placeholder="搜索项目名称..."
+          />
+          <a-button type="primary" @click="openCreateProjectModal">新建项目</a-button>
+        </div>
       </header>
 
       <div v-if="filteredProjects.length > 0" class="project-grid">
@@ -227,13 +198,11 @@ onMounted(() => {
 <style scoped>
 .project-list-page {
   display: grid;
-  gap: var(--cw-space-5);
   max-width: 1440px;
   margin: 0 auto;
   padding: 32px 24px 64px;
 }
 
-.hero-shell,
 .library-shell {
   border: 1px solid color-mix(in srgb, var(--cw-color-border) 68%, #ffffff);
   border-radius: var(--cw-radius-xl);
@@ -243,73 +212,9 @@ onMounted(() => {
   box-shadow: var(--cw-shadow-medium);
 }
 
-.hero-shell {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--cw-space-5);
-  align-items: end;
-  padding: 28px 32px;
-}
-
-.hero-copy {
-  display: grid;
-  gap: var(--cw-space-3);
-}
-
-.hero-eyebrow {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #1145d9;
-}
-
-.hero-copy h1,
 .section-copy h2 {
   margin: 0;
   line-height: 1.08;
-}
-
-.hero-copy h1 {
-  max-width: 12ch;
-  font-size: clamp(34px, 5vw, 54px);
-}
-
-.hero-text {
-  max-width: 52ch;
-  margin: 0;
-  font-size: 15px;
-  line-height: 1.75;
-  color: var(--cw-color-muted);
-}
-
-.hero-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--cw-space-3);
-  font-size: 13px;
-  color: var(--cw-color-muted);
-}
-
-.hero-meta span {
-  display: inline-flex;
-  align-items: center;
-  min-height: 32px;
-  padding: 0 12px;
-  border-radius: 999px;
-  background: rgba(22, 93, 255, 0.08);
-}
-
-.hero-actions {
-  display: grid;
-  justify-items: start;
-  gap: var(--cw-space-2);
-}
-
-.hero-action-hint {
-  font-size: 13px;
-  line-height: 1.6;
-  color: var(--cw-color-muted);
 }
 
 .library-shell {
@@ -328,6 +233,7 @@ onMounted(() => {
 .section-copy {
   display: grid;
   gap: var(--cw-space-1);
+  min-width: 0;
 }
 
 .section-copy h2 {
@@ -339,6 +245,13 @@ onMounted(() => {
   font-size: 14px;
   line-height: 1.6;
   color: var(--cw-color-muted);
+}
+
+.section-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--cw-space-3);
 }
 
 .search-input {
@@ -424,7 +337,6 @@ onMounted(() => {
 }
 
 @media (max-width: 900px) {
-  .hero-shell,
   .project-grid {
     grid-template-columns: 1fr;
   }
@@ -433,6 +345,11 @@ onMounted(() => {
     flex-direction: column;
     align-items: flex-start;
   }
+
+  .section-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
 }
 
 @media (max-width: 680px) {
@@ -440,9 +357,17 @@ onMounted(() => {
     padding: 24px 16px 48px;
   }
 
-  .hero-shell,
   .library-shell {
     padding: 20px;
+  }
+
+  .section-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-input {
+    width: 100%;
   }
 
   .project-grid {
