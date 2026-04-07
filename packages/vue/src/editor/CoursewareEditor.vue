@@ -171,6 +171,7 @@ const {
   removeTimelineStep,
   removeSlide,
   redo,
+  setSlideBackgroundImageFromFile,
   replaceImageFromFile,
   reorderNode,
   reorderSlide,
@@ -578,6 +579,18 @@ const handleLocalImageImport = async (file: File) => {
   }
 };
 
+/** 从工具条上传图片并直接设置为当前页面背景。 */
+const handleBackgroundImageImport = async (file: File) => {
+  try {
+    await setSlideBackgroundImageFromFile(file);
+    activateSideTab("slide");
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "背景图设置失败，请重试";
+    window.alert(message);
+    console.error(error);
+  }
+};
+
 /** 从属性面板直接替换当前图片节点，并保留节点布局和当前选中态。 */
 const handleImageReplace = async (nodeId: string, file: File) => {
   try {
@@ -696,6 +709,7 @@ onBeforeUnmount(() => {
           @add-rect="addRect"
           @add-text="addText"
           @import-image="handleLocalImageImport"
+          @set-background-image="handleBackgroundImageImport"
           @redo="redo"
           @undo="undo"
         />

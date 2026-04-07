@@ -21,6 +21,9 @@ export function useEditorLocalImage(options: UseEditorLocalImageOptions) {
   const resolveActiveSlideId = () =>
     options.snapshot.value.activeSlideId ?? options.activeSlide.value?.id ?? null;
 
+  /** 读取当前真正可更新背景配置的 slide。 */
+  const resolveActiveSlide = () => options.activeSlide.value ?? null;
+
   /** 按节点 id 读取当前激活页面中的图片节点。 */
   const resolveImageNode = (nodeId: string) => {
     const imageNode = options.activeSlide.value?.nodes.find((node) => node.id === nodeId);
@@ -63,6 +66,33 @@ export function useEditorLocalImage(options: UseEditorLocalImageOptions) {
     return node.id;
   };
 
+  /** 把本地图片直接设为当前页面背景，并尽量保留现有背景填充方式。 */
+  const setSlideBackgroundImageFromFile = async (file: File): Promise<string | null> => {
+    const slideId = resolveActiveSlideId();
+    const activeSlide = resolveActiveSlide();
+    if (!slideId || !activeSlide) {
+      return null;
+    }
+
+    const asset = await readLocalImageAsset(file);
+
+    options.controller.execute({
+      type: "slide.update",
+      slideId,
+      patch: {
+        background: {
+          ...activeSlide.background,
+          image: {
+            src: asset.dataUrl,
+            fit: activeSlide.background.image?.fit ?? "cover",
+          },
+        },
+      },
+    });
+
+    return asset.dataUrl;
+  };
+
   /** 用本地图片替换当前页面中的现有图片节点，同时保留布局与样式配置。 */
   const replaceImageFromFile = async (nodeId: string, file: File): Promise<string | null> => {
     const slideId = resolveActiveSlideId();
@@ -95,6 +125,7 @@ export function useEditorLocalImage(options: UseEditorLocalImageOptions) {
 
   return {
     addImageFromFile,
+    setSlideBackgroundImageFromFile,
     replaceImageFromFile,
   };
 }
