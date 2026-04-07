@@ -221,7 +221,7 @@ const activeSideTab = ref<EditorSideTab>("node");
 const isSlideRailCollapsed = ref(false);
 
 /** 当前右侧管理栏是否已收起。 */
-const isEditorSideCollapsed = ref(false);
+const isEditorSideCollapsed = ref(true);
 
 /** 当前页面设置抽屉是否打开。 */
 const isSlideSettingsDrawerVisible = ref(false);
@@ -1035,8 +1035,17 @@ defineExpose({
 
         <section ref="workspaceShellRef" class="workspace-shell panel-shell">
           <div class="stage-floating-tools">
-            <a-button class="stage-floating-button" size="small" type="outline" @click="openSlideSettingsDrawer">
-              页面设置
+            <a-button
+              class="stage-floating-button"
+              aria-label="打开页面设置"
+              shape="circle"
+              size="small"
+              type="outline"
+              @click="openSlideSettingsDrawer"
+            >
+              <template #icon>
+                <icon-settings />
+              </template>
             </a-button>
             <FloatingLayerManager
               :nodes="activeSlide?.nodes ?? []"

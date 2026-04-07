@@ -201,7 +201,7 @@
 
 .floating-layer-item__visibility :deep(.arco-btn-icon),
 .floating-layer-item__lock :deep(.arco-btn-icon) {
-  font-size: 22px;
+  font-size: 32px;
 }
 
 .floating-layer-item__visibility:hover,
