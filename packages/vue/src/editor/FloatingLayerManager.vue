@@ -62,10 +62,6 @@ const emit = defineEmits<{
   align: [mode: LayerAlignMode];
   /** 对当前多选节点执行分布。 */
   distribute: [mode: LayerDistributeMode];
-  /** 请求右侧面板切到组件属性。 */
-  "open-inspector": [];
-  /** 请求右侧面板切到时间轴。 */
-  "open-timeline": [];
 }>();
 
 /** 当前浮层是否处于展开态。 */
@@ -97,17 +93,6 @@ const primarySelectedNode = computed(() =>
 /** 当前是否存在可定位的单个主选中对象。 */
 const hasPrimarySelection = computed(() => Boolean(primarySelectedNode.value));
 
-/** 当前是否正处于单选状态。 */
-const hasSingleSelection = computed(
-  () => props.selectedNodeIds.length === 1 && Boolean(primarySelectedNode.value),
-);
-
-/** 当前是否正处于多选状态。 */
-const hasMultiSelection = computed(() => props.selectedNodeIds.length > 1);
-
-/** 当前是否满足分布操作条件。 */
-const canDistributeSelection = computed(() => props.selectedNodeIds.length > 2);
-
 /** 当前选中节点 id 的只读集合，供模板快速判断高亮态。 */
 const selectedNodeIdSet = computed(() => new Set(props.selectedNodeIds));
 
@@ -137,16 +122,6 @@ const canMoveBackward = computed(() => {
 /** 判断某个节点当前是否处于选中态。 */
 const isNodeSelected = (nodeId: string): boolean => selectedNodeIdSet.value.has(nodeId);
 
-/** 当前选中对象的显隐动作文案。 */
-const visibilityActionLabel = computed(() =>
-  primarySelectedNode.value?.visible ? "预览隐藏" : "预览显示",
-);
-
-/** 当前选中对象的锁定动作文案。 */
-const lockActionLabel = computed(() =>
-  primarySelectedNode.value?.locked ? "解锁" : "锁定",
-);
-
 /** 切换浮层展开状态。 */
 const toggleExpanded = () => {
   isExpanded.value = !isExpanded.value;
@@ -167,16 +142,6 @@ const handleLayerKeydown = (event: KeyboardEvent, nodeId: string) => {
   handleSelect(nodeId);
 };
 
-/** 请求右侧面板切到组件属性。 */
-const openInspector = () => {
-  emit("open-inspector");
-};
-
-/** 请求右侧面板切到时间轴。 */
-const openTimeline = () => {
-  emit("open-timeline");
-};
-
 /** 按语义位置派发层级调整动作。 */
 const handleReorder = (position: ReorderPosition) => {
   if (!primarySelectedNode.value) {
@@ -184,24 +149,6 @@ const handleReorder = (position: ReorderPosition) => {
   }
 
   emit("reorder", primarySelectedNode.value.id, position);
-};
-
-/** 派发批量对齐动作。 */
-const handleAlign = (mode: LayerAlignMode) => {
-  if (!hasMultiSelection.value) {
-    return;
-  }
-
-  emit("align", mode);
-};
-
-/** 派发批量分布动作。 */
-const handleDistribute = (mode: LayerDistributeMode) => {
-  if (!canDistributeSelection.value) {
-    return;
-  }
-
-  emit("distribute", mode);
 };
 
 /** 进入图层重命名编辑态。 */
@@ -249,28 +196,6 @@ const handleRenameKeydown = (event: KeyboardEvent, node: CoursewareNode) => {
   }
 };
 
-/** 切换当前主选中对象的锁定状态。 */
-const handlePrimaryLockToggle = () => {
-  if (!primarySelectedNode.value || !hasSingleSelection.value) {
-    return;
-  }
-
-  emit("update-node", primarySelectedNode.value.id, {
-    locked: !primarySelectedNode.value.locked,
-  });
-};
-
-/** 切换当前主选中对象在预览态中的默认显隐状态。 */
-const handlePrimaryVisibilityToggle = () => {
-  if (!primarySelectedNode.value || !hasSingleSelection.value) {
-    return;
-  }
-
-  emit("update-node", primarySelectedNode.value.id, {
-    visible: !primarySelectedNode.value.visible,
-  });
-};
-
 /** 从模板 ref 的不同入参形态里解析出真正的 HTML 元素。 */
 const resolveLayerItemElement = (value: unknown): HTMLElement | null => {
   if (value instanceof HTMLElement) {
@@ -315,19 +240,6 @@ const scrollPrimarySelectionIntoView = (behavior: ScrollBehavior) => {
     block: "nearest",
     behavior,
   });
-};
-
-/** 当前图层项使用的类型图标名称。 */
-const resolveNodeTypeIcon = (nodeType: CoursewareNode["type"]): string => {
-  switch (nodeType) {
-    case "image":
-      return "icon-image";
-    case "rect":
-      return "icon-stop";
-    case "text":
-    default:
-      return "icon-font-colors";
-  }
 };
 
 /** 生成图层列表中展示的“类型-名称”文案。 */
@@ -528,9 +440,6 @@ watch(
               <span class="floating-layer-item__drag-shell">
                 <span class="floating-layer-item__drag">⋮⋮</span>
               </span>
-              <span class="floating-layer-item__icon" :title="formatNodeTypeLabel(node.type)">
-                <component :is="resolveNodeTypeIcon(node.type)" />
-              </span>
               <a-input
                 v-if="editingNodeId === node.id"
                 class="floating-layer-item__name-input"
@@ -578,74 +487,6 @@ watch(
       <p v-else class="floating-layer-manager__empty">
         当前页面还没有组件，先从上方工具栏插入文本、矩形或图片。
       </p>
-
-      <div
-        v-if="hasPrimarySelection || hasMultiSelection"
-        class="floating-layer-manager__footer"
-      >
-        <a-button class="floating-layer-manager__footer-action" size="mini" type="text" @click="openInspector">
-          属性
-        </a-button>
-        <a-button class="floating-layer-manager__footer-action" size="mini" type="text" @click="openTimeline">
-          时间轴
-        </a-button>
-        <a-button
-          v-if="hasSingleSelection"
-          class="floating-layer-manager__footer-action"
-          size="mini"
-          type="text"
-          :disabled="!canMoveForward"
-          @click="handleReorder('front')"
-        >
-          置顶
-        </a-button>
-        <a-button
-          v-if="hasSingleSelection"
-          class="floating-layer-manager__footer-action"
-          size="mini"
-          type="text"
-          @click="handlePrimaryLockToggle"
-        >
-          {{ lockActionLabel }}
-        </a-button>
-        <a-button
-          v-if="hasSingleSelection"
-          class="floating-layer-manager__footer-action"
-          size="mini"
-          type="text"
-          @click="handlePrimaryVisibilityToggle"
-        >
-          {{ visibilityActionLabel }}
-        </a-button>
-        <a-button
-          v-if="hasMultiSelection"
-          class="floating-layer-manager__footer-action"
-          size="mini"
-          type="text"
-          @click="handleAlign('left')"
-        >
-          左对齐
-        </a-button>
-        <a-button
-          v-if="hasMultiSelection"
-          class="floating-layer-manager__footer-action"
-          size="mini"
-          type="text"
-          @click="handleAlign('h-center')"
-        >
-          水平居中
-        </a-button>
-        <a-button
-          v-if="hasMultiSelection"
-          class="floating-layer-manager__footer-action"
-          size="mini"
-          type="text"
-          :disabled="!canDistributeSelection"
-          @click="handleDistribute('horizontal')"
-        >
-          水平分布
-        </a-button>
-      </div>
     </div>
   </section>
 </template>
