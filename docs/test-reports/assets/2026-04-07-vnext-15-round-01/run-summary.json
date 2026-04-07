@@ -1,0 +1,106 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "projectTitle": "VNext-15 组件浮层测试 Round01",
+  "updatedSlideName": "封面页-浮层抽屉",
+  "executedAt": "2026-04-07T15:46:58.867Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "default-layout",
+      "projectId": "document-ef6e6d1e-b120-4858-be78-2d7dee1dbc3f",
+      "rightSideVisible": false,
+      "pageSettingsTriggerVisible": true,
+      "layerTriggerVisible": true,
+      "floatingPanelVisible": false
+    },
+    {
+      "id": "seed-nodes",
+      "nodeCount": 3,
+      "nodeOrder": [
+        "Text",
+        "Rectangle",
+        "Image"
+      ],
+      "expectedLayerLabels": [
+        "文本-Text",
+        "矩形-Rectangle",
+        "图片-Image"
+      ]
+    },
+    {
+      "id": "floating-panel-list",
+      "triggerLabelAfterOpen": "收起图层管理",
+      "layerCount": 3,
+      "actualLabels": [
+        "文本-Text",
+        "矩形-Rectangle",
+        "图片-Image"
+      ],
+      "matchesStorageOrder": true
+    },
+    {
+      "id": "selection-linkage",
+      "sideTabsText": "组件属性时间轴",
+      "hasNodeTab": true,
+      "hasTimelineTab": true,
+      "hasSlideTab": false,
+      "inspectorHeadingVisible": true
+    },
+    {
+      "id": "quick-actions",
+      "firstNodeId": "node-547bb78a-1362-4582-a172-cbb0d6827798",
+      "firstNodeVisible": false,
+      "firstNodeLocked": true,
+      "visibilityButtonNextAction": "预览显示",
+      "lockButtonNextAction": "解锁"
+    },
+    {
+      "id": "reorder-from-floating-panel",
+      "reorderedLabels": [
+        "矩形-Rectangle",
+        "图片-Image",
+        "文本-Text"
+      ],
+      "reorderedNodeOrder": [
+        "Rectangle",
+        "Image",
+        "Text"
+      ],
+      "textMovedToLast": true
+    },
+    {
+      "id": "page-settings-drawer",
+      "drawerVisible": true,
+      "storedSlideName": "封面页-浮层抽屉",
+      "slideCardName": "封面页-浮层抽屉",
+      "renamePersisted": true
+    },
+    {
+      "id": "preview-smoke",
+      "previewCanvasVisible": true
+    },
+    {
+      "id": "reload-persistence",
+      "slideNameAfterReload": "封面页-浮层抽屉",
+      "nodeOrderAfterReload": [
+        "Rectangle",
+        "Image",
+        "Text"
+      ],
+      "textNodeVisibleAfterReload": false,
+      "textNodeLockedAfterReload": true,
+      "floatingLabelsAfterReload": [
+        "矩形-Rectangle",
+        "图片-Image",
+        "文本-Text"
+      ],
+      "persistedSlideNameMatches": true,
+      "textStillLast": true
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

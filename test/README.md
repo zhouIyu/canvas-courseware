@@ -26,6 +26,7 @@
 - `pnpm test:vnext-12`
 - `pnpm test:vnext-13`
 - `pnpm test:vnext-14`
+- `pnpm test:vnext-15`
 
 ## 运行前提
 
