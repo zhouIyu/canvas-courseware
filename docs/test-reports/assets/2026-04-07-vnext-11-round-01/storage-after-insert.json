@@ -1,0 +1,51 @@
+{
+  "id": "document-4702f3b4-891f-4e66-931c-a1f3cc836e35",
+  "title": "未命名课件",
+  "updatedAt": "2026-04-07T12:00:54.670Z",
+  "thumbnail": "#FFFFFF",
+  "document": {
+    "version": "1.0.0",
+    "meta": {
+      "id": "document-4702f3b4-891f-4e66-931c-a1f3cc836e35",
+      "title": "未命名课件"
+    },
+    "slides": [
+      {
+        "id": "slide-c4d96159-b84d-41b7-b66e-cb8c2e9b6509",
+        "name": "第1页",
+        "size": {
+          "width": 1280,
+          "height": 720
+        },
+        "background": {
+          "fill": "#FFFFFF",
+          "image": null
+        },
+        "nodes": [
+          {
+            "id": "node-966351ff-ba02-420d-8d36-21acabc2708d",
+            "type": "image",
+            "name": "vnext08-sample",
+            "x": 480,
+            "y": 270,
+            "width": 320,
+            "height": 180,
+            "rotation": 0,
+            "opacity": 1,
+            "visible": true,
+            "locked": false,
+            "props": {
+              "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUAAAAC0CAIAAABqhmJGAAACM0lEQVR42u3TwQ0AEBBFQRU46k55ilMFTUiWNT/vLlmZ0vqS9GjFCSSAJQEsCWAJYEkASwJYEsASwJIAlgSwBLAkgCUBLAlgCWBJAEsCWBLAEsCSAJYEsASwJIAlASwJYAlgSQBLAlgSwBLAkgCWBLAEsCSAJQEsCWAJYEkASwJYAjjsbbM0A9gMYIDNAAbYDGCADWCAzQAG2AxggM0ABtgABtgMYIDNAAbYAAbYDGCAzQAG2AxggA1ggM0ABtgMYIDNADYDGGAzgAE2AxhgAxhgM4ABNgMYYDOAATaAATYDGGAzgAE2A9gMYIDNAAbYDGCADWCAzQAG2AxggM0ABtgABtgMYIDNAAbYAAbYDGCAzQAG2AxggA1ggM0ABtgMYIDNAAbYAD4AuI4ZlV+3NItCBLAZwAAbwACbAQywGcAAmwEMsAEMsBnAAJsBDLAZwAAbwACbAQywGcAAG8AAmwEMsBnAAJsBDLABDLAZwACbAQywGcBmAANsBjDAZgADbAADbAYwwGYAA2wGMMAGMMBmAANsBjDAZgCbAQywGcAAmwEMsAEMsBnAAJsBDLAZwAAbwACbAQywGcAAG8AAmwEMsBnAAJsBDLABDLAZwACbAQyw2feAJQEsASwJYEkASwJYAlgSwJIAlgSwBLAkgCUBLAEsCWBJAEsCWAJYEsCSAJYEsASwJIAlASwBLAlgSQBLAlgCWBLAkgCWAHYFCWBJAEsCWAJYEsCSAJYEsASwpBva6Uq2pjoG1kMAAAAASUVORK5CYII=",
+              "objectFit": "contain",
+              "alt": "vnext08-sample.png"
+            }
+          }
+        ],
+        "timeline": {
+          "steps": [],
+          "animations": []
+        }
+      }
+    ]
+  }
+}

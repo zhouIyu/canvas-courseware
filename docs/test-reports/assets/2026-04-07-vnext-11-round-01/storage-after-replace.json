@@ -1,0 +1,51 @@
+{
+  "id": "document-4702f3b4-891f-4e66-931c-a1f3cc836e35",
+  "title": "未命名课件",
+  "updatedAt": "2026-04-07T12:00:58.346Z",
+  "thumbnail": "#FFFFFF",
+  "document": {
+    "version": "1.0.0",
+    "meta": {
+      "id": "document-4702f3b4-891f-4e66-931c-a1f3cc836e35",
+      "title": "未命名课件"
+    },
+    "slides": [
+      {
+        "id": "slide-c4d96159-b84d-41b7-b66e-cb8c2e9b6509",
+        "name": "第1页",
+        "size": {
+          "width": 1280,
+          "height": 720
+        },
+        "background": {
+          "fill": "#FFFFFF",
+          "image": null
+        },
+        "nodes": [
+          {
+            "id": "node-966351ff-ba02-420d-8d36-21acabc2708d",
+            "type": "image",
+            "name": "vnext08-sample",
+            "x": 420,
+            "y": 210,
+            "width": 360,
+            "height": 240,
+            "rotation": 0,
+            "opacity": 1,
+            "visible": true,
+            "locked": false,
+            "props": {
+              "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAAHgCAIAAAAUlnfqAAAD1klEQVR42u3SUQkAIBBEQQua5PoYw3p+agfhUI5ZJsHy2o6AMpoLEDQIGgQNgkbQIGgQNAgaBI2gQdAgaBA0CBpBg6BB0CBoEDSCBkGDoEHQIGgEDYIGQYOgQdAIGgQNggZBg6ARNAgaBA2CRtAgaBA0CBoEjaBB0CBoEDQIGkGDoEHQIGgQNIIGQYOgQdAgaAQNggZBg6BB0AgaBA2CBkGDoBE0CBoEDYIGQSNoEDQIGgSNoEHQIGgQNAgaQYOgQdAgaBA0ggZBg6BB0CBoBA2CBkGDoEHQCBoEDYIGQYOgETQIGgQNggZBI2gQNAgaBI2gvYCgQdAgaBA0ggZBg6BB0CBoBA2CBkGDoEHQCBoEDYIGQYOgETQIGgQNggZBI2gQNAgaBA2CRtAgaBA0CBoEjaBB0CBoEDSCBkGDoEHQIGgEDYIGQUNW0GtCGYJG0CBoEDQIGkGDoEHQIGgQNIIGQYOgQdAgaAQNggZBg6BB0AgaBA2CBkGDoBE0CBoEDYIGQSNoEDQIGgQNgkbQIGgQNAgaQXsBQYOgQdAgaAQNggZBg6BB0AgaBA2Chs+DNrueoE3QgjZBC9oEbSZoE7SgTdCCNkEL2gRtJmgTtKBN0II2QQvaBG0maBO0oE3QgjZBC9oEbSZoE7SgTdCCNkEL2gRtJmgTtKBN0II2QQvaBG0maBO0oE3QgjZBmwnaTNAmaEGboAVtgjYTtAla0CZoQZugBW2CNhO0CVrQJmhBm6AFbYI2E7QJWtAmaEGboAVtgjYTtAn6ZdDwmqARNAgaBA2CRtAgaBA0CBoEjaBB0CBoEDQIGkGDoEHQIGgQNIIGQYOgQdAgaAQNggZBg6BB0AgaBA2CBkGDoBE0CBoEDYJG0F5A0CBoEDQIGkGDoEHQIGgQNIIGQcMvQfexoQxBI2gQNAgaBI2gQdAgaBA0CBpBg6BB0CBoEDSCBkGDoEHQIGgEDYIGQYOgQdAIGgQNggZBg6ARNAgaBA2CBkEjaBA0CBoEjaC9gKBB0CBoEDSCBkGDoEHQIGgEDYIGQYOgQdAIGgQNggZBg6ARNAgaBA2CBkEjaBA0CBoEDYJG0CBoEDQIGgSNoEHQIGgQNIIGQYOgQdAgaAQNggZBg6BB0AgaBA2CBkGDoBE0CBoEDYIGQSNoEDQIGgQNgkbQIGgQNAgaBI2gQdAgaBA0gvYCggZBg6BB0AgaBA2CBkGDoBE0CBoEDYIGQSNoEDQIGgQNgkbQIGgQNAgaBI2gQdAgaBA0CBpBg6BB0CBoEDSCBkGDoEHQCBoEDYIGQYOgETQIGgQNSQ46DM7Lj62AeAAAAABJRU5ErkJggg==",
+              "objectFit": "contain",
+              "alt": "vnext09-bg-portrait.png"
+            }
+          }
+        ],
+        "timeline": {
+          "steps": [],
+          "animations": []
+        }
+      }
+    ]
+  }
+}

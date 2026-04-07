@@ -1,0 +1,98 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "insertImagePath": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-04-07-vnext-08-round-01/vnext08-sample.png",
+  "replaceImagePath": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-04-07-vnext-09-round-01/vnext09-bg-portrait.png",
+  "executedAt": "2026-04-07T12:00:49.970Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "toolbar-labels",
+      "projectId": "document-4702f3b4-891f-4e66-931c-a1f3cc836e35",
+      "toolbarText": "插入文本矩形图片图片框",
+      "hasImageButton": true,
+      "hasImageFrameButton": true,
+      "hasLegacyImportLabel": false,
+      "metrics": {
+        "innerWidth": 1440,
+        "innerHeight": 900,
+        "bodyScrollWidth": 1440,
+        "docScrollWidth": 1440,
+        "bodyScrollHeight": 900,
+        "horizontalOverflow": false
+      }
+    },
+    {
+      "id": "insert-image",
+      "imageNodeId": "node-966351ff-ba02-420d-8d36-21acabc2708d",
+      "name": "vnext08-sample",
+      "x": 480,
+      "y": 270,
+      "width": 320,
+      "height": 180,
+      "alt": "vnext08-sample.png",
+      "objectFit": "contain"
+    },
+    {
+      "id": "update-layout-before-replace",
+      "imageNodeId": "node-966351ff-ba02-420d-8d36-21acabc2708d",
+      "x": 420,
+      "y": 210,
+      "width": 360,
+      "height": 240,
+      "objectFit": "contain"
+    },
+    {
+      "id": "replace-image",
+      "imageNodeId": "node-966351ff-ba02-420d-8d36-21acabc2708d",
+      "sameNodeId": true,
+      "x": 420,
+      "y": 210,
+      "width": 360,
+      "height": 240,
+      "alt": "vnext09-bg-portrait.png",
+      "objectFit": "contain",
+      "srcChanged": true
+    },
+    {
+      "id": "reload-persistence",
+      "imageNodeId": "node-966351ff-ba02-420d-8d36-21acabc2708d",
+      "sameNodeAfterReload": true,
+      "x": 420,
+      "y": 210,
+      "width": 360,
+      "height": 240,
+      "alt": "vnext09-bg-portrait.png",
+      "objectFit": "contain"
+    },
+    {
+      "id": "preview-render",
+      "topPixel": [
+        255,
+        107,
+        107,
+        255
+      ],
+      "bottomPixel": [
+        77,
+        150,
+        255,
+        255
+      ],
+      "topLooksWarm": true,
+      "bottomLooksBlue": true,
+      "metrics": {
+        "innerWidth": 1440,
+        "innerHeight": 900,
+        "bodyScrollWidth": 1440,
+        "docScrollWidth": 1440,
+        "bodyScrollHeight": 900,
+        "horizontalOverflow": false
+      }
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

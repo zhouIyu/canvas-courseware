@@ -1,0 +1,23 @@
+{
+  "topPixel": [
+    255,
+    247,
+    174,
+    255
+  ],
+  "middlePixel": [
+    255,
+    247,
+    174,
+    255
+  ],
+  "bottomPixel": [
+    255,
+    247,
+    174,
+    255
+  ],
+  "topLooksWarm": true,
+  "middleLooksLight": true,
+  "bottomLooksBlue": false
+}

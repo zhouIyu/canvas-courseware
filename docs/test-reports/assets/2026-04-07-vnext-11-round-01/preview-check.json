@@ -1,0 +1,16 @@
+{
+  "topPixel": [
+    255,
+    107,
+    107,
+    255
+  ],
+  "bottomPixel": [
+    77,
+    150,
+    255,
+    255
+  ],
+  "topLooksWarm": true,
+  "bottomLooksBlue": true
+}

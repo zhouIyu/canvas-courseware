@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "pnpm --filter @canvas-courseware/playground dev",
     "build": "pnpm -r build",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "test:vnext-10": "node test/vnext-10/round-01.mjs",
+    "test:vnext-11": "node test/vnext-11/round-01.mjs",
+    "test:vnext-12": "node test/vnext-12/round-01.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
