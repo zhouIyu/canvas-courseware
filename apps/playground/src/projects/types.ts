@@ -1,4 +1,5 @@
 import type { CoursewareDocument } from "@canvas-courseware/core";
+import type { ProjectCanvasSize, ProjectCreateOptions } from "./project-creation";
 
 /** 项目列表页使用的摘要信息。 */
 export interface ProjectSummary {
@@ -12,6 +13,8 @@ export interface ProjectSummary {
   thumbnail: string | null;
   /** 当前项目的 slide 数量。 */
   slideCount: number;
+  /** 当前项目首页画布尺寸。 */
+  canvasSize: ProjectCanvasSize;
 }
 
 /** 本地仓库里持久化的一条完整项目记录。 */
@@ -40,7 +43,7 @@ export interface ProjectRepository {
   /** 读取单个完整项目。 */
   get(id: string): ProjectRecord | null;
   /** 创建一个新的空白项目。 */
-  create(title?: string): ProjectRecord;
+  create(options?: ProjectCreateOptions): ProjectRecord;
   /** 保存一条完整项目记录。 */
   save(record: ProjectRecord): ProjectRecord;
   /** 删除一个项目。 */

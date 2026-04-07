@@ -7,6 +7,11 @@ import {
   createTextNode,
   type CoursewareDocument,
 } from "@canvas-courseware/core";
+import {
+  normalizeProjectSlideSize,
+  normalizeProjectTitle,
+  type ProjectCreateOptions,
+} from "./project-creation";
 import type { ProjectRecord } from "./types";
 
 /** 生成项目更新时间字符串。 */
@@ -250,7 +255,13 @@ export function createDemoProjectRecord(): ProjectRecord {
 }
 
 /** 创建一个新的空白项目。 */
-export function createBlankProjectRecord(title = "未命名课件"): ProjectRecord {
+export function createBlankProjectRecord(options: ProjectCreateOptions = {}): ProjectRecord {
+  /** 新项目标题使用统一的默认值策略。 */
+  const title = normalizeProjectTitle(options.title);
+
+  /** 新项目首页尺寸允许在创建时直接指定。 */
+  const slideSize = normalizeProjectSlideSize(options.slideSize);
+
   /** 新项目的基础文档。 */
   const documentModel = createCoursewareDocument({
     title,
@@ -260,6 +271,10 @@ export function createBlankProjectRecord(title = "未命名课件"): ProjectReco
   const firstSlide = documentModel.slides[0];
   if (firstSlide) {
     firstSlide.name = "第1页";
+    firstSlide.size = {
+      width: slideSize.width,
+      height: slideSize.height,
+    };
     firstSlide.background.fill = "#FFFFFF";
   }
 

@@ -1,5 +1,6 @@
 import type { CoursewareDocument } from "@canvas-courseware/core";
 import { createBlankProjectRecord, createDemoProjectRecord } from "./demo-project";
+import { normalizeProjectSlideSize, type ProjectCanvasSize } from "./project-creation";
 import type { ProjectRecord, ProjectRepository, ProjectSummary } from "./types";
 
 /** 浏览器本地存储的项目键名。 */
@@ -28,6 +29,11 @@ function resolveProjectThumbnail(document: CoursewareDocument): string | null {
   return document.slides[0]?.background.fill ?? null;
 }
 
+/** 从文档中提取首页画布尺寸，供列表页和创建链路展示。 */
+function resolveProjectCanvasSize(document: CoursewareDocument): ProjectCanvasSize {
+  return normalizeProjectSlideSize(document.slides[0]?.size);
+}
+
 /** 把完整项目记录转成列表页使用的摘要。 */
 function toProjectSummary(record: ProjectRecord): ProjectSummary {
   return {
@@ -36,6 +42,7 @@ function toProjectSummary(record: ProjectRecord): ProjectSummary {
     updatedAt: record.updatedAt,
     thumbnail: record.thumbnail,
     slideCount: record.document.slides.length,
+    canvasSize: resolveProjectCanvasSize(record.document),
   };
 }
 
@@ -133,8 +140,8 @@ export function createLocalProjectRepository(): ProjectRepository {
       return targetRecord ? clonePlainData(targetRecord) : null;
     },
 
-    create(title) {
-      const nextRecord = createBlankProjectRecord(title);
+    create(options) {
+      const nextRecord = createBlankProjectRecord(options);
       const currentRecords = readStoredProjects();
       writeStoredProjects([nextRecord, ...currentRecords]);
       return clonePlainData(nextRecord);
