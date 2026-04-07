@@ -115,78 +115,6 @@
   min-height: 0;
 }
 
-.toolbar-shell {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  border-bottom: 1px solid color-mix(in srgb, var(--cw-color-border) 92%, #ffffff);
-  background: rgba(255, 255, 255, 0.96);
-}
-
-.toolbar-caption {
-  flex-shrink: 0;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--cw-color-muted);
-}
-
-.toolbar-group {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-}
-
-.toolbar-group :is(.primary-button, .secondary-button, .danger-button) {
-  min-height: 36px;
-}
-
-.toolbar-group-insert {
-  gap: 4px;
-  padding: 4px 6px;
-  border: 1px solid color-mix(in srgb, var(--cw-color-border) 88%, #ffffff);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.72);
-}
-
-.toolbar-group-insert .toolbar-caption {
-  padding: 0 8px 0 4px;
-}
-
-.toolbar-group-history {
-  gap: 4px;
-  padding: 4px 6px;
-  border: 1px solid color-mix(in srgb, var(--cw-color-border) 88%, #ffffff);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.72);
-}
-
-.toolbar-group-history .toolbar-caption {
-  padding: 0 8px 0 4px;
-}
-
-.toolbar-action-button {
-  min-height: 32px;
-  padding: 0 10px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--cw-color-primary);
-}
-
-.toolbar-action-button:hover {
-  color: #0f6bff;
-  background: rgba(22, 93, 255, 0.08);
-}
-
-.toolbar-group-history :deep(.arco-btn.arco-btn-disabled) {
-  color: color-mix(in srgb, var(--cw-color-muted) 80%, #ffffff);
-}
-
 .editor-layout {
   --cw-editor-pane-height: 820px;
   --cw-slide-rail-width: 220px;
@@ -617,7 +545,6 @@
   transform: translateY(-1px);
 }
 
-.editor-shell.is-embedded .toolbar-shell,
 .editor-shell.is-embedded .side-tabs {
   padding-inline: 12px;
 }
@@ -655,19 +582,16 @@
     grid-template-columns: 1fr;
   }
 
-  .toolbar-shell,
   .panel-head {
     align-items: flex-start;
   }
 }
 
 @media (max-width: 768px) {
-  .toolbar-shell,
   .side-tabs {
     padding: 10px;
   }
 
-  .toolbar-group,
   .side-tabs,
   .side-tabs-nav {
     width: 100%;

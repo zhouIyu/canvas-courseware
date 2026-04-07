@@ -15,6 +15,7 @@ import {
 import { FabricEditorAdapter } from "@canvas-courseware/fabric";
 import { useEditorBatchLayout } from "./useEditorBatchLayout";
 import { useEditorClipboardKeyboard } from "./useEditorClipboardKeyboard";
+import { useEditorLocalImage } from "./useEditorLocalImage";
 import { useEditorSlideManagement } from "./useEditorSlideManagement";
 import {
   computed,
@@ -182,6 +183,13 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
   } = useEditorSlideManagement({
     controller,
     snapshot,
+    activeSlide,
+  });
+
+  /** 组合本地图片导入能力，统一转换成标准图片节点命令。 */
+  const { addImageFromFile } = useEditorLocalImage({
+    snapshot,
+    controller,
     activeSlide,
   });
 
@@ -414,6 +422,7 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     activeSlide,
     adapter,
     addImage,
+    addImageFromFile,
     addRect,
     addSlide,
     addSlideAfter,

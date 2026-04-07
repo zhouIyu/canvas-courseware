@@ -15,6 +15,7 @@ import {
 } from "@canvas-courseware/core";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { DEFAULT_EDITOR_HEIGHT } from "../shared";
+import EditorToolbar from "./EditorToolbar.vue";
 import InspectorPanel from "./InspectorPanel.vue";
 import LayerPanel from "./LayerPanel.vue";
 import SlideRailPanel from "./SlideRailPanel.vue";
@@ -25,7 +26,6 @@ import type {
   LayerDistributeMode,
 } from "./useEditorBatchLayout";
 import { useCoursewareEditor } from "./useCoursewareEditor";
-
 /** 编辑器右侧管理区的标签名。 */
 type EditorSideTab = "slide" | "node" | "layers" | "timeline";
 
@@ -154,6 +154,7 @@ const toolbarHeight = ref(0);
 const {
   activeSlide,
   addImage,
+  addImageFromFile,
   addRect,
   addSlide,
   addSlideAfter,
@@ -565,6 +566,17 @@ const handleTimelineAnimationRemove = (animationId: string) => {
   removeTimelineAnimation(activeSlide.value.id, animationId);
 };
 
+/** 从工具条导入一张本地图片，并在失败时给出明确反馈。 */
+const handleLocalImageImport = async (file: File) => {
+  try {
+    await addImageFromFile(file);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "图片导入失败，请重试";
+    window.alert(message);
+    console.error(error);
+  }
+};
+
 /** 切换右侧管理区标签。 */
 const activateSideTab = (tab: EditorSideTab) => {
   activeSideTab.value = tab;
@@ -581,7 +593,6 @@ const handleSideTabChange = (key: EditorSideTabValue) => {
     activateSideTab(key);
   }
 };
-
 /** 切换左侧页面栏显隐。 */
 const toggleSlideRail = () => {
   isSlideRailCollapsed.value = !isSlideRailCollapsed.value;
@@ -604,7 +615,6 @@ const updateStageViewportSize = () => {
     height: stageViewportRef.value?.clientHeight ?? 0,
   };
 };
-
 /** 监听工具条和编辑区尺寸变化，让布局与画布缩放及时同步。 */
 let toolbarResizeObserver: ResizeObserver | null = null;
 let stageViewportResizeObserver: ResizeObserver | null = null;
@@ -666,34 +676,18 @@ onBeforeUnmount(() => {
     </header>
 
     <main class="editor-workbench">
-      <section ref="toolbarShellRef" class="toolbar-shell panel-shell">
-        <div class="toolbar-group toolbar-group-insert">
-          <span class="toolbar-caption">插入</span>
-          <a-button class="toolbar-action-button" type="text" @click="addText">文本</a-button>
-          <a-button class="toolbar-action-button" type="text" @click="addRect">矩形</a-button>
-          <a-button class="toolbar-action-button" type="text" @click="addImage">图片</a-button>
-        </div>
-
-        <div class="toolbar-group toolbar-group-history">
-          <span class="toolbar-caption">历史</span>
-          <a-button
-            class="toolbar-action-button"
-            type="text"
-            :disabled="!canUndo"
-            @click="undo"
-          >
-            撤销
-          </a-button>
-          <a-button
-            class="toolbar-action-button"
-            type="text"
-            :disabled="!canRedo"
-            @click="redo"
-          >
-            重做
-          </a-button>
-        </div>
-      </section>
+      <div ref="toolbarShellRef">
+        <EditorToolbar
+          :can-redo="canRedo"
+          :can-undo="canUndo"
+          @add-image="addImage"
+          @add-rect="addRect"
+          @add-text="addText"
+          @import-image="handleLocalImageImport"
+          @redo="redo"
+          @undo="undo"
+        />
+      </div>
 
       <div class="editor-layout" :class="editorLayoutClass" :style="editorLayoutStyle">
         <a-button
