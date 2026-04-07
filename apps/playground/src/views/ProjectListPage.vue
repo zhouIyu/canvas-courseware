@@ -7,6 +7,10 @@ import {
   type ProjectCreateOptions,
 } from "../projects/project-creation";
 import { projectRepository } from "../projects/project-repository";
+import {
+  createProjectThumbnailStyle,
+  isImageThumbnailSource,
+} from "../projects/project-thumbnails";
 import type { ProjectSummary } from "../projects/types";
 
 /** 项目搜索关键字。 */
@@ -42,6 +46,13 @@ const formatUpdatedAt = (updatedAt: string): string =>
 /** 生成项目标题首字母占位。 */
 const resolveProjectInitial = (projectTitle: string): string =>
   projectTitle.trim().slice(0, 1) || "课";
+
+/** 生成项目卡片封面样式，优先展示真实截图。 */
+const resolveProjectThumbnailStyle = (thumbnail: string | null) =>
+  createProjectThumbnailStyle(thumbnail);
+
+/** 判断项目封面当前是否已经有真实截图。 */
+const hasProjectThumbnailImage = (thumbnail: string | null) => isImageThumbnailSource(thumbnail);
 
 /** 当前搜索结果。 */
 const filteredProjects = computed(() => {
@@ -152,9 +163,11 @@ onMounted(() => {
           <template #cover>
             <div
               class="project-thumbnail"
-              :style="{ background: project.thumbnail ?? 'linear-gradient(135deg, #CCFBF1, #FFFFFF)' }"
+              :style="resolveProjectThumbnailStyle(project.thumbnail)"
             >
-              <span>{{ resolveProjectInitial(project.title) }}</span>
+              <span v-if="!hasProjectThumbnailImage(project.thumbnail)">
+                {{ resolveProjectInitial(project.title) }}
+              </span>
             </div>
           </template>
 

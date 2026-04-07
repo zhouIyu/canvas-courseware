@@ -29,6 +29,12 @@ import {
   watch,
 } from "vue";
 
+/** slide 缩略图导出时使用的缩放倍率，控制 data URL 体积。 */
+const THUMBNAIL_CAPTURE_SCALE = 0.24;
+
+/** slide 缩略图导出时使用的 JPEG 质量。 */
+const THUMBNAIL_CAPTURE_QUALITY = 0.78;
+
 /**
  * 编辑器 composable 的输入参数。
  * 当前只允许外部传入初始文档，后续可以继续扩展更多壳层配置。
@@ -149,6 +155,29 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
   /** 请求适配层结束当前画布内的文本编辑态，供外层点击非画布区域时复用。 */
   const requestInlineTextEditingExit = () => {
     adapter.exitActiveTextEditing();
+  };
+
+  /** 导出当前激活页的缩略图 data URL，供应用层持久化页面封面。 */
+  const captureActiveSlideThumbnail = async (): Promise<string | null> => {
+    if (!activeSlide.value) {
+      return null;
+    }
+
+    /**
+     * 截图前先强制把当前 snapshot 同步到 Fabric 画布，
+     * 避免“刚完成编辑就立即保存”时导出的仍是旧内容。
+     */
+    await adapter.sync();
+    const canvas = adapter.getCanvas();
+    if (!canvas) {
+      return null;
+    }
+
+    return canvas.toDataURL({
+      format: "jpeg",
+      quality: THUMBNAIL_CAPTURE_QUALITY,
+      multiplier: THUMBNAIL_CAPTURE_SCALE,
+    });
   };
 
   /** 订阅 controller 快照变化，让 Vue 层保持响应式同步。 */
@@ -446,6 +475,7 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     applyingExternalDocument,
     canRedo,
     canUndo,
+    captureActiveSlideThumbnail,
     controller,
     clearSelection,
     copySelected,

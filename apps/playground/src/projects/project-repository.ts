@@ -1,6 +1,10 @@
 import type { CoursewareDocument } from "@canvas-courseware/core";
 import { createBlankProjectRecord, createDemoProjectRecord } from "./demo-project";
 import { normalizeProjectSlideSize, type ProjectCanvasSize } from "./project-creation";
+import {
+  resolveProjectPrimaryThumbnail,
+  sanitizeProjectSlideThumbnails,
+} from "./project-thumbnails";
 import type { ProjectRecord, ProjectRepository, ProjectSummary } from "./types";
 
 /** 浏览器本地存储的项目键名。 */
@@ -24,11 +28,6 @@ function clonePlainData<TValue>(value: TValue): TValue {
   return JSON.parse(JSON.stringify(value)) as TValue;
 }
 
-/** 从文档中提取首版缩略图占位。 */
-function resolveProjectThumbnail(document: CoursewareDocument): string | null {
-  return document.slides[0]?.background.fill ?? null;
-}
-
 /** 从文档中提取首页画布尺寸，供列表页和创建链路展示。 */
 function resolveProjectCanvasSize(document: CoursewareDocument): ProjectCanvasSize {
   return normalizeProjectSlideSize(document.slides[0]?.size);
@@ -50,12 +49,15 @@ function toProjectSummary(record: ProjectRecord): ProjectSummary {
 function sanitizeStoredProjectRecord(record: ProjectRecord): ProjectRecord {
   /** 读取阶段只修正缺失字段，不主动改写更新时间。 */
   const normalizedTitle = record.title?.trim() || record.document?.meta?.title || "未命名课件";
+  /** 先清洗 slide 级缩略图，再反推项目首页封面。 */
+  const slideThumbnails = sanitizeProjectSlideThumbnails(record.document, record.slideThumbnails);
 
   return {
     ...clonePlainData(record),
     title: normalizedTitle,
     updatedAt: record.updatedAt || new Date().toISOString(),
-    thumbnail: record.thumbnail ?? resolveProjectThumbnail(record.document),
+    thumbnail: resolveProjectPrimaryThumbnail(record.document, slideThumbnails),
+    slideThumbnails,
     document: {
       ...clonePlainData(record.document),
       meta: {
@@ -71,11 +73,17 @@ function sanitizeStoredProjectRecord(record: ProjectRecord): ProjectRecord {
 function normalizeProjectRecord(record: ProjectRecord): ProjectRecord {
   /** 保存前统一整理标题，避免出现空标题项目。 */
   const normalizedRecord = sanitizeStoredProjectRecord(record);
+  /** 保存时再次按当前文档过滤一遍缩略图缓存，避免遗留被删除页面的截图。 */
+  const slideThumbnails = sanitizeProjectSlideThumbnails(
+    normalizedRecord.document,
+    normalizedRecord.slideThumbnails,
+  );
 
   return {
     ...normalizedRecord,
     updatedAt: new Date().toISOString(),
-    thumbnail: resolveProjectThumbnail(normalizedRecord.document),
+    thumbnail: resolveProjectPrimaryThumbnail(normalizedRecord.document, slideThumbnails),
+    slideThumbnails,
   };
 }
 

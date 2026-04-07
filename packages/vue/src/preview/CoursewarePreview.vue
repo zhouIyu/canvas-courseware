@@ -35,6 +35,8 @@ const props = withDefaults(
     previewRequest?: PreviewPlaybackRequest | null;
     /** 是否展示组件内部头部。 */
     showHeader?: boolean;
+    /** 外部传入的 slide 缩略图缓存，供左侧页面栏优先展示真实封面。 */
+    slideThumbnailMap?: Record<string, string | null>;
   }>(),
   {
     title: "课件预览工作台",
@@ -42,6 +44,7 @@ const props = withDefaults(
     slideId: null,
     previewRequest: null,
     showHeader: true,
+    slideThumbnailMap: () => ({}),
   },
 );
 
@@ -220,9 +223,24 @@ const activeSlideIndex = computed(() => {
   return slides.findIndex((slide) => slide.id === state.value.slideId);
 });
 
-/** 生成预览侧栏缩略页背景样式。 */
-const resolveSlideThumbnailStyle = (slide: CoursewareDocument["slides"][number]) =>
-  createSlideBackgroundStyle(slide.background);
+/** 生成预览侧栏缩略页背景样式，优先使用保存后的真实截图。 */
+const resolveSlideThumbnailStyle = (slide: CoursewareDocument["slides"][number]) => {
+  const thumbnail = props.slideThumbnailMap[slide.id];
+  if (!thumbnail) {
+    return createSlideBackgroundStyle(slide.background);
+  }
+
+  return {
+    backgroundColor: slide.background.fill,
+    backgroundImage: `url(${JSON.stringify(thumbnail)})`,
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+    backgroundSize: "cover",
+  };
+};
+
+/** 判断某一页当前是否已经有真实缩略图。 */
+const hasSlideThumbnail = (slideId: string) => Boolean(props.slideThumbnailMap[slideId]);
 
 /** 当前是否以内嵌工作台模式渲染。 */
 const isEmbedded = computed(() => !props.showHeader);
@@ -353,13 +371,15 @@ onBeforeUnmount(() => {
             </div>
 
             <div class="slide-thumbnail" :style="resolveSlideThumbnailStyle(slide)">
-              <span class="thumb-line long" />
-              <span class="thumb-line short" />
-              <span class="thumb-dots">
-                <i />
-                <i />
-                <i />
-              </span>
+              <template v-if="!hasSlideThumbnail(slide.id)">
+                <span class="thumb-line long" />
+                <span class="thumb-line short" />
+                <span class="thumb-dots">
+                  <i />
+                  <i />
+                  <i />
+                </span>
+              </template>
             </div>
           </a-button>
         </div>

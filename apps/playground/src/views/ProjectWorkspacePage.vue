@@ -3,15 +3,30 @@ import type { CoursewareDocument, EditorSnapshot } from "@canvas-courseware/core
 import type { RequestOption } from "@arco-design/web-vue";
 import { CoursewareEditor, CoursewarePreview } from "@canvas-courseware/vue";
 import { IconLeft } from "@arco-design/web-vue/es/icon";
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import {
+  computed,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  type ComponentPublicInstance,
+  watch,
+} from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
   downloadCoursewareJson,
   formatCoursewareJsonError,
   readCoursewareJsonFile,
 } from "../projects/courseware-json";
+import {
+  resolveProjectPrimaryThumbnail,
+  sanitizeProjectSlideThumbnails,
+} from "../projects/project-thumbnails";
 import { projectRepository } from "../projects/project-repository";
-import type { ProjectRecord, ProjectWorkspaceMode } from "../projects/types";
+import type {
+  ProjectRecord,
+  ProjectSlideThumbnailMap,
+  ProjectWorkspaceMode,
+} from "../projects/types";
 import "./ProjectWorkspacePage.css";
 
 /** 自动保存延时，单位毫秒。 */
@@ -36,6 +51,25 @@ interface PreviewPlaybackRequest {
   stepIndex: number;
 }
 
+/** 编辑器对应用层暴露的截图方法。 */
+interface CoursewareEditorExposed {
+  /** 导出当前激活页的缩略图截图结果。 */
+  captureActiveSlideThumbnail: () => Promise<{
+    /** 已完成截图的 slide id。 */
+    slideId: string;
+    /** 当前 slide 对应的缩略图 data URL。 */
+    thumbnail: string;
+  } | null>;
+}
+
+/** 编辑器切页前抛给应用层的缩略图截图结果。 */
+interface SlideThumbnailCapturedPayload {
+  /** 已完成截图的 slide id。 */
+  slideId: string;
+  /** 当前 slide 对应的缩略图 data URL。 */
+  thumbnail: string;
+}
+
 /** 当前路由实例。 */
 const route = useRoute();
 
@@ -57,6 +91,9 @@ const previewPlaybackRequest = ref<PreviewPlaybackRequest | null>(null);
 /** 工作区内容容器引用，用来计算可用高度。 */
 const workspaceStageRef = ref<HTMLElement | null>(null);
 
+/** 编辑器组件引用，供保存前主动导出当前页缩略图。 */
+const workspaceEditorRef = ref<(ComponentPublicInstance & CoursewareEditorExposed) | null>(null);
+
 /** 当前是否正在加载项目数据。 */
 const isLoading = ref(true);
 
@@ -65,6 +102,9 @@ const isProjectMissing = ref(false);
 
 /** 当前是否正在把仓库数据灌入页面，避免误触自动保存。 */
 const isHydrating = ref(false);
+
+/** 当前项目内各 slide 的缩略图缓存。 */
+const slideThumbnails = ref<ProjectSlideThumbnailMap>({});
 
 /** 当前保存状态。 */
 const saveStatus = ref<SaveStatus>("saved");
@@ -166,12 +206,18 @@ const buildProjectRecord = (): ProjectRecord | null => {
   }
 
   const normalizedTitle = projectTitle.value.trim() || "未命名课件";
+  /** 保存前统一过滤掉已删除页面的截图缓存。 */
+  const normalizedSlideThumbnails = sanitizeProjectSlideThumbnails(
+    documentModel.value,
+    slideThumbnails.value,
+  );
 
   return {
     id: projectId.value,
     title: normalizedTitle,
     updatedAt: new Date().toISOString(),
-    thumbnail: documentModel.value.slides[0]?.background.fill ?? null,
+    thumbnail: resolveProjectPrimaryThumbnail(documentModel.value, normalizedSlideThumbnails),
+    slideThumbnails: normalizedSlideThumbnails,
     document: {
       ...documentModel.value,
       meta: {
@@ -183,8 +229,22 @@ const buildProjectRecord = (): ProjectRecord | null => {
   };
 };
 
+/** 保存前主动向编辑器拉取当前页截图，保证当前页封面与最新画布保持一致。 */
+const syncActiveSlideThumbnailBeforeSave = async () => {
+  const captured = await workspaceEditorRef.value?.captureActiveSlideThumbnail?.();
+  if (!captured || !documentModel.value) {
+    return;
+  }
+
+  slideThumbnails.value = {
+    ...slideThumbnails.value,
+    [captured.slideId]: captured.thumbnail,
+  };
+};
+
 /** 执行一次显式或自动保存。 */
 const persistProject = async (): Promise<boolean> => {
+  await syncActiveSlideThumbnailBeforeSave();
   const projectRecord = buildProjectRecord();
   if (!projectRecord) {
     return false;
@@ -254,6 +314,7 @@ const loadProject = () => {
 
   projectTitle.value = projectRecord.title;
   documentModel.value = projectRecord.document;
+  slideThumbnails.value = projectRecord.slideThumbnails;
   editorSnapshot.value = null;
   previewPlaybackRequest.value = null;
   lastSavedAt.value = projectRecord.updatedAt;
@@ -345,6 +406,7 @@ const applyImportedDocument = async (nextDocument: CoursewareDocument): Promise<
   isHydrating.value = true;
   editorSnapshot.value = null;
   projectTitle.value = normalizedTitle;
+  slideThumbnails.value = {};
   documentModel.value = {
     ...nextDocument,
     meta: {
@@ -401,6 +463,19 @@ const handleProjectTitleInput = (nextValue: string | number) => {
 /** 接收编辑器当前快照，用来同步预览模式的页面位置。 */
 const handleSnapshotChange = (snapshot: EditorSnapshot) => {
   editorSnapshot.value = snapshot;
+};
+
+/** 接收编辑器切页前导出的缩略图，并按项目级缓存落盘。 */
+const handleSlideThumbnailCaptured = (payload: SlideThumbnailCapturedPayload) => {
+  if (slideThumbnails.value[payload.slideId] === payload.thumbnail) {
+    return;
+  }
+
+  slideThumbnails.value = {
+    ...slideThumbnails.value,
+    [payload.slideId]: payload.thumbnail,
+  };
+  scheduleAutoSave();
 };
 
 /** 从编辑器时间轴发起预览请求，并切换到预览模式。 */
@@ -576,12 +651,15 @@ onMounted(() => {
 
       <section ref="workspaceStageRef" class="workspace-stage">
         <CoursewareEditor
+          ref="workspaceEditorRef"
           v-show="workspaceMode === 'edit'"
           v-model="documentModel"
           :height="workspaceContentHeight"
+          :slide-thumbnail-map="slideThumbnails"
           :show-header="false"
           class="workspace-editor"
           @snapshot-change="handleSnapshotChange"
+          @slide-thumbnail-captured="handleSlideThumbnailCaptured"
           @timeline-preview-request="handleTimelinePreviewRequest"
         />
 
@@ -591,6 +669,7 @@ onMounted(() => {
           :height="workspaceContentHeight"
           :preview-request="previewPlaybackRequest"
           :show-header="false"
+          :slide-thumbnail-map="slideThumbnails"
           :slide-id="activeSlideId"
           class="workspace-preview"
         />

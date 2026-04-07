@@ -12,16 +12,12 @@ import {
   normalizeProjectTitle,
   type ProjectCreateOptions,
 } from "./project-creation";
+import { resolveProjectPrimaryThumbnail } from "./project-thumbnails";
 import type { ProjectRecord } from "./types";
 
 /** 生成项目更新时间字符串。 */
 function createUpdatedAt(): string {
   return new Date().toISOString();
-}
-
-/** 从文档中提取首版缩略图占位。 */
-function resolveProjectThumbnail(document: CoursewareDocument): string | null {
-  return document.slides[0]?.background.fill ?? null;
 }
 
 /** 用一份文档创建可持久化项目记录。 */
@@ -30,11 +26,15 @@ export function createProjectRecordFromDocument(
   title: string,
   id = document.meta.id,
 ): ProjectRecord {
+  /** 新建项目初始时还没有真实截图，先留空等待后续保存链路自动补齐。 */
+  const slideThumbnails = {};
+
   return {
     id,
     title,
     updatedAt: createUpdatedAt(),
-    thumbnail: resolveProjectThumbnail(document),
+    thumbnail: resolveProjectPrimaryThumbnail(document, slideThumbnails),
+    slideThumbnails,
     document: {
       ...document,
       meta: {

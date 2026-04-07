@@ -1,6 +1,9 @@
 import type { CoursewareDocument } from "@canvas-courseware/core";
 import type { ProjectCanvasSize, ProjectCreateOptions } from "./project-creation";
 
+/** 项目级 slide 缩略图缓存，按 slide id 保存 data URL。 */
+export type ProjectSlideThumbnailMap = Record<string, string | null>;
+
 /** 项目列表页使用的摘要信息。 */
 export interface ProjectSummary {
   /** 项目唯一标识。 */
@@ -9,7 +12,7 @@ export interface ProjectSummary {
   title: string;
   /** 最近更新时间。 */
   updatedAt: string;
-  /** 项目缩略图占位，首版用颜色或空值表示。 */
+  /** 项目封面图，可为截图 data URL 或回退色值。 */
   thumbnail: string | null;
   /** 当前项目的 slide 数量。 */
   slideCount: number;
@@ -25,8 +28,10 @@ export interface ProjectRecord {
   title: string;
   /** 最近更新时间。 */
   updatedAt: string;
-  /** 项目缩略图占位，首版用颜色或空值表示。 */
+  /** 项目封面图，可为首页截图 data URL 或回退色值。 */
   thumbnail: string | null;
+  /** 当前项目内各 slide 的缩略图缓存。 */
+  slideThumbnails: ProjectSlideThumbnailMap;
   /** 当前项目对应的通用课件文档。 */
   document: CoursewareDocument;
 }

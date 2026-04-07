@@ -37,9 +37,12 @@ const props = withDefaults(
     slides: Slide[];
     /** 当前激活的 slide id。 */
     activeSlideId?: string | null;
+    /** slide 对应的缩略图 data URL，缺省时回退到背景样式。 */
+    slideThumbnailMap?: Record<string, string | null>;
   }>(),
   {
     activeSlideId: null,
+    slideThumbnailMap: () => ({}),
   },
 );
 
@@ -78,8 +81,24 @@ const slideSummary = computed(() =>
   props.slides.length > 0 ? `共 ${props.slides.length} 页，可拖拽排序` : "还没有页面，先新建一页",
 );
 
-/** 生成 slide 缩略图背景样式。 */
-const resolveSlideThumbnailStyle = (slide: Slide) => createSlideBackgroundStyle(slide.background);
+/** 生成 slide 缩略图背景样式，优先使用保存后的真实截图。 */
+const resolveSlideThumbnailStyle = (slide: Slide) => {
+  const thumbnail = props.slideThumbnailMap[slide.id];
+  if (!thumbnail) {
+    return createSlideBackgroundStyle(slide.background);
+  }
+
+  return {
+    backgroundColor: slide.background.fill,
+    backgroundImage: `url(${JSON.stringify(thumbnail)})`,
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+    backgroundSize: "cover",
+  };
+};
+
+/** 判断某一页当前是否已经有真实缩略图。 */
+const hasSlideThumbnail = (slideId: string) => Boolean(props.slideThumbnailMap[slideId]);
 
 /** 激活指定页面。 */
 const activateSlide = (slideId: string) => {
@@ -282,13 +301,15 @@ const resolveDropIndex = (
           </div>
 
           <div class="slide-thumbnail" :style="resolveSlideThumbnailStyle(slide)">
-            <span class="thumb-line long" />
-            <span class="thumb-line short" />
-            <span class="thumb-dots">
-              <i />
-              <i />
-              <i />
-            </span>
+            <template v-if="!hasSlideThumbnail(slide.id)">
+              <span class="thumb-line long" />
+              <span class="thumb-line short" />
+              <span class="thumb-dots">
+                <i />
+                <i />
+                <i />
+              </span>
+            </template>
           </div>
 
           <div class="slide-card-copy">

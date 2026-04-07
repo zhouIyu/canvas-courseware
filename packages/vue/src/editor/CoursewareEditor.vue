@@ -74,6 +74,14 @@ interface TimelinePreviewRequestPayload {
   stepIndex: number;
 }
 
+/** 编辑器向应用层抛出的 slide 缩略图截图结果。 */
+interface SlideThumbnailCapturedPayload {
+  /** 已完成截图的 slide id。 */
+  slideId: string;
+  /** 当前 slide 对应的缩略图 data URL。 */
+  thumbnail: string;
+}
+
 /** 编辑区右键菜单在组件内维护的定位状态。 */
 interface EditorContextMenuState {
   /** 菜单相对工作区的 X 坐标。 */
@@ -104,11 +112,14 @@ const props = withDefaults(
     height?: number;
     /** 是否展示组件内部头部。 */
     showHeader?: boolean;
+    /** 外部传入的 slide 缩略图缓存，供左侧页面栏优先展示真实封面。 */
+    slideThumbnailMap?: Record<string, string | null>;
   }>(),
   {
     title: "课件编辑工作台",
     height: DEFAULT_EDITOR_HEIGHT,
     showHeader: true,
+    slideThumbnailMap: () => ({}),
   },
 );
 
@@ -116,6 +127,8 @@ const props = withDefaults(
 const emit = defineEmits<{
   /** 向外同步最新编辑快照，供 app 层接管产品状态。 */
   "snapshot-change": [snapshot: EditorSnapshot];
+  /** 通知外层某一页已经完成缩略图截图，可持久化到项目仓库。 */
+  "slide-thumbnail-captured": [payload: SlideThumbnailCapturedPayload];
   /** 通知外层从某个时间轴步骤切入预览模式。 */
   "timeline-preview-request": [payload: TimelinePreviewRequestPayload];
 }>();
@@ -242,6 +255,7 @@ const {
   activateSlide,
   canRedo,
   canUndo,
+  captureActiveSlideThumbnail: captureActiveSlideThumbnailDataUrl,
   clearSelection,
   copySelected,
   duplicateSelected,
@@ -542,6 +556,42 @@ const handleSlideUpdate = (patch: Partial<Pick<Slide, "name" | "size" | "backgro
   updateSlide(activeSlide.value.id, patch);
 };
 
+/** 导出当前激活页缩略图，并在成功后同步抛给应用层。 */
+const captureAndEmitActiveSlideThumbnail = async (): Promise<SlideThumbnailCapturedPayload | null> => {
+  if (!activeSlide.value) {
+    return null;
+  }
+
+  const thumbnail = await captureActiveSlideThumbnailDataUrl();
+  if (!thumbnail) {
+    return null;
+  }
+
+  const payload = {
+    slideId: activeSlide.value.id,
+    thumbnail,
+  };
+  emit("slide-thumbnail-captured", payload);
+  return payload;
+};
+
+/** 对外暴露当前激活页的截图接口，供工作台在保存前主动同步缩略图。 */
+const captureActiveSlideThumbnail = async (): Promise<SlideThumbnailCapturedPayload | null> => {
+  if (!activeSlide.value) {
+    return null;
+  }
+
+  const thumbnail = await captureActiveSlideThumbnailDataUrl();
+  if (!thumbnail) {
+    return null;
+  }
+
+  return {
+    slideId: activeSlide.value.id,
+    thumbnail,
+  };
+};
+
 /** 页面栏内快速重命名 slide。 */
 const handleSlideRename = (payload: SlideRailRenamePayload) => {
   updateSlide(payload.slideId, {
@@ -549,13 +599,31 @@ const handleSlideRename = (payload: SlideRailRenamePayload) => {
   });
 };
 
+/** 切页前先截取当前页封面，再切到目标页面。 */
+const handleSlideActivate = async (slideId: string) => {
+  if (slideId === activeSlide.value?.id) {
+    return;
+  }
+
+  await captureAndEmitActiveSlideThumbnail();
+  activateSlide(slideId);
+};
+
+/** 从左侧页面栏新增一页前，先同步当前页面封面。 */
+const handleSlideCreate = async () => {
+  await captureAndEmitActiveSlideThumbnail();
+  addSlide();
+};
+
 /** 从指定页面后快速新增下一页。 */
-const handleSlideCreateAfter = (slideId: string) => {
+const handleSlideCreateAfter = async (slideId: string) => {
+  await captureAndEmitActiveSlideThumbnail();
   addSlideAfter(slideId);
 };
 
 /** 复制指定页面。 */
-const handleSlideDuplicate = (slideId: string) => {
+const handleSlideDuplicate = async (slideId: string) => {
+  await captureAndEmitActiveSlideThumbnail();
   duplicateSlideById(slideId);
 };
 
@@ -869,6 +937,11 @@ onBeforeUnmount(() => {
   stageViewportResizeObserver?.disconnect();
   stageViewportResizeObserver = null;
 });
+
+/** 暴露给应用壳层的组件方法。 */
+defineExpose({
+  captureActiveSlideThumbnail,
+});
 </script>
 
 <template>
@@ -936,9 +1009,10 @@ onBeforeUnmount(() => {
         <aside v-show="!isSlideRailCollapsed" class="slide-rail-host">
           <SlideRailPanel
             :active-slide-id="snapshot.activeSlideId"
+            :slide-thumbnail-map="props.slideThumbnailMap"
             :slides="snapshot.document.slides"
-            @activate="activateSlide"
-            @create="addSlide"
+            @activate="handleSlideActivate"
+            @create="handleSlideCreate"
             @create-after="handleSlideCreateAfter"
             @duplicate="handleSlideDuplicate"
             @remove="handleSlideRemove"
