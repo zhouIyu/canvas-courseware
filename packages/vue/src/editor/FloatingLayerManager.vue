@@ -260,6 +260,16 @@ const handleNodeLockToggle = (node: CoursewareNode) => {
   });
 };
 
+/** 让纯 icon 操作也能响应 Enter / Space，保持键盘可访问性。 */
+const handleActionIconKeydown = (event: KeyboardEvent, action: () => void) => {
+  if (event.key !== "Enter" && event.key !== " ") {
+    return;
+  }
+
+  event.preventDefault();
+  action();
+};
+
 /** 开始拖拽某个节点。 */
 const handleDragStart = (nodeId: string, event: DragEvent) => {
   draggedNodeId.value = nodeId;
@@ -459,26 +469,28 @@ watch(
               >
                 {{ resolveNodeDisplayLabel(node) }}
               </strong>
-              <a-button
+              <span
                 class="floating-layer-item__visibility"
                 :aria-label="node.visible ? '预览隐藏' : '预览显示'"
-                size="mini"
-                type="text"
+                role="button"
+                tabindex="0"
                 @click.stop="handleNodeVisibilityToggle(node)"
+                @keydown.stop="handleActionIconKeydown($event, () => handleNodeVisibilityToggle(node))"
               >
                 <icon-eye v-if="node.visible" />
                 <icon-eye-invisible v-else />
-              </a-button>
-              <a-button
+              </span>
+              <span
                 class="floating-layer-item__lock"
                 :aria-label="node.locked ? '解锁' : '锁定'"
-                size="mini"
-                type="text"
+                role="button"
+                tabindex="0"
                 @click.stop="handleNodeLockToggle(node)"
+                @keydown.stop="handleActionIconKeydown($event, () => handleNodeLockToggle(node))"
               >
                 <icon-lock v-if="node.locked" />
                 <icon-unlock v-else />
-              </a-button>
+              </span>
             </div>
           </div>
         </article>

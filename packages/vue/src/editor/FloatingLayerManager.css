@@ -199,17 +199,24 @@
   padding: 0 2px;
   border-radius: 0;
   color: #6f819d;
+  cursor: pointer;
+  outline: none;
 }
 
-.floating-layer-item__visibility :deep(.arco-btn-icon),
-.floating-layer-item__lock :deep(.arco-btn-icon) {
-  font-size: 32px;
+.floating-layer-item__visibility :deep(.arco-icon),
+.floating-layer-item__lock :deep(.arco-icon) {
+  font-size: 16px;
 }
 
 .floating-layer-item__visibility:hover,
 .floating-layer-item__lock:hover {
   color: var(--cw-color-primary);
   background: transparent;
+}
+
+.floating-layer-item__visibility:focus-visible,
+.floating-layer-item__lock:focus-visible {
+  color: var(--cw-color-primary);
 }
 
 @media (max-width: 1240px) {
