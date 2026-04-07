@@ -152,23 +152,18 @@
   min-width: 0;
 }
 
-.floating-layer-item__drag-shell {
+.floating-layer-item__drag {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border: 1px dashed rgba(191, 205, 224, 0.9);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.7);
   flex-shrink: 0;
-}
-
-.floating-layer-item__drag {
-  font-size: 11px;
-  letter-spacing: -0.1em;
+  width: 16px;
   color: #a3afc2;
   cursor: grab;
+}
+
+.floating-layer-item__drag :deep(.arco-icon) {
+  font-size: 16px;
 }
 
 .floating-layer-item__name {

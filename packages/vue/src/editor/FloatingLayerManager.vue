@@ -447,8 +447,8 @@ watch(
             @keydown="handleLayerKeydown($event, node.id)"
           >
             <div class="floating-layer-item__head">
-              <span class="floating-layer-item__drag-shell">
-                <span class="floating-layer-item__drag">⋮⋮</span>
+              <span class="floating-layer-item__drag">
+                <icon-drag-dot-vertical />
               </span>
               <a-input
                 v-if="editingNodeId === node.id"
