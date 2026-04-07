@@ -6,11 +6,7 @@ import type {
   ReorderPosition,
 } from "@canvas-courseware/core";
 import { computed, nextTick, ref, watch } from "vue";
-import {
-  formatNodeGeometry,
-  formatNodeTimelineSummaryLabel,
-  formatNodeTypeLabel,
-} from "../shared";
+import { formatNodeTypeLabel } from "../shared";
 import type {
   LayerAlignMode,
   LayerDistributeMode,
@@ -138,26 +134,6 @@ const canMoveBackward = computed(() => {
   return currentIndex > 0;
 });
 
-/** 当前选中摘要文案。 */
-const selectionSummary = computed(() => {
-  if (!primarySelectedNode.value) {
-    return "选择一个对象后，可直接切到属性或时间轴，并在浮层内完成重排。";
-  }
-
-  if (hasMultiSelection.value) {
-    return `已选中 ${props.selectedNodeIds.length} 个对象，可直接做对齐与分布。`;
-  }
-
-  return `当前对象为「${primarySelectedNode.value.name}」，可直接改名、锁定、隐藏或调整层级。`;
-});
-
-/** 单张图层卡片的紧凑元信息。 */
-const resolveNodeMetaLine = (node: CoursewareNode): string => formatNodeGeometry(node);
-
-/** 读取某个节点的步骤归属摘要。 */
-const resolveNodeTimelineSummary = (nodeId: string): NodeTimelineSummary | null =>
-  props.nodeTimelineSummaryMap[nodeId] ?? null;
-
 /** 判断某个节点当前是否处于选中态。 */
 const isNodeSelected = (nodeId: string): boolean => selectedNodeIdSet.value.has(nodeId);
 
@@ -170,25 +146,6 @@ const visibilityActionLabel = computed(() =>
 const lockActionLabel = computed(() =>
   primarySelectedNode.value?.locked ? "解锁" : "锁定",
 );
-
-/** 生成图层卡片上需要展示的状态标签。 */
-const resolveNodeStateTags = (node: CoursewareNode): string[] => {
-  const tags: string[] = [];
-
-  if (isNodeSelected(node.id)) {
-    tags.push(hasMultiSelection.value ? "已纳入多选" : "当前选中");
-  }
-
-  if (!node.visible) {
-    tags.push("预览隐藏");
-  }
-
-  if (node.locked) {
-    tags.push("已锁定");
-  }
-
-  return tags;
-};
 
 /** 切换浮层展开状态。 */
 const toggleExpanded = () => {
@@ -360,9 +317,27 @@ const scrollPrimarySelectionIntoView = (behavior: ScrollBehavior) => {
   });
 };
 
-/** 手动触发一次定位，供顶部快捷按钮复用。 */
-const handleLocatePrimarySelection = () => {
-  scrollPrimarySelectionIntoView("smooth");
+/** 当前图层项使用的类型图标名称。 */
+const resolveNodeTypeIcon = (nodeType: CoursewareNode["type"]): string => {
+  switch (nodeType) {
+    case "image":
+      return "icon-image";
+    case "rect":
+      return "icon-stop";
+    case "text":
+    default:
+      return "icon-font-colors";
+  }
+};
+
+/** 根据当前列表索引返回更贴近设计语义的图层序号。 */
+const resolveLayerOrderLabel = (index: number): string => `Z ${props.nodes.length - index - 1}`;
+
+/** 切换某个节点在预览态中的默认显隐状态。 */
+const handleNodeVisibilityToggle = (node: CoursewareNode) => {
+  emit("update-node", node.id, {
+    visible: !node.visible,
+  });
 };
 
 /** 开始拖拽某个节点。 */
@@ -510,96 +485,14 @@ watch(
     <div v-if="isExpanded" class="floating-layer-manager__panel">
       <div class="floating-layer-manager__header">
         <div class="floating-layer-manager__heading">
-          <span class="floating-layer-manager__eyebrow">组件管理</span>
-          <strong>{{ nodes.length }} 个对象</strong>
-          <p>{{ selectionSummary }}</p>
+          <strong>图层</strong>
+          <span>{{ nodes.length }} 项</span>
         </div>
-      </div>
-
-      <div class="floating-layer-manager__actions">
-        <a-button
-          size="mini"
-          type="outline"
-          :disabled="!hasPrimarySelection"
-          @click="handleLocatePrimarySelection"
-        >
-          {{ hasMultiSelection ? "定位首个" : "定位选中" }}
-        </a-button>
-        <a-button
-          size="mini"
-          type="outline"
-          :disabled="!hasPrimarySelection"
-          @click="openInspector"
-        >
-          组件属性
-        </a-button>
-        <a-button
-          size="mini"
-          type="outline"
-          :disabled="!hasPrimarySelection"
-          @click="openTimeline"
-        >
-          时间轴
-        </a-button>
-        <a-button
-          size="mini"
-          type="outline"
-          :disabled="!hasSingleSelection"
-          @click="primarySelectedNode && startRename(primarySelectedNode)"
-        >
-          命名
-        </a-button>
-        <a-button
-          size="mini"
-          type="outline"
-          :disabled="!hasSingleSelection"
-          @click="handlePrimaryVisibilityToggle"
-        >
-          {{ visibilityActionLabel }}
-        </a-button>
-        <a-button
-          size="mini"
-          type="outline"
-          :disabled="!hasSingleSelection"
-          @click="handlePrimaryLockToggle"
-        >
-          {{ lockActionLabel }}
-        </a-button>
-      </div>
-
-      <div v-if="hasSingleSelection" class="floating-layer-manager__actions secondary">
-        <a-button size="mini" type="outline" :disabled="!canMoveForward" @click="handleReorder('front')">
-          置顶
-        </a-button>
-        <a-button size="mini" type="outline" :disabled="!canMoveForward" @click="handleReorder('forward')">
-          上移
-        </a-button>
-        <a-button size="mini" type="outline" :disabled="!canMoveBackward" @click="handleReorder('backward')">
-          下移
-        </a-button>
-        <a-button size="mini" type="outline" :disabled="!canMoveBackward" @click="handleReorder('back')">
-          置底
-        </a-button>
-      </div>
-
-      <div v-if="hasMultiSelection" class="floating-layer-manager__actions secondary">
-        <a-button size="mini" type="outline" @click="handleAlign('left')">左对齐</a-button>
-        <a-button size="mini" type="outline" @click="handleAlign('h-center')">水平居中</a-button>
-        <a-button size="mini" type="outline" @click="handleAlign('right')">右对齐</a-button>
-        <a-button size="mini" type="outline" @click="handleAlign('top')">顶对齐</a-button>
-        <a-button size="mini" type="outline" @click="handleAlign('v-center')">垂直居中</a-button>
-        <a-button size="mini" type="outline" @click="handleAlign('bottom')">底对齐</a-button>
-        <a-button size="mini" type="outline" :disabled="!canDistributeSelection" @click="handleDistribute('horizontal')">
-          水平分布
-        </a-button>
-        <a-button size="mini" type="outline" :disabled="!canDistributeSelection" @click="handleDistribute('vertical')">
-          垂直分布
-        </a-button>
       </div>
 
       <div v-if="nodes.length > 0" class="floating-layer-manager__list">
         <article
-          v-for="node in nodes"
+          v-for="(node, index) in nodes"
           :key="node.id"
           :ref="(element) => registerLayerItemElement(node.id, element)"
           class="floating-layer-item"
@@ -624,7 +517,12 @@ watch(
             @keydown="handleLayerKeydown($event, node.id)"
           >
             <div class="floating-layer-item__head">
-              <span class="floating-layer-item__drag">⋮⋮</span>
+              <span class="floating-layer-item__drag-shell">
+                <span class="floating-layer-item__drag">⋮⋮</span>
+              </span>
+              <span class="floating-layer-item__icon" :title="formatNodeTypeLabel(node.type)">
+                <component :is="resolveNodeTypeIcon(node.type)" />
+              </span>
               <a-input
                 v-if="editingNodeId === node.id"
                 class="floating-layer-item__name-input"
@@ -644,23 +542,19 @@ watch(
               >
                 {{ node.name }}
               </strong>
-              <span class="floating-layer-item__type">{{ formatNodeTypeLabel(node.type) }}</span>
-            </div>
-
-            <div v-if="resolveNodeStateTags(node).length > 0" class="floating-layer-item__tags">
-              <span
-                v-for="tag in resolveNodeStateTags(node)"
-                :key="`${node.id}-${tag}`"
-                class="floating-layer-item__tag"
-              >
-                {{ tag }}
+              <span class="floating-layer-item__order">{{ resolveLayerOrderLabel(index) }}</span>
+              <span v-if="node.locked" class="floating-layer-item__state-icon" title="已锁定">
+                <icon-lock />
               </span>
-            </div>
-
-            <small class="floating-layer-item__meta">{{ resolveNodeMetaLine(node) }}</small>
-            <div class="floating-layer-item__summary">
-              <span>播放</span>
-              <span>{{ formatNodeTimelineSummaryLabel(resolveNodeTimelineSummary(node.id)) }}</span>
+              <a-button
+                class="floating-layer-item__visibility"
+                :aria-label="node.visible ? '预览隐藏' : '预览显示'"
+                size="mini"
+                type="text"
+                @click.stop="handleNodeVisibilityToggle(node)"
+              >
+                <component :is="node.visible ? 'icon-eye' : 'icon-eye-invisible'" />
+              </a-button>
             </div>
           </div>
         </article>
@@ -669,6 +563,74 @@ watch(
       <p v-else class="floating-layer-manager__empty">
         当前页面还没有组件，先从上方工具栏插入文本、矩形或图片。
       </p>
+
+      <div
+        v-if="hasPrimarySelection || hasMultiSelection"
+        class="floating-layer-manager__footer"
+      >
+        <a-button class="floating-layer-manager__footer-action" size="mini" type="text" @click="openInspector">
+          属性
+        </a-button>
+        <a-button class="floating-layer-manager__footer-action" size="mini" type="text" @click="openTimeline">
+          时间轴
+        </a-button>
+        <a-button
+          v-if="hasSingleSelection"
+          class="floating-layer-manager__footer-action"
+          size="mini"
+          type="text"
+          :disabled="!canMoveForward"
+          @click="handleReorder('front')"
+        >
+          置顶
+        </a-button>
+        <a-button
+          v-if="hasSingleSelection"
+          class="floating-layer-manager__footer-action"
+          size="mini"
+          type="text"
+          @click="handlePrimaryLockToggle"
+        >
+          {{ lockActionLabel }}
+        </a-button>
+        <a-button
+          v-if="hasSingleSelection"
+          class="floating-layer-manager__footer-action"
+          size="mini"
+          type="text"
+          @click="handlePrimaryVisibilityToggle"
+        >
+          {{ visibilityActionLabel }}
+        </a-button>
+        <a-button
+          v-if="hasMultiSelection"
+          class="floating-layer-manager__footer-action"
+          size="mini"
+          type="text"
+          @click="handleAlign('left')"
+        >
+          左对齐
+        </a-button>
+        <a-button
+          v-if="hasMultiSelection"
+          class="floating-layer-manager__footer-action"
+          size="mini"
+          type="text"
+          @click="handleAlign('h-center')"
+        >
+          水平居中
+        </a-button>
+        <a-button
+          v-if="hasMultiSelection"
+          class="floating-layer-manager__footer-action"
+          size="mini"
+          type="text"
+          :disabled="!canDistributeSelection"
+          @click="handleDistribute('horizontal')"
+        >
+          水平分布
+        </a-button>
+      </div>
     </div>
   </section>
 </template>
