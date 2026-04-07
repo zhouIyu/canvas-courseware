@@ -557,7 +557,8 @@ watch(
                 type="text"
                 @click.stop="handleNodeVisibilityToggle(node)"
               >
-                <component :is="node.visible ? 'icon-eye' : 'icon-eye-invisible'" />
+                <icon-eye v-if="node.visible" />
+                <icon-eye-invisible v-else />
               </a-button>
               <a-button
                 class="floating-layer-item__lock"
@@ -566,7 +567,8 @@ watch(
                 type="text"
                 @click.stop="handleNodeLockToggle(node)"
               >
-                <component :is="node.locked ? 'icon-lock' : 'icon-unlock'" />
+                <icon-lock v-if="node.locked" />
+                <icon-unlock v-else />
               </a-button>
             </div>
           </div>
