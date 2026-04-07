@@ -6,6 +6,14 @@ type CanvasWithBackgroundImage = Canvas & {
   backgroundImage?: FabricImage | undefined;
 };
 
+/** 把背景图对象安全写回 Fabric 画布。 */
+export function applyCanvasBackgroundImage(
+  canvas: Canvas,
+  backgroundImage: FabricImage | null,
+): void {
+  (canvas as CanvasWithBackgroundImage).backgroundImage = backgroundImage ?? undefined;
+}
+
 /** 让画布尺寸和纯色背景始终与当前 slide 保持一致。 */
 export function syncCanvasFrame(canvas: Canvas, slide: Slide): void {
   canvas.setDimensions({
@@ -17,16 +25,25 @@ export function syncCanvasFrame(canvas: Canvas, slide: Slide): void {
 
 /** 清空当前画布上的背景图，供空态和切页时复用。 */
 export function resetCanvasBackground(canvas: Canvas): void {
-  (canvas as CanvasWithBackgroundImage).backgroundImage = undefined;
+  applyCanvasBackgroundImage(canvas, null);
+}
+
+/**
+ * 预先加载当前 slide 需要的背景图。
+ * 调用方可以在资源加载完成后自行决定是否把结果写回当前画布，
+ * 从而避免切页时旧请求晚到一步覆盖新页面。
+ */
+export async function loadCanvasBackgroundImage(slide: Slide): Promise<FabricImage | null> {
+  return createCanvasBackgroundImage(slide);
 }
 
 /**
  * 按当前 slide 的背景配置同步背景图。
- * 这里单独拆成异步步骤，避免选择态变更时重复加载背景资源。
+ * 这个方法适合无需额外版本保护的直接同步场景。
  */
 export async function syncCanvasBackgroundImage(canvas: Canvas, slide: Slide): Promise<void> {
-  const backgroundImage = await createCanvasBackgroundImage(slide);
-  (canvas as CanvasWithBackgroundImage).backgroundImage = backgroundImage ?? undefined;
+  const backgroundImage = await loadCanvasBackgroundImage(slide);
+  applyCanvasBackgroundImage(canvas, backgroundImage);
 }
 
 /** 把 slide 背景图转换为可挂到 Fabric 画布上的背景对象。 */

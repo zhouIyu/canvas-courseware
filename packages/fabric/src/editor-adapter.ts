@@ -2,18 +2,20 @@ import { ActiveSelection, Canvas, type ModifiedEvent } from "fabric";
 import { type CoursewareNode, EditorController, type EditorSnapshot, type Slide } from "@canvas-courseware/core";
 import { registerEditorCanvasEvents } from "./editor-canvas-events";
 import {
+  applyCanvasBackgroundImage,
   applySelectionToCanvas,
   createEditorNodeObject,
   type FabricNodeObject,
   findNode,
+  loadCanvasBackgroundImage,
   readObjectGeometry,
   readNodeMeta,
   renderEmptyCanvas,
+  resetCanvasBackground,
   resolveCanvasSelectionNodeIds,
   resolveActiveSelectionNodeTranslations,
   resolveSlide,
   resolveTextNodeChange,
-  syncCanvasBackgroundImage,
   syncCanvasFrame,
 } from "./editor-adapter-support";
 /**
@@ -215,11 +217,15 @@ export class FabricEditorAdapter {
       this.objectMap.clear();
       canvas.clear();
       syncCanvasFrame(canvas, slide);
-      await syncCanvasBackgroundImage(canvas, slide);
+      resetCanvasBackground(canvas);
+
+      const backgroundImage = await loadCanvasBackgroundImage(slide);
 
       if (syncVersion !== this.syncVersion || !this.canvas) {
         return;
       }
+
+      applyCanvasBackgroundImage(canvas, backgroundImage);
 
       const objects: FabricNodeObject[] = [];
 

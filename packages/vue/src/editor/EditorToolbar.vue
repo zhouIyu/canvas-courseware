@@ -21,9 +21,9 @@ const emit = defineEmits<{
   "add-text": [];
   /** 新增矩形节点。 */
   "add-rect": [];
-  /** 新增图片占位节点，供后续粘贴地址或再换图。 */
+  /** 新增空图片节点。 */
   "add-image": [];
-  /** 从本地文件插入图片。 */
+  /** 从本地文件导入图片。 */
   "import-image": [file: File];
   /** 执行一次撤销。 */
   undo: [];
@@ -43,13 +43,13 @@ const handleImageFileSelect = (file: File) => {
       <span class="toolbar-caption">插入</span>
       <a-button class="toolbar-action-button" type="text" @click="emit('add-text')">文本</a-button>
       <a-button class="toolbar-action-button" type="text" @click="emit('add-rect')">矩形</a-button>
+      <a-button class="toolbar-action-button" type="text" @click="emit('add-image')">图片</a-button>
       <LocalImageFileTrigger
-        aria-label="插入图片"
-        label="图片"
+        aria-label="从本地导入图片"
+        label="导入图片"
         variant="toolbar"
         @select="handleImageFileSelect"
       />
-      <a-button class="toolbar-action-button" type="text" @click="emit('add-image')">占位图</a-button>
     </div>
 
     <div class="toolbar-group toolbar-group-history">

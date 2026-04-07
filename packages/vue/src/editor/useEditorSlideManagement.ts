@@ -25,15 +25,17 @@ export function useEditorSlideManagement(options: UseEditorSlideManagementOption
   /** 生成编辑器中新页面的默认命名。 */
   const createSlideName = () => `第${options.snapshot.value.document.slides.length + 1}页`;
 
-  /** 根据参考页生成一张新的空白 slide，并继承常用画布参数。 */
+  /**
+   * 根据参考页生成一张新的空白 slide。
+   * 新建页只继承常用画布尺寸和基础背景色，不继承背景图资源，
+   * 这样可以保证“新建页面”和“复制页面”在背景初始化上的边界清晰。
+   */
   const createDraftSlide = (referenceSlide?: Slide) =>
     createSlide({
       name: createSlideName(),
       width: referenceSlide?.size.width,
       height: referenceSlide?.size.height,
       backgroundFill: referenceSlide?.background.fill ?? "#FFFFFF",
-      backgroundImageSrc: referenceSlide?.background.image?.src ?? undefined,
-      backgroundImageFit: referenceSlide?.background.image?.fit ?? "cover",
     });
 
   /** 统一派发 slide 创建并切到新页，避免各个入口重复写两条命令。 */

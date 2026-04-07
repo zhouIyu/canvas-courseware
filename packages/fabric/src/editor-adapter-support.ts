@@ -10,6 +10,8 @@ import {
   type FabricRenderableObject,
 } from "./object-factory";
 import {
+  applyCanvasBackgroundImage,
+  loadCanvasBackgroundImage,
   resetCanvasBackground,
   syncCanvasFrame,
   syncCanvasBackgroundImage,
@@ -46,7 +48,13 @@ export function resolveSlide(
     : undefined;
 }
 
-export { syncCanvasFrame, syncCanvasBackgroundImage };
+export {
+  applyCanvasBackgroundImage,
+  loadCanvasBackgroundImage,
+  resetCanvasBackground,
+  syncCanvasFrame,
+  syncCanvasBackgroundImage,
+};
 
 /** 在没有可渲染页面时，重置 Fabric 画布到空白状态。 */
 export function renderEmptyCanvas(

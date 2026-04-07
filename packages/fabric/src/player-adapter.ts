@@ -18,8 +18,9 @@ import {
   type FabricRenderableObject,
 } from "./object-factory";
 import {
+  applyCanvasBackgroundImage,
+  loadCanvasBackgroundImage,
   resetCanvasBackground,
-  syncCanvasBackgroundImage,
   syncCanvasFrame,
 } from "./background";
 
@@ -403,11 +404,15 @@ export class FabricPlayerAdapter {
     this.objectMap.clear();
     canvas.clear();
     syncCanvasFrame(canvas, slide);
-    await syncCanvasBackgroundImage(canvas, slide);
+    resetCanvasBackground(canvas);
+
+    const backgroundImage = await loadCanvasBackgroundImage(slide);
 
     if (version !== this.syncVersion || !this.canvas) {
       return;
     }
+
+    applyCanvasBackgroundImage(canvas, backgroundImage);
 
     const objects: FabricPlaybackObject[] = [];
 
