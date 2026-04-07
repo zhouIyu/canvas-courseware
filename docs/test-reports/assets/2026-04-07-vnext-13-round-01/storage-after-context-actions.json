@@ -1,0 +1,54 @@
+{
+  "id": "document-cadb9259-5366-43cf-9b94-7b4499d214ba",
+  "title": "未命名课件",
+  "updatedAt": "2026-04-07T14:07:46.746Z",
+  "thumbnail": "#FFFFFF",
+  "document": {
+    "version": "1.0.0",
+    "meta": {
+      "id": "document-cadb9259-5366-43cf-9b94-7b4499d214ba",
+      "title": "未命名课件"
+    },
+    "slides": [
+      {
+        "id": "slide-90a90c51-87f1-4aa2-923d-edc9b0b1c9d7",
+        "name": "第1页",
+        "size": {
+          "width": 1280,
+          "height": 720
+        },
+        "background": {
+          "fill": "#FFFFFF",
+          "image": null
+        },
+        "nodes": [
+          {
+            "id": "node-ac99ced9-8e4f-48ab-a6eb-cc0915c03fad",
+            "type": "text",
+            "name": "Text",
+            "x": 110,
+            "y": 110,
+            "width": 421,
+            "height": 37.16,
+            "rotation": 0,
+            "opacity": 1,
+            "visible": true,
+            "locked": false,
+            "props": {
+              "text": "画布内双击编辑成功",
+              "fontSize": 32,
+              "color": "#172033",
+              "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+              "lineHeight": 1.5,
+              "textAlign": "left"
+            }
+          }
+        ],
+        "timeline": {
+          "steps": [],
+          "animations": []
+        }
+      }
+    ]
+  }
+}

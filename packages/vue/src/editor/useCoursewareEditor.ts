@@ -146,6 +146,11 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     });
   };
 
+  /** 请求适配层结束当前画布内的文本编辑态，供外层点击非画布区域时复用。 */
+  const requestInlineTextEditingExit = () => {
+    adapter.exitActiveTextEditing();
+  };
+
   /** 订阅 controller 快照变化，让 Vue 层保持响应式同步。 */
   const unsubscribe = controller.subscribe((nextSnapshot) => {
     snapshot.value = nextSnapshot;
@@ -457,6 +462,7 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     removeTimelineAnimation,
     removeTimelineStep,
     reorderTimelineStep,
+    requestInlineTextEditingExit,
     replaceDocument,
     selectedNode,
     selectedNodeId,

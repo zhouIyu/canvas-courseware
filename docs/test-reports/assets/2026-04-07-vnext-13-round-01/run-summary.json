@@ -1,0 +1,86 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "editedText": "画布内双击编辑成功",
+  "executedAt": "2026-04-07T14:07:36.357Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "blank-context-menu",
+      "menuText": "插入文本 插入矩形 插入图片 插入图片框 粘贴",
+      "hasInsertText": true,
+      "hasInsertRect": true,
+      "hasInsertImage": true,
+      "hasInsertImageFrame": true,
+      "hasPaste": true,
+      "hasSelectionActions": false,
+      "metrics": {
+        "innerWidth": 1440,
+        "innerHeight": 900,
+        "bodyScrollWidth": 1440,
+        "docScrollWidth": 1440,
+        "bodyScrollHeight": 900,
+        "horizontalOverflow": false
+      }
+    },
+    {
+      "id": "insert-text",
+      "textNodeCount": 1,
+      "nodeId": "node-ac99ced9-8e4f-48ab-a6eb-cc0915c03fad",
+      "text": "新建文本",
+      "x": 110,
+      "y": 110
+    },
+    {
+      "id": "double-click-edit",
+      "nodeId": "node-ac99ced9-8e4f-48ab-a6eb-cc0915c03fad",
+      "text": "画布内双击编辑成功",
+      "inspectorTextValue": "画布内双击编辑成功",
+      "textUpdated": true
+    },
+    {
+      "id": "selected-context-menu",
+      "menuText": "插入文本 插入矩形 插入图片 插入图片框 复制所选 重复所选 删除所选 粘贴",
+      "hasCopy": true,
+      "hasDuplicate": true,
+      "hasDelete": true
+    },
+    {
+      "id": "duplicate-selected",
+      "textNodeCount": 2,
+      "duplicatedNodeId": "node-04694e3f-2f43-4b5f-a0b4-01c209c4dd75",
+      "duplicatedText": "画布内双击编辑成功",
+      "duplicatedOffsetX": 24,
+      "duplicatedOffsetY": 24
+    },
+    {
+      "id": "delete-selected",
+      "textNodeCount": 1,
+      "remainingNodeId": "node-ac99ced9-8e4f-48ab-a6eb-cc0915c03fad",
+      "remainingText": "画布内双击编辑成功",
+      "deletedDuplicate": true
+    },
+    {
+      "id": "reload-persistence",
+      "textNodeCount": 1,
+      "persistedText": "画布内双击编辑成功",
+      "textStillUpdated": true
+    },
+    {
+      "id": "preview-smoke",
+      "resetButtonVisible": true,
+      "metrics": {
+        "innerWidth": 1440,
+        "innerHeight": 900,
+        "bodyScrollWidth": 1440,
+        "docScrollWidth": 1440,
+        "bodyScrollHeight": 900,
+        "horizontalOverflow": false
+      }
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

@@ -124,6 +124,16 @@ export class FabricEditorAdapter {
     return this.currentSlideId;
   }
 
+  /** 当用户点击非画布区域时，主动结束当前文本对象的内联编辑态。 */
+  exitActiveTextEditing(): void {
+    const activeObject = this.canvas?.getActiveObject() as EditableFabricTextObject | undefined;
+    if (!activeObject?.isEditing || typeof activeObject.exitEditing !== "function") {
+      return;
+    }
+
+    activeObject.exitEditing();
+  }
+
   async mount(options: FabricEditorAdapterMountOptions): Promise<void> {
     await this.disposeCanvas();
 
@@ -545,26 +555,44 @@ export class FabricEditorAdapter {
     const editableTarget = target as EditableFabricTextObject;
     editableTarget.editable = false;
 
-    if (this.isSyncing || !this.controller || !this.currentSlideId) {
+    if (!this.controller) {
       return;
     }
 
+    const meta = readNodeMeta(target);
+    const slideId = meta?.slideId ?? this.currentSlideId;
+    if (!slideId) {
+      return;
+    }
+
+    /**
+     * 文本编辑退出时，Fabric 可能会先抛出一次选中态变化，
+     * 进而触发控制器把当前快照同步回画布。
+     * 这里如果继续用 `isSyncing` 拦截，就会把真正的最终文本提交漏掉。
+     */
     const textChange = resolveTextNodeChange(
       this.controller.getSnapshot(),
-      this.currentSlideId,
+      slideId,
       target,
     );
     if (!textChange) {
       return;
     }
 
-    this.controller.handleAdapterEvent({
-      type: "adapter.text.changed",
-      slideId: this.currentSlideId,
-      nodeId: textChange.nodeId,
-      text: textChange.text,
+    this.retainSelection(textChange.nodeId);
+    queueMicrotask(() => {
+      if (!this.controller) {
+        return;
+      }
+
+      this.controller.handleAdapterEvent({
+        type: "adapter.text.changed",
+        slideId,
+        nodeId: textChange.nodeId,
+        text: textChange.text,
+      });
+      this.scheduleSelectionRestore(textChange.nodeId);
     });
-    this.scheduleSelectionRestore(textChange.nodeId);
   }
 
   /** 统一处理右键菜单请求，并把命中目标同步回标准选中态。 */

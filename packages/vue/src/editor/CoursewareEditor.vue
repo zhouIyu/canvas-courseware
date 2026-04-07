@@ -260,6 +260,7 @@ const {
   reorderSlide,
   reorderTimelineStep,
   replaceDocument,
+  requestInlineTextEditingExit,
   selectedNode,
   selectedNodeId,
   selectNodes,
@@ -800,11 +801,15 @@ const handleStageViewportContextMenu = (event: MouseEvent) => {
 
 /** 点击菜单外区域时关闭右键菜单。 */
 const handleGlobalPointerDown = (event: PointerEvent) => {
+  const target = event.target;
+  if (!(target instanceof HTMLElement) || !target.closest("canvas")) {
+    requestInlineTextEditingExit();
+  }
+
   if (!contextMenuState.value) {
     return;
   }
 
-  const target = event.target;
   if (target instanceof HTMLElement && target.closest(".stage-context-menu")) {
     return;
   }
