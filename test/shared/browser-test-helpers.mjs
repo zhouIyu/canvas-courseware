@@ -145,15 +145,16 @@ export async function waitForSaved(page) {
 }
 
 /**
- * 读取预览 `lower-canvas` 上指定像素点颜色。
+ * 读取指定 canvas 选择器上的像素颜色。
  *
  * @param {import("playwright").Page} page
+ * @param {string} selector
  * @param {number} x
  * @param {number} y
  * @returns {Promise<number[] | null>}
  */
-export async function readPreviewCanvasPixel(page, x, y) {
-  return page.locator(".preview-stage-surface .lower-canvas").evaluate((canvas, point) => {
+export async function readCanvasPixel(page, selector, x, y) {
+  return page.locator(selector).evaluate((canvas, point) => {
     if (!(canvas instanceof HTMLCanvasElement)) {
       return null;
     }
@@ -165,4 +166,16 @@ export async function readPreviewCanvasPixel(page, x, y) {
 
     return Array.from(context.getImageData(point.x, point.y, 1, 1).data);
   }, { x, y });
+}
+
+/**
+ * 读取预览 `lower-canvas` 上指定像素点颜色。
+ *
+ * @param {import("playwright").Page} page
+ * @param {number} x
+ * @param {number} y
+ * @returns {Promise<number[] | null>}
+ */
+export async function readPreviewCanvasPixel(page, x, y) {
+  return readCanvasPixel(page, ".preview-stage-surface .lower-canvas", x, y);
 }
