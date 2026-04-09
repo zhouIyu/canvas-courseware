@@ -1,17 +1,16 @@
 {
   "baseUrl": "http://127.0.0.1:32173/projects",
   "imagePath": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-04-07-vnext-08-round-01/vnext08-sample.png",
-  "executedAt": "2026-04-09T07:01:47.802Z",
+  "executedAt": "2026-04-09T07:13:51.072Z",
   "desktopViewport": {
     "width": 1440,
     "height": 900
   },
   "checks": [
     {
-      "id": "empty-image-frame-context-menu",
-      "menuText": "插入文本 插入矩形 插入图片 插入图片框 复制所选 重复所选 删除所选 粘贴",
-      "hasSetBackground": false,
-      "hasDelete": true,
+      "id": "blank-context-menu",
+      "menuText": "插入文本 插入矩形 插入图片 粘贴",
+      "hasInsertImageFrame": false,
       "metrics": {
         "innerWidth": 1440,
         "innerHeight": 900,
@@ -23,7 +22,7 @@
     },
     {
       "id": "image-context-menu",
-      "menuText": "插入文本 插入矩形 插入图片 插入图片框 复制所选 重复所选 设为背景 删除所选 粘贴",
+      "menuText": "插入文本 插入矩形 插入图片 复制所选 重复所选 设为背景 删除所选 粘贴",
       "hasSetBackground": true,
       "hasCopy": true,
       "hasDuplicate": true,

@@ -275,7 +275,6 @@ const toolbarHeight = ref(0);
 /** 从 composable 中解出编辑器所需的状态与操作。 */
 const {
   activeSlide,
-  addImage,
   addImageFromFile,
   addRect,
   addSlide,
@@ -837,12 +836,6 @@ const handleContextMenuAddRect = () => {
   addRect();
 };
 
-/** 右键菜单中快速插入空图片框。 */
-const handleContextMenuAddImageFrame = () => {
-  closeContextMenu();
-  addImage();
-};
-
 /** 右键菜单中直接从本地插入图片。 */
 const handleContextMenuImageImport = async (file: File) => {
   closeContextMenu();
@@ -1196,9 +1189,6 @@ defineExpose({
                 variant="menu"
                 @select="handleContextMenuImageImport"
               />
-              <a-button class="stage-context-menu__item" type="text" @click="handleContextMenuAddImageFrame">
-                插入图片框
-              </a-button>
             </div>
 
             <template v-if="contextMenuHasSelection">

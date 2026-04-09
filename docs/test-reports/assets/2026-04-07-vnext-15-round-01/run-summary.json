@@ -2,7 +2,7 @@
   "baseUrl": "http://127.0.0.1:32173/projects",
   "projectTitle": "VNext-15 组件浮层测试 Round01",
   "updatedSlideName": "封面页-浮层抽屉",
-  "executedAt": "2026-04-09T06:59:39.002Z",
+  "executedAt": "2026-04-09T07:13:51.072Z",
   "desktopViewport": {
     "width": 1440,
     "height": 900
@@ -10,7 +10,7 @@
   "checks": [
     {
       "id": "default-layout",
-      "projectId": "document-cec6cd26-d9e1-42de-8ede-8da7c0edc395",
+      "projectId": "document-15cfefed-2f72-4704-8575-671ceef12cf3",
       "rightSideVisible": false,
       "pageSettingsTriggerVisible": true,
       "layerTriggerVisible": true,
@@ -22,12 +22,12 @@
       "nodeOrder": [
         "Text",
         "Rectangle",
-        "Image"
+        "vnext08-sample"
       ],
       "expectedLayerLabels": [
         "文本-Text",
         "矩形-Rectangle",
-        "图片-Image"
+        "图片-vnext08-sample"
       ]
     },
     {
@@ -37,7 +37,7 @@
       "actualLabels": [
         "文本-Text",
         "矩形-Rectangle",
-        "图片-Image"
+        "图片-vnext08-sample"
       ],
       "matchesStorageOrder": true
     },
@@ -51,7 +51,7 @@
     },
     {
       "id": "quick-actions",
-      "firstNodeId": "node-6e7222d7-b4ca-4f74-900c-65a8fc29021d",
+      "firstNodeId": "node-72538a75-b139-4d1f-81e9-e1ba3db97728",
       "firstNodeVisible": false,
       "firstNodeLocked": true,
       "visibilityButtonNextAction": "预览显示",
@@ -61,12 +61,12 @@
       "id": "reorder-from-floating-panel",
       "reorderedLabels": [
         "矩形-Rectangle",
-        "图片-Image",
+        "图片-vnext08-sample",
         "文本-Text"
       ],
       "reorderedNodeOrder": [
         "Rectangle",
-        "Image",
+        "vnext08-sample",
         "Text"
       ],
       "textMovedToLast": true
@@ -87,14 +87,14 @@
       "slideNameAfterReload": "封面页-浮层抽屉",
       "nodeOrderAfterReload": [
         "Rectangle",
-        "Image",
+        "vnext08-sample",
         "Text"
       ],
       "textNodeVisibleAfterReload": false,
       "textNodeLockedAfterReload": true,
       "floatingLabelsAfterReload": [
         "矩形-Rectangle",
-        "图片-Image",
+        "图片-vnext08-sample",
         "文本-Text"
       ],
       "persistedSlideNameMatches": true,

@@ -1,7 +1,7 @@
 {
   "baseUrl": "http://127.0.0.1:32173/projects",
   "editedText": "画布内双击编辑成功",
-  "executedAt": "2026-04-08T06:18:06.851Z",
+  "executedAt": "2026-04-09T07:13:51.072Z",
   "desktopViewport": {
     "width": 1440,
     "height": 900
@@ -9,11 +9,11 @@
   "checks": [
     {
       "id": "blank-context-menu",
-      "menuText": "插入文本 插入矩形 插入图片 插入图片框 粘贴",
+      "menuText": "插入文本 插入矩形 插入图片 粘贴",
       "hasInsertText": true,
       "hasInsertRect": true,
       "hasInsertImage": true,
-      "hasInsertImageFrame": true,
+      "hasInsertImageFrame": false,
       "hasPaste": true,
       "hasSelectionActions": false,
       "metrics": {
@@ -28,21 +28,21 @@
     {
       "id": "insert-text",
       "textNodeCount": 1,
-      "nodeId": "node-eed0c162-6e57-4dfe-a9d5-74e6e5ba49d7",
+      "nodeId": "node-2a75fd7a-a6e6-4d93-9501-4fb47b529d6f",
       "text": "新建文本",
       "x": 110,
       "y": 110
     },
     {
       "id": "double-click-edit",
-      "nodeId": "node-eed0c162-6e57-4dfe-a9d5-74e6e5ba49d7",
+      "nodeId": "node-2a75fd7a-a6e6-4d93-9501-4fb47b529d6f",
       "text": "画布内双击编辑成功",
       "inspectorTextValue": "画布内双击编辑成功",
       "textUpdated": true
     },
     {
       "id": "selected-context-menu",
-      "menuText": "插入文本 插入矩形 插入图片 插入图片框 复制所选 重复所选 删除所选 粘贴",
+      "menuText": "插入文本 插入矩形 插入图片 复制所选 重复所选 删除所选 粘贴",
       "hasCopy": true,
       "hasDuplicate": true,
       "hasDelete": true
@@ -50,7 +50,7 @@
     {
       "id": "duplicate-selected",
       "textNodeCount": 2,
-      "duplicatedNodeId": "node-4d38a185-a40f-4d8e-9bff-f20f17fa4402",
+      "duplicatedNodeId": "node-6a3e2042-a892-41c5-9188-d5539584e54c",
       "duplicatedText": "画布内双击编辑成功",
       "duplicatedOffsetX": 24,
       "duplicatedOffsetY": 24
@@ -58,7 +58,7 @@
     {
       "id": "delete-selected",
       "textNodeCount": 1,
-      "remainingNodeId": "node-eed0c162-6e57-4dfe-a9d5-74e6e5ba49d7",
+      "remainingNodeId": "node-2a75fd7a-a6e6-4d93-9501-4fb47b529d6f",
       "remainingText": "画布内双击编辑成功",
       "deletedDuplicate": true
     },

@@ -1,6 +1,5 @@
 import {
   createCoursewareDocument,
-  createImageNode,
   createRectNode,
   createTextNode,
   EditorController,
@@ -340,34 +339,6 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     });
   };
 
-  /** 在当前 slide 中新增图片节点。 */
-  const addImage = () => {
-    const slideId = snapshot.value.activeSlideId;
-    if (!slideId) {
-      return;
-    }
-
-    const node = createImageNode({
-      x: 220,
-      y: 140,
-      width: 260,
-      height: 220,
-      src: "",
-    });
-
-    controller.execute({
-      type: "node.create",
-      slideId,
-      node,
-      index: activeSlide.value?.nodes.length,
-    });
-    controller.execute({
-      type: "selection.set",
-      slideId,
-      nodeIds: [node.id],
-    });
-  };
-
   /** 删除当前选中的所有节点。 */
   const removeSelected = () => {
     const slideId = snapshot.value.selection.slideId ?? snapshot.value.activeSlideId;
@@ -521,7 +492,6 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
   return {
     activeSlide,
     adapter,
-    addImage,
     addImageFromFile,
     setSlideBackgroundImageFromNode,
     replaceImageFromFile,

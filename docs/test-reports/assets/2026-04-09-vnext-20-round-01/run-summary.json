@@ -1,7 +1,7 @@
 {
   "baseUrl": "http://127.0.0.1:32173/projects",
   "imagePath": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-04-07-vnext-08-round-01/vnext08-sample.png",
-  "executedAt": "2026-04-09T07:01:47.799Z",
+  "executedAt": "2026-04-09T07:13:51.072Z",
   "desktopViewport": {
     "width": 1440,
     "height": 900
@@ -9,10 +9,15 @@
   "checks": [
     {
       "id": "toolbar-actions",
-      "projectId": "document-01d3ed9c-0e03-4114-ba60-fb7add164682",
+      "projectId": "document-c7f0d80b-2b93-4989-9979-0d3638486c65",
       "toolbarText": "插入文本矩形图片",
       "hasBackgroundEntry": false,
       "hasImageFrameEntry": false
+    },
+    {
+      "id": "blank-context-menu",
+      "menuText": "插入文本 插入矩形 插入图片 粘贴",
+      "hasInsertImageFrame": false
     },
     {
       "id": "context-background-fit-modal",

@@ -172,33 +172,16 @@ try {
   await waitForSaved(page);
 
   const projectId = page.url().match(/\/projects\/([^?]+)/)?.[1] ?? "";
-
-  logStep("insert empty image frame");
   await openBlankContextMenu(page);
-  await page.getByRole("button", { name: "插入图片框" }).click();
-  await waitForSaved(page);
-
-  const projectsAfterFrameInsert = await readStoredProjects(page, STORAGE_KEY);
-  const projectAfterFrameInsert = findProjectById(projectsAfterFrameInsert, projectId);
-  const emptyImageFrame = readFirstImageNode(projectAfterFrameInsert);
-  if (!emptyImageFrame) {
-    throw new Error("未找到刚插入的空图片框");
-  }
-
-  logStep("verify empty image frame has no background shortcut");
-  await openNodeContextMenu(page, emptyImageFrame);
-  const emptyFrameMenuText = normalizeInlineText(await page.locator(".stage-context-menu").textContent());
+  const blankMenuText = normalizeInlineText(await page.locator(".stage-context-menu").textContent());
 
   summary.checks.push({
-    id: "empty-image-frame-context-menu",
-    menuText: emptyFrameMenuText,
-    hasSetBackground: emptyFrameMenuText.includes("设为背景"),
-    hasDelete: emptyFrameMenuText.includes("删除所选"),
+    id: "blank-context-menu",
+    menuText: blankMenuText,
+    hasInsertImageFrame: blankMenuText.includes("插入图片框"),
     metrics: await readViewportMetrics(page),
   });
-
-  await page.getByRole("button", { name: "删除所选" }).click();
-  await waitForSaved(page);
+  await page.keyboard.press("Escape");
 
   logStep("insert local image node");
   await page

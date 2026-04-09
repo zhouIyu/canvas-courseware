@@ -17,6 +17,11 @@ const BASE_URL = "http://127.0.0.1:32173/projects";
 /** 本地项目存储键名。 */
 const STORAGE_KEY = "canvas-courseware.projects";
 
+/** 图层浮层回归使用的图片资源。 */
+const IMAGE_PATH = path.resolve(
+  "docs/test-reports/assets/2026-04-07-vnext-08-round-01/vnext08-sample.png",
+);
+
 /** 当前轮次测试产物目录。 */
 const ASSET_DIR = path.resolve("docs/test-reports/assets/2026-04-07-vnext-15-round-01");
 
@@ -120,24 +125,7 @@ async function renameProject(page) {
 }
 
 /**
- * 在编辑区空白区域触发右键菜单。
- *
- * @param {import("playwright").Page} page
- * @returns {Promise<void>}
- */
-async function openBlankContextMenu(page) {
-  await page.locator(".stage-scroll").click({
-    button: "right",
-    position: {
-      x: 24,
-      y: 24,
-    },
-  });
-  await page.locator(".stage-context-menu").waitFor();
-}
-
-/**
- * 通过工具栏和空白区右键菜单快速新增文本、矩形和图片框。
+ * 通过工具栏快速新增文本、矩形和图片节点。
  *
  * @param {import("playwright").Page} page
  * @returns {Promise<void>}
@@ -146,8 +134,11 @@ async function seedNodes(page) {
   const toolbar = page.locator(".toolbar-group-insert");
   await toolbar.getByRole("button", { name: "文本" }).click();
   await toolbar.getByRole("button", { name: "矩形" }).click();
-  await openBlankContextMenu(page);
-  await page.getByRole("button", { name: "插入图片框" }).click();
+  await toolbar
+    .locator(".local-image-file-trigger")
+    .filter({ hasText: "图片" })
+    .locator("input[type='file']")
+    .setInputFiles(IMAGE_PATH);
   await waitForSaved(page);
 }
 
