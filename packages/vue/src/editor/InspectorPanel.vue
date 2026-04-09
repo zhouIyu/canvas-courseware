@@ -16,6 +16,7 @@ import {
   formatStepIndexLabel,
   formatTriggerLabel,
 } from "../shared";
+import { resolveImageSourceSyncPatch } from "./image-file";
 import LocalImageFileTrigger from "./LocalImageFileTrigger.vue";
 
 /** 属性面板需要的只读状态输入。 */
@@ -123,6 +124,10 @@ const imageSourceHint = computed(() => {
     ? "当前使用本地图片，保存后会随项目一起恢复。"
     : "当前使用图片地址，也可以直接更换为本地图片。";
 });
+
+/** 读取旧资源可复用的文件名，仅在 data URL 场景下回退到 alt 字段。 */
+const resolvePreviousImageFileName = (node: Extract<CoursewareNode, { type: "image" }>) =>
+  node.props.src.trim().startsWith("data:") ? node.props.alt ?? null : null;
 
 /** 读取文本输入框的字符串值。 */
 const readTextInputValue = (value: unknown, fallback = ""): string => {
@@ -297,9 +302,29 @@ const handleImageSourceInput = (value: string | number | undefined) => {
     return;
   }
 
+  const nextSource = readTextInputValue(value, props.selectedNode.props.src);
+  if (nextSource.trim().length === 0) {
+    updateNode({
+      props: {
+        src: nextSource,
+      },
+    });
+    return;
+  }
+
+  const syncPatch = resolveImageSourceSyncPatch({
+    currentName: props.selectedNode.name,
+    currentAlt: props.selectedNode.props.alt,
+    previousSource: props.selectedNode.props.src,
+    previousFileName: resolvePreviousImageFileName(props.selectedNode),
+    nextSource,
+  });
+
   updateNode({
+    ...(syncPatch.name ? { name: syncPatch.name } : {}),
     props: {
-      src: readTextInputValue(value, props.selectedNode.props.src),
+      src: nextSource,
+      ...(syncPatch.alt ? { alt: syncPatch.alt } : {}),
     },
   });
 };

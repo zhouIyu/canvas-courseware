@@ -2,7 +2,7 @@
   "baseUrl": "http://127.0.0.1:32173/projects",
   "insertImagePath": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-04-07-vnext-08-round-01/vnext08-sample.png",
   "replaceImagePath": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-04-07-vnext-09-round-01/vnext09-bg-portrait.png",
-  "executedAt": "2026-04-09T07:01:47.805Z",
+  "executedAt": "2026-04-09T09:23:00.588Z",
   "desktopViewport": {
     "width": 1440,
     "height": 900
@@ -10,7 +10,7 @@
   "checks": [
     {
       "id": "toolbar-labels",
-      "projectId": "document-34ed969d-d8bf-415b-b7dd-7cf6ec384410",
+      "projectId": "document-11ac5d86-a552-4f35-8f5a-3685ddc0659b",
       "toolbarText": "插入文本矩形图片",
       "hasImageButton": true,
       "hasImageFrameButton": false,
@@ -27,7 +27,7 @@
     },
     {
       "id": "insert-image",
-      "imageNodeId": "node-0c3ba95c-897f-47dd-994a-a59a76fffa9c",
+      "imageNodeId": "node-e5d4bae4-02bb-4a0b-a917-cab668719f3e",
       "name": "vnext08-sample",
       "x": 480,
       "y": 270,
@@ -38,7 +38,7 @@
     },
     {
       "id": "update-layout-before-replace",
-      "imageNodeId": "node-0c3ba95c-897f-47dd-994a-a59a76fffa9c",
+      "imageNodeId": "node-e5d4bae4-02bb-4a0b-a917-cab668719f3e",
       "x": 420,
       "y": 210,
       "width": 360,
@@ -47,7 +47,7 @@
     },
     {
       "id": "replace-image",
-      "imageNodeId": "node-0c3ba95c-897f-47dd-994a-a59a76fffa9c",
+      "imageNodeId": "node-e5d4bae4-02bb-4a0b-a917-cab668719f3e",
       "sameNodeId": true,
       "x": 420,
       "y": 210,
@@ -59,7 +59,7 @@
     },
     {
       "id": "reload-persistence",
-      "imageNodeId": "node-0c3ba95c-897f-47dd-994a-a59a76fffa9c",
+      "imageNodeId": "node-e5d4bae4-02bb-4a0b-a917-cab668719f3e",
       "sameNodeAfterReload": true,
       "x": 420,
       "y": 210,

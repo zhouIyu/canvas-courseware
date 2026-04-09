@@ -6,7 +6,11 @@ import {
   type Slide,
 } from "@canvas-courseware/core";
 import type { ComputedRef, ShallowRef } from "vue";
-import { readLocalImageAsset, resolveImportedImageLayout } from "./image-file";
+import {
+  readLocalImageAsset,
+  resolveImageSourceSyncPatch,
+  resolveImportedImageLayout,
+} from "./image-file";
 
 /** 本地图片导入 composable 的初始化参数。 */
 export interface UseEditorLocalImageOptions {
@@ -34,6 +38,16 @@ export function useEditorLocalImage(options: UseEditorLocalImageOptions) {
   const resolveImageNode = (nodeId: string) => {
     const imageNode = options.activeSlide.value?.nodes.find((node) => node.id === nodeId);
     return imageNode?.type === "image" ? imageNode : null;
+  };
+
+  /** 在 data URL 场景下回退读取上一版文件名，供默认命名同步判断使用。 */
+  const resolvePreviousImageFileName = (nodeId: string): string | null => {
+    const imageNode = resolveImageNode(nodeId);
+    if (!imageNode || !imageNode.props.src.trim().startsWith("data:")) {
+      return null;
+    }
+
+    return imageNode.props.alt ?? null;
   };
 
   /** 解析“设为背景”时最终应采用的填充方式。 */
@@ -107,15 +121,25 @@ export function useEditorLocalImage(options: UseEditorLocalImageOptions) {
     }
 
     const asset = await readLocalImageAsset(file);
+    const syncPatch = resolveImageSourceSyncPatch({
+      currentName: imageNode.name,
+      currentAlt: imageNode.props.alt,
+      previousSource: imageNode.props.src,
+      previousFileName: resolvePreviousImageFileName(nodeId),
+      nextSource: asset.dataUrl,
+      nextFileName: asset.fileName,
+    });
+    const nextAlt = syncPatch.alt ?? imageNode.props.alt ?? asset.fileName;
 
     options.controller.execute({
       type: "node.update",
       slideId,
       nodeId,
       patch: {
+        ...(syncPatch.name ? { name: syncPatch.name } : {}),
         props: {
           src: asset.dataUrl,
-          alt: asset.fileName,
+          alt: nextAlt,
         },
       },
     });
