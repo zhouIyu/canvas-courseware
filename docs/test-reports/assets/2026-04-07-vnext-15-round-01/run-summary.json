@@ -2,7 +2,7 @@
   "baseUrl": "http://127.0.0.1:32173/projects",
   "projectTitle": "VNext-15 组件浮层测试 Round01",
   "updatedSlideName": "封面页-浮层抽屉",
-  "executedAt": "2026-04-07T15:46:58.867Z",
+  "executedAt": "2026-04-09T06:59:39.002Z",
   "desktopViewport": {
     "width": 1440,
     "height": 900
@@ -10,7 +10,7 @@
   "checks": [
     {
       "id": "default-layout",
-      "projectId": "document-ef6e6d1e-b120-4858-be78-2d7dee1dbc3f",
+      "projectId": "document-cec6cd26-d9e1-42de-8ede-8da7c0edc395",
       "rightSideVisible": false,
       "pageSettingsTriggerVisible": true,
       "layerTriggerVisible": true,
@@ -51,7 +51,7 @@
     },
     {
       "id": "quick-actions",
-      "firstNodeId": "node-547bb78a-1362-4582-a172-cbb0d6827798",
+      "firstNodeId": "node-6e7222d7-b4ca-4f74-900c-65a8fc29021d",
       "firstNodeVisible": false,
       "firstNodeLocked": true,
       "visibilityButtonNextAction": "预览显示",

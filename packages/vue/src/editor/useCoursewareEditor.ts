@@ -278,7 +278,6 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
   const {
     addImageFromFile,
     replaceImageFromFile,
-    setSlideBackgroundImageFromFile,
     setSlideBackgroundImageFromNode,
   } = useEditorLocalImage({
     snapshot,
@@ -524,7 +523,6 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     adapter,
     addImage,
     addImageFromFile,
-    setSlideBackgroundImageFromFile,
     setSlideBackgroundImageFromNode,
     replaceImageFromFile,
     addRect,

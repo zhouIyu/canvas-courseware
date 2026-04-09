@@ -21,12 +21,8 @@ const emit = defineEmits<{
   "add-text": [];
   /** 新增矩形节点。 */
   "add-rect": [];
-  /** 新增空图片节点。 */
-  "add-image": [];
   /** 从本地文件导入图片。 */
   "import-image": [file: File];
-  /** 从本地文件直接设置当前页面背景图。 */
-  "set-background-image": [file: File];
   /** 执行一次撤销。 */
   undo: [];
   /** 执行一次重做。 */
@@ -36,11 +32,6 @@ const emit = defineEmits<{
 /** 把文件选择事件转发给父层统一处理。 */
 const handleImageFileSelect = (file: File) => {
   emit("import-image", file);
-};
-
-/** 把文件选择事件转发给父层，用于直接设置当前页背景图。 */
-const handleBackgroundImageFileSelect = (file: File) => {
-  emit("set-background-image", file);
 };
 </script>
 
@@ -56,13 +47,6 @@ const handleBackgroundImageFileSelect = (file: File) => {
         variant="toolbar"
         @select="handleImageFileSelect"
       />
-      <LocalImageFileTrigger
-        aria-label="上传图片并设为当前页背景"
-        label="设为背景"
-        variant="toolbar"
-        @select="handleBackgroundImageFileSelect"
-      />
-      <a-button class="toolbar-action-button" type="text" @click="emit('add-image')">图片框</a-button>
     </div>
 
     <div class="toolbar-group toolbar-group-history">

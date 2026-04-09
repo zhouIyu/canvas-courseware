@@ -126,16 +126,16 @@ async function renameProject(page) {
 }
 
 /**
- * 通过工具栏上传背景图到当前页面。
+ * 通过页面设置抽屉上传背景图到当前页面。
  *
  * @param {import("playwright").Page} page
  * @returns {Promise<void>}
  */
-async function setCurrentSlideBackgroundFromToolbar(page) {
+async function setCurrentSlideBackgroundFromDrawer(page) {
+  await page.getByRole("button", { name: "打开页面设置" }).click();
+  await page.locator(".slide-settings-drawer").waitFor();
   await page
-    .locator(".toolbar-group-insert .local-image-file-trigger")
-    .filter({ hasText: "设为背景" })
-    .locator("input[type='file']")
+    .locator(".slide-settings-drawer .background-actions .local-image-file-trigger input[type='file']")
     .setInputFiles(BACKGROUND_IMAGE_PATH);
   await waitForSaved(page);
   await page.waitForTimeout(400);
@@ -253,7 +253,7 @@ try {
   await renameProject(page);
 
   logStep("set first slide background");
-  await setCurrentSlideBackgroundFromToolbar(page);
+  await setCurrentSlideBackgroundFromDrawer(page);
   await closeSlideSettingsDrawerIfNeeded(page);
 
   const firstSlidePixel = await readEditorCanvasPixel(page, 100, 80);

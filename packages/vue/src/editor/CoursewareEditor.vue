@@ -109,27 +109,14 @@ interface EditorContextMenuState {
 }
 
 /** “设为背景”流程中待确认的图片来源。 */
-type PendingBackgroundImageAction =
-  | {
-      /** 待处理来源为本地图片文件。 */
-      sourceKind: "file";
-      /** 当前待写入页面背景的本地文件。 */
-      file: File;
-      /** 弹层中展示给用户的来源摘要。 */
-      sourceLabel: string;
-      /** 弹层打开时默认选中的填充方式。 */
-      preferredFit: ObjectFit;
-    }
-  | {
-      /** 待处理来源为当前画布中的图片节点。 */
-      sourceKind: "node";
-      /** 当前待转换为背景图的节点 id。 */
-      nodeId: string;
-      /** 弹层中展示给用户的来源摘要。 */
-      sourceLabel: string;
-      /** 弹层打开时默认选中的填充方式。 */
-      preferredFit: ObjectFit;
-    };
+interface PendingBackgroundImageAction {
+  /** 当前待转换为背景图的节点 id。 */
+  nodeId: string;
+  /** 弹层中展示给用户的来源摘要。 */
+  sourceLabel: string;
+  /** 弹层打开时默认选中的填充方式。 */
+  preferredFit: ObjectFit;
+}
 
 /** 右键菜单预估宽度，用于避免贴边溢出。 */
 const CONTEXT_MENU_WIDTH = 188;
@@ -313,7 +300,6 @@ const {
   redo,
   pasteClipboard,
   setSlideBackgroundImageFromNode,
-  setSlideBackgroundImageFromFile,
   replaceImageFromFile,
   reorderNode,
   reorderSlide,
@@ -828,20 +814,6 @@ const handleLocalImageImport = async (file: File) => {
   }
 };
 
-/** 从工具条上传图片后，先打开填充方式确认弹层。 */
-const handleBackgroundImageImport = (file: File) => {
-  closeContextMenu();
-  pendingBackgroundImageAction.value = {
-    sourceKind: "file",
-    file,
-    sourceLabel: `本地图片 · ${file.name}`,
-    preferredFit: normalizeBackgroundImageFit(
-      activeSlide.value?.background.image?.fit,
-      DEFAULT_BACKGROUND_IMAGE_FIT,
-    ),
-  };
-};
-
 /** 从属性面板直接替换当前图片节点，并保留节点布局和当前选中态。 */
 const handleImageReplace = async (nodeId: string, file: File) => {
   try {
@@ -898,7 +870,6 @@ const handleContextMenuSetImageAsBackground = () => {
 
   closeContextMenu();
   pendingBackgroundImageAction.value = {
-    sourceKind: "node",
     nodeId: imageNode.id,
     sourceLabel: `画布图片 · ${imageNode.name}`,
     preferredFit: normalizeBackgroundImageFit(
@@ -918,13 +889,9 @@ const handleBackgroundImageFitConfirm = async (fit: ObjectFit) => {
   isApplyingBackgroundImageFit.value = true;
 
   try {
-    if (pendingAction.sourceKind === "file") {
-      await setSlideBackgroundImageFromFile(pendingAction.file, fit);
-    } else {
-      const backgroundSource = setSlideBackgroundImageFromNode(pendingAction.nodeId, fit);
-      if (!backgroundSource) {
-        throw new Error("当前图片还没有可用资源，暂时不能设为背景");
-      }
+    const backgroundSource = setSlideBackgroundImageFromNode(pendingAction.nodeId, fit);
+    if (!backgroundSource) {
+      throw new Error("当前图片还没有可用资源，暂时不能设为背景");
     }
 
     isSlideSettingsDrawerVisible.value = true;
@@ -1121,11 +1088,9 @@ defineExpose({
         <EditorToolbar
           :can-redo="canRedo"
           :can-undo="canUndo"
-          @add-image="addImage"
           @add-rect="addRect"
           @add-text="addText"
           @import-image="handleLocalImageImport"
-          @set-background-image="handleBackgroundImageImport"
           @redo="redo"
           @undo="undo"
         />

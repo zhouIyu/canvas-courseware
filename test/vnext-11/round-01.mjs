@@ -83,6 +83,17 @@ async function setInspectorNumber(page, label, value) {
   await input.blur();
 }
 
+/**
+ * 打开右侧管理栏，确保属性面板可见。
+ *
+ * @param {import("playwright").Page} page
+ * @returns {Promise<void>}
+ */
+async function openEditorSide(page) {
+  await page.getByRole("button", { name: "展开右侧管理栏" }).click();
+  await page.locator(".editor-side").waitFor();
+}
+
 await ensureDirectory(ASSET_DIR);
 
 /** 当前浏览器会话。 */
@@ -128,6 +139,7 @@ try {
     toolbarText,
     hasImageButton: toolbarText.includes("图片"),
     hasImageFrameButton: toolbarText.includes("图片框"),
+    hasSetBackgroundButton: toolbarText.includes("设为背景"),
     hasLegacyImportLabel: toolbarText.includes("导入图片"),
     metrics: await readViewportMetrics(page),
   });
@@ -139,6 +151,7 @@ try {
     .first()
     .locator("input[type='file']")
     .setInputFiles(INSERT_IMAGE_PATH);
+  await openEditorSide(page);
   await page.getByRole("heading", { name: "图片属性" }).waitFor();
   await waitForSaved(page);
 

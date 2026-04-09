@@ -2,7 +2,7 @@
   "baseUrl": "http://127.0.0.1:32173/projects",
   "insertImagePath": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-04-07-vnext-08-round-01/vnext08-sample.png",
   "replaceImagePath": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-04-07-vnext-09-round-01/vnext09-bg-portrait.png",
-  "executedAt": "2026-04-07T12:00:49.970Z",
+  "executedAt": "2026-04-09T07:01:47.805Z",
   "desktopViewport": {
     "width": 1440,
     "height": 900
@@ -10,10 +10,11 @@
   "checks": [
     {
       "id": "toolbar-labels",
-      "projectId": "document-4702f3b4-891f-4e66-931c-a1f3cc836e35",
-      "toolbarText": "插入文本矩形图片图片框",
+      "projectId": "document-34ed969d-d8bf-415b-b7dd-7cf6ec384410",
+      "toolbarText": "插入文本矩形图片",
       "hasImageButton": true,
-      "hasImageFrameButton": true,
+      "hasImageFrameButton": false,
+      "hasSetBackgroundButton": false,
       "hasLegacyImportLabel": false,
       "metrics": {
         "innerWidth": 1440,
@@ -26,7 +27,7 @@
     },
     {
       "id": "insert-image",
-      "imageNodeId": "node-966351ff-ba02-420d-8d36-21acabc2708d",
+      "imageNodeId": "node-0c3ba95c-897f-47dd-994a-a59a76fffa9c",
       "name": "vnext08-sample",
       "x": 480,
       "y": 270,
@@ -37,7 +38,7 @@
     },
     {
       "id": "update-layout-before-replace",
-      "imageNodeId": "node-966351ff-ba02-420d-8d36-21acabc2708d",
+      "imageNodeId": "node-0c3ba95c-897f-47dd-994a-a59a76fffa9c",
       "x": 420,
       "y": 210,
       "width": 360,
@@ -46,7 +47,7 @@
     },
     {
       "id": "replace-image",
-      "imageNodeId": "node-966351ff-ba02-420d-8d36-21acabc2708d",
+      "imageNodeId": "node-0c3ba95c-897f-47dd-994a-a59a76fffa9c",
       "sameNodeId": true,
       "x": 420,
       "y": 210,
@@ -58,7 +59,7 @@
     },
     {
       "id": "reload-persistence",
-      "imageNodeId": "node-966351ff-ba02-420d-8d36-21acabc2708d",
+      "imageNodeId": "node-0c3ba95c-897f-47dd-994a-a59a76fffa9c",
       "sameNodeAfterReload": true,
       "x": 420,
       "y": 210,

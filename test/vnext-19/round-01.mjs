@@ -104,6 +104,23 @@ async function openNodeContextMenu(page, node) {
 }
 
 /**
+ * 在编辑区空白区域触发右键菜单。
+ *
+ * @param {import("playwright").Page} page
+ * @returns {Promise<void>}
+ */
+async function openBlankContextMenu(page) {
+  await page.locator(".stage-scroll").click({
+    button: "right",
+    position: {
+      x: 24,
+      y: 24,
+    },
+  });
+  await page.locator(".stage-context-menu").waitFor();
+}
+
+/**
  * 在“设为背景”确认弹层中选择目标填充方式并完成确认。
  *
  * @param {import("playwright").Page} page
@@ -157,7 +174,8 @@ try {
   const projectId = page.url().match(/\/projects\/([^?]+)/)?.[1] ?? "";
 
   logStep("insert empty image frame");
-  await page.getByRole("button", { name: "图片框" }).click();
+  await openBlankContextMenu(page);
+  await page.getByRole("button", { name: "插入图片框" }).click();
   await waitForSaved(page);
 
   const projectsAfterFrameInsert = await readStoredProjects(page, STORAGE_KEY);
@@ -185,9 +203,7 @@ try {
   logStep("insert local image node");
   await page
     .locator(".toolbar-group-insert .local-image-file-trigger")
-    .filter({
-      has: page.getByRole("button", { name: "插入图片" }),
-    })
+    .filter({ hasText: "图片" })
     .locator("input[type='file']")
     .setInputFiles(IMAGE_PATH);
   await waitForSaved(page);

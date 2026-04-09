@@ -44,17 +44,14 @@ function readFirstSlideBackground(project) {
 }
 
 /**
- * 在“设为背景”确认弹层中选择目标填充方式并完成确认。
+ * 打开页面设置抽屉，供背景图导入链路复用。
  *
  * @param {import("playwright").Page} page
- * @param {string} optionLabel
  * @returns {Promise<void>}
  */
-async function confirmBackgroundFit(page, optionLabel) {
-  const modal = page.locator(".background-fit-modal");
-  await modal.waitFor();
-  await modal.getByRole("button", { name: new RegExp(optionLabel) }).click();
-  await modal.getByRole("button", { name: "确认设为背景" }).click();
+async function openSlideSettingsDrawer(page) {
+  await page.getByRole("button", { name: "打开页面设置" }).click();
+  await page.locator(".slide-settings-drawer").waitFor();
 }
 
 await ensureDirectory(ASSET_DIR);
@@ -103,13 +100,11 @@ try {
     metrics: await readViewportMetrics(page),
   });
 
-  logStep("upload image as background");
+  logStep("upload image as background from slide settings");
+  await openSlideSettingsDrawer(page);
   await page
-    .locator(".toolbar-group-insert .local-image-file-trigger")
-    .filter({ hasText: "设为背景" })
-    .locator("input[type='file']")
+    .locator(".slide-settings-drawer .background-actions .local-image-file-trigger input[type='file']")
     .setInputFiles(BACKGROUND_IMAGE_PATH);
-  await confirmBackgroundFit(page, "裁切铺满");
   await waitForSaved(page);
 
   await page.screenshot({

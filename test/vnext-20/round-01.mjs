@@ -103,22 +103,6 @@ async function openNodeContextMenu(page, node) {
 }
 
 /**
- * 如页面设置抽屉仍然打开，则先关闭，避免遮挡画布交互。
- *
- * @param {import("playwright").Page} page
- * @returns {Promise<void>}
- */
-async function closeSlideSettingsDrawerIfVisible(page) {
-  const drawer = page.locator(".slide-settings-drawer");
-  if (!(await drawer.isVisible().catch(() => false))) {
-    return;
-  }
-
-  await drawer.locator(".arco-drawer-close-btn").click();
-  await drawer.waitFor({ state: "hidden" });
-}
-
-/**
  * 在“设为背景”确认弹层中选择目标填充方式并完成确认。
  *
  * @param {import("playwright").Page} page
@@ -172,35 +156,15 @@ try {
   await waitForSaved(page);
 
   const projectId = page.url().match(/\/projects\/([^?]+)/)?.[1] ?? "";
-
-  logStep("set toolbar background with explicit contain");
-  await page
-    .locator(".toolbar-group-insert .local-image-file-trigger")
-    .filter({ hasText: "设为背景" })
-    .locator("input[type='file']")
-    .setInputFiles(IMAGE_PATH);
-
-  const toolbarModalText = await confirmBackgroundFit(page, "完整显示");
-  await page.locator(".slide-settings-drawer .slide-settings-panel").waitFor();
-  await waitForSaved(page);
-
-  const projectsAfterToolbarBackground = await readStoredProjects(page, STORAGE_KEY);
-  const projectAfterToolbarBackground = findProjectById(projectsAfterToolbarBackground, projectId);
-  const slideAfterToolbarBackground = readFirstSlide(projectAfterToolbarBackground);
-
-  await writeJsonFile(
-    path.join(ASSET_DIR, "storage-after-toolbar-set-background.json"),
-    projectAfterToolbarBackground,
-  );
+  const toolbarText = normalizeInlineText(await page.locator(".toolbar-group-insert").textContent());
 
   summary.checks.push({
-    id: "toolbar-background-fit-modal",
-    modalText: toolbarModalText,
-    backgroundFit: slideAfterToolbarBackground?.background?.image?.fit ?? null,
-    hasBackgroundImage: Boolean(slideAfterToolbarBackground?.background?.image?.src),
+    id: "toolbar-actions",
+    projectId,
+    toolbarText,
+    hasBackgroundEntry: toolbarText.includes("设为背景"),
+    hasImageFrameEntry: toolbarText.includes("图片框"),
   });
-
-  await closeSlideSettingsDrawerIfVisible(page);
 
   logStep("insert local image node");
   await page

@@ -76,36 +76,6 @@ export function useEditorLocalImage(options: UseEditorLocalImageOptions) {
     return node.id;
   };
 
-  /** 把本地图片直接设为当前页面背景，并允许调用方显式指定填充方式。 */
-  const setSlideBackgroundImageFromFile = async (
-    file: File,
-    preferredFit?: ObjectFit,
-  ): Promise<string | null> => {
-    const slideId = resolveActiveSlideId();
-    const activeSlide = resolveActiveSlide();
-    if (!slideId || !activeSlide) {
-      return null;
-    }
-
-    const asset = await readLocalImageAsset(file);
-
-    options.controller.execute({
-      type: "slide.update",
-      slideId,
-      patch: {
-        background: {
-          ...activeSlide.background,
-          image: {
-            src: asset.dataUrl,
-            fit: resolveBackgroundImageFit(preferredFit),
-          },
-        },
-      },
-    });
-
-    return asset.dataUrl;
-  };
-
   /** 把当前页面中的图片节点直接转换成背景图，并返回最终写入的资源地址。 */
   const setSlideBackgroundImageFromNode = (
     nodeId: string,
@@ -160,7 +130,6 @@ export function useEditorLocalImage(options: UseEditorLocalImageOptions) {
 
   return {
     addImageFromFile,
-    setSlideBackgroundImageFromFile,
     setSlideBackgroundImageFromNode,
     replaceImageFromFile,
   };
