@@ -109,7 +109,7 @@ const CONTEXT_MENU_WIDTH = 188;
 const CONTEXT_MENU_SAFE_MARGIN = 12;
 
 /** 右键菜单预估高度，用于首版定位。 */
-const CONTEXT_MENU_ESTIMATED_HEIGHT = 260;
+const CONTEXT_MENU_ESTIMATED_HEIGHT = 312;
 
 /** 编辑器组件的显示参数。 */
 const props = withDefaults(
@@ -271,6 +271,7 @@ const {
   removeSelected,
   redo,
   pasteClipboard,
+  setSlideBackgroundImageFromNode,
   setSlideBackgroundImageFromFile,
   replaceImageFromFile,
   reorderNode,
@@ -539,6 +540,23 @@ const contextMenuStyle = computed(() =>
 
 /** 当前右键菜单是否应显示“所选对象”快捷操作。 */
 const contextMenuHasSelection = computed(() => snapshot.value.selection.nodeIds.length > 0);
+
+/** 当前右键菜单命中的是否为一张已导入资源的图片节点。 */
+const contextMenuTargetImageNode = computed(() => {
+  if (!contextMenuState.value?.nodeId || !activeSlide.value) {
+    return null;
+  }
+
+  const node = activeSlide.value.nodes.find((candidate) => candidate.id === contextMenuState.value?.nodeId);
+  if (!node || node.type !== "image" || node.props.src.trim().length === 0) {
+    return null;
+  }
+
+  return node;
+});
+
+/** 当前右键菜单是否可以展示“设为背景”快捷入口。 */
+const contextMenuCanSetBackground = computed(() => Boolean(contextMenuTargetImageNode.value));
 
 /** 当前 slide 的更新入口。 */
 const handleSlideUpdate = (patch: Partial<Pick<Slide, "name" | "size" | "background">>) => {
@@ -813,6 +831,23 @@ const handleContextMenuCopy = () => {
 const handleContextMenuDuplicate = () => {
   closeContextMenu();
   duplicateSelected();
+};
+
+/** 右键菜单中把当前图片节点直接转换成页面背景。 */
+const handleContextMenuSetImageAsBackground = () => {
+  const nodeId = contextMenuTargetImageNode.value?.id;
+  if (!nodeId) {
+    return;
+  }
+
+  closeContextMenu();
+  const backgroundSource = setSlideBackgroundImageFromNode(nodeId);
+  if (!backgroundSource) {
+    window.alert("当前图片还没有可用资源，暂时不能设为背景");
+    return;
+  }
+
+  isSlideSettingsDrawerVisible.value = true;
 };
 
 /** 右键菜单中删除当前选区。 */
@@ -1113,6 +1148,14 @@ defineExpose({
                 </a-button>
                 <a-button class="stage-context-menu__item" type="text" @click="handleContextMenuDuplicate">
                   重复所选
+                </a-button>
+                <a-button
+                  v-if="contextMenuCanSetBackground"
+                  class="stage-context-menu__item"
+                  type="text"
+                  @click="handleContextMenuSetImageAsBackground"
+                >
+                  设为背景
                 </a-button>
                 <a-button class="stage-context-menu__item danger" type="text" @click="handleContextMenuDelete">
                   删除所选

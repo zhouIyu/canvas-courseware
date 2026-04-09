@@ -20,6 +20,7 @@ export type EditorCommand =
   | CreateNodeCommand
   | BatchUpdateNodesCommand
   | UpdateNodeCommand
+  | SetImageNodeAsBackgroundCommand
   | DeleteNodeCommand
   | SetSelectionCommand
   | ClearSelectionCommand
@@ -102,6 +103,13 @@ export interface UpdateNodeCommand {
   slideId: string;
   nodeId: string;
   patch: NodePatch;
+}
+
+/** 把一个图片节点转换为当前 slide 背景，并同步移除原节点。 */
+export interface SetImageNodeAsBackgroundCommand {
+  type: "node.image.set-as-background";
+  slideId: string;
+  nodeId: string;
 }
 
 export interface DeleteNodeCommand {

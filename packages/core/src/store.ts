@@ -263,6 +263,7 @@ function shouldTrackHistoryCommand(command: EditorCommand): boolean {
     case "node.create":
     case "node.batch.update":
     case "node.update":
+    case "node.image.set-as-background":
     case "node.delete":
     case "node.reorder":
     case "timeline.step.upsert":

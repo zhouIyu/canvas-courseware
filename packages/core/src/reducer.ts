@@ -46,6 +46,8 @@ export function reduceSnapshot(
       return updateNodes(snapshot, command.slideId, command.updates);
     case "node.update":
       return updateNode(snapshot, command.slideId, command.nodeId, command.patch);
+    case "node.image.set-as-background":
+      return setImageNodeAsBackground(snapshot, command.slideId, command.nodeId);
     case "node.delete":
       return deleteNode(snapshot, command.slideId, command.nodeId);
     case "selection.set":
@@ -151,26 +153,123 @@ function deleteNode(snapshot: EditorSnapshot, slideId: string, nodeId: string): 
     return nextNodes.length === slide.nodes.length ? slide : { ...slide, nodes: nextNodes };
   });
 
-  if (nextSnapshot === snapshot) {
+  return nextSnapshot === snapshot
+    ? snapshot
+    : removeNodeFromSelection(nextSnapshot, snapshot.selection, slideId, nodeId);
+}
+
+/** 把当前图片节点转换成 slide 背景，并同步清理原节点与相关时间轴引用。 */
+function setImageNodeAsBackground(
+  snapshot: EditorSnapshot,
+  slideId: string,
+  nodeId: string,
+): EditorSnapshot {
+  const slide = findSlide(snapshot.document, slideId);
+  const imageNode = slide ? findConvertibleImageNode(slide, nodeId) : null;
+  if (!slide || !imageNode) {
     return snapshot;
   }
 
-  if (snapshot.selection.slideId !== slideId) {
-    return nextSnapshot;
+  const nextSnapshot = updateDocumentSlide(snapshot, slideId, (currentSlide) => ({
+    ...currentSlide,
+    background: {
+      ...currentSlide.background,
+      image: {
+        src: imageNode.props.src.trim(),
+        fit: imageNode.props.objectFit ?? currentSlide.background.image?.fit ?? "cover",
+      },
+    },
+    nodes: currentSlide.nodes.filter((node) => node.id !== nodeId),
+    timeline: stripNodeReferencesFromTimeline(currentSlide, nodeId),
+  }));
+
+  return nextSnapshot === snapshot
+    ? snapshot
+    : removeNodeFromSelection(nextSnapshot, snapshot.selection, slideId, nodeId);
+}
+
+/** 读取可被转换为背景图的图片节点，过滤空图片框等无效场景。 */
+function findConvertibleImageNode(
+  slide: Slide,
+  nodeId: string,
+): Extract<CoursewareNode, { type: "image" }> | null {
+  const node = slide.nodes.find((candidate) => candidate.id === nodeId);
+  if (!node || node.type !== "image" || node.props.src.trim().length === 0) {
+    return null;
   }
 
-  const nextSelectionIds = snapshot.selection.nodeIds.filter((id) => id !== nodeId);
-  if (nextSelectionIds.length === snapshot.selection.nodeIds.length) {
-    return nextSnapshot;
+  return node;
+}
+
+/** 从当前选择态中剔除一个已被移除的节点 id。 */
+function removeNodeFromSelection(
+  snapshot: EditorSnapshot,
+  selection: SelectionState,
+  slideId: string,
+  nodeId: string,
+): EditorSnapshot {
+  if (selection.slideId !== slideId) {
+    return snapshot;
+  }
+
+  const nextSelectionIds = selection.nodeIds.filter((id) => id !== nodeId);
+  if (nextSelectionIds.length === selection.nodeIds.length) {
+    return snapshot;
   }
 
   return {
-    ...nextSnapshot,
+    ...snapshot,
     selection: {
       slideId,
       nodeIds: nextSelectionIds,
     },
   };
+}
+
+/** 清理时间轴中对被转为背景的节点与其动画的引用，避免留下悬空配置。 */
+function stripNodeReferencesFromTimeline(slide: Slide, nodeId: string): Slide["timeline"] {
+  const removedAnimationIds = new Set(
+    slide.timeline.animations
+      .filter((animation) => animation.targetId === nodeId)
+      .map((animation) => animation.id),
+  );
+
+  return {
+    animations: slide.timeline.animations.filter((animation) => animation.targetId !== nodeId),
+    steps: slide.timeline.steps
+      .map((step) => ({
+        ...step,
+        actions: step.actions.filter((action) =>
+          shouldKeepTimelineAction(action, nodeId, removedAnimationIds),
+        ),
+      }))
+      .filter((step) => step.actions.length > 0),
+  };
+}
+
+/** 判断某条时间轴动作是否仍然保留有效目标。 */
+function shouldKeepTimelineAction(
+  action: TimelineStep["actions"][number],
+  nodeId: string,
+  removedAnimationIds: ReadonlySet<string>,
+): boolean {
+  if ("targetId" in action && action.targetId === nodeId) {
+    return false;
+  }
+
+  if (action.type === "play-animation" && removedAnimationIds.has(action.animationId)) {
+    return false;
+  }
+
+  if (
+    action.type === "show-node" &&
+    action.animationId &&
+    removedAnimationIds.has(action.animationId)
+  ) {
+    return false;
+  }
+
+  return true;
 }
 
 /** 设置当前 slide 的选中节点列表。 */

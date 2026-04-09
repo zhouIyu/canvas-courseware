@@ -93,6 +93,24 @@ export function useEditorLocalImage(options: UseEditorLocalImageOptions) {
     return asset.dataUrl;
   };
 
+  /** 把当前页面中的图片节点直接转换成背景图，并返回最终写入的资源地址。 */
+  const setSlideBackgroundImageFromNode = (nodeId: string): string | null => {
+    const slideId = resolveActiveSlideId();
+    const imageNode = resolveImageNode(nodeId);
+    const normalizedSource = imageNode?.props.src.trim() ?? "";
+    if (!slideId || !imageNode || normalizedSource.length === 0) {
+      return null;
+    }
+
+    options.controller.execute({
+      type: "node.image.set-as-background",
+      slideId,
+      nodeId,
+    });
+
+    return normalizedSource;
+  };
+
   /** 用本地图片替换当前页面中的现有图片节点，同时保留布局与样式配置。 */
   const replaceImageFromFile = async (nodeId: string, file: File): Promise<string | null> => {
     const slideId = resolveActiveSlideId();
@@ -126,6 +144,7 @@ export function useEditorLocalImage(options: UseEditorLocalImageOptions) {
   return {
     addImageFromFile,
     setSlideBackgroundImageFromFile,
+    setSlideBackgroundImageFromNode,
     replaceImageFromFile,
   };
 }

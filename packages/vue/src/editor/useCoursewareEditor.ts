@@ -275,7 +275,12 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
   });
 
   /** 组合本地图片导入能力，统一转换成标准图片节点命令。 */
-  const { addImageFromFile, replaceImageFromFile, setSlideBackgroundImageFromFile } = useEditorLocalImage({
+  const {
+    addImageFromFile,
+    replaceImageFromFile,
+    setSlideBackgroundImageFromFile,
+    setSlideBackgroundImageFromNode,
+  } = useEditorLocalImage({
     snapshot,
     controller,
     activeSlide,
@@ -520,6 +525,7 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     addImage,
     addImageFromFile,
     setSlideBackgroundImageFromFile,
+    setSlideBackgroundImageFromNode,
     replaceImageFromFile,
     addRect,
     addSlide,
