@@ -43,6 +43,20 @@ function readFirstSlideBackground(project) {
   return project?.document?.slides?.[0]?.background ?? null;
 }
 
+/**
+ * 在“设为背景”确认弹层中选择目标填充方式并完成确认。
+ *
+ * @param {import("playwright").Page} page
+ * @param {string} optionLabel
+ * @returns {Promise<void>}
+ */
+async function confirmBackgroundFit(page, optionLabel) {
+  const modal = page.locator(".background-fit-modal");
+  await modal.waitFor();
+  await modal.getByRole("button", { name: new RegExp(optionLabel) }).click();
+  await modal.getByRole("button", { name: "确认设为背景" }).click();
+}
+
 await ensureDirectory(ASSET_DIR);
 
 /** 当前浏览器会话。 */
@@ -95,6 +109,7 @@ try {
     .filter({ hasText: "设为背景" })
     .locator("input[type='file']")
     .setInputFiles(BACKGROUND_IMAGE_PATH);
+  await confirmBackgroundFit(page, "裁切铺满");
   await waitForSaved(page);
 
   await page.screenshot({

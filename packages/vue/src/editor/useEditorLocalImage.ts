@@ -1,4 +1,10 @@
-import { createImageNode, EditorController, type EditorSnapshot, type Slide } from "@canvas-courseware/core";
+import {
+  createImageNode,
+  EditorController,
+  type EditorSnapshot,
+  type ObjectFit,
+  type Slide,
+} from "@canvas-courseware/core";
 import type { ComputedRef, ShallowRef } from "vue";
 import { readLocalImageAsset, resolveImportedImageLayout } from "./image-file";
 
@@ -29,6 +35,10 @@ export function useEditorLocalImage(options: UseEditorLocalImageOptions) {
     const imageNode = options.activeSlide.value?.nodes.find((node) => node.id === nodeId);
     return imageNode?.type === "image" ? imageNode : null;
   };
+
+  /** 解析“设为背景”时最终应采用的填充方式。 */
+  const resolveBackgroundImageFit = (preferredFit?: ObjectFit | null): ObjectFit =>
+    preferredFit ?? resolveActiveSlide()?.background.image?.fit ?? "cover";
 
   /** 把本地图片文件转换成标准图片节点并插入当前页面。 */
   const addImageFromFile = async (file: File): Promise<string | null> => {
@@ -66,8 +76,11 @@ export function useEditorLocalImage(options: UseEditorLocalImageOptions) {
     return node.id;
   };
 
-  /** 把本地图片直接设为当前页面背景，并尽量保留现有背景填充方式。 */
-  const setSlideBackgroundImageFromFile = async (file: File): Promise<string | null> => {
+  /** 把本地图片直接设为当前页面背景，并允许调用方显式指定填充方式。 */
+  const setSlideBackgroundImageFromFile = async (
+    file: File,
+    preferredFit?: ObjectFit,
+  ): Promise<string | null> => {
     const slideId = resolveActiveSlideId();
     const activeSlide = resolveActiveSlide();
     if (!slideId || !activeSlide) {
@@ -84,7 +97,7 @@ export function useEditorLocalImage(options: UseEditorLocalImageOptions) {
           ...activeSlide.background,
           image: {
             src: asset.dataUrl,
-            fit: activeSlide.background.image?.fit ?? "cover",
+            fit: resolveBackgroundImageFit(preferredFit),
           },
         },
       },
@@ -94,7 +107,10 @@ export function useEditorLocalImage(options: UseEditorLocalImageOptions) {
   };
 
   /** 把当前页面中的图片节点直接转换成背景图，并返回最终写入的资源地址。 */
-  const setSlideBackgroundImageFromNode = (nodeId: string): string | null => {
+  const setSlideBackgroundImageFromNode = (
+    nodeId: string,
+    preferredFit?: ObjectFit,
+  ): string | null => {
     const slideId = resolveActiveSlideId();
     const imageNode = resolveImageNode(nodeId);
     const normalizedSource = imageNode?.props.src.trim() ?? "";
@@ -106,6 +122,7 @@ export function useEditorLocalImage(options: UseEditorLocalImageOptions) {
       type: "node.image.set-as-background",
       slideId,
       nodeId,
+      fit: resolveBackgroundImageFit(preferredFit ?? imageNode.props.objectFit),
     });
 
     return normalizedSource;

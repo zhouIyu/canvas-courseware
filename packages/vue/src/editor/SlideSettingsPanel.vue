@@ -1,25 +1,13 @@
 <script setup lang="ts">
 import type { Slide } from "@canvas-courseware/core";
 import { computed, ref } from "vue";
-import { createSlideBackgroundStyle } from "../shared";
+import {
+  BACKGROUND_IMAGE_FIT_OPTIONS,
+  createSlideBackgroundStyle,
+  normalizeBackgroundImageFit,
+} from "../shared";
 import LocalImageFileTrigger from "./LocalImageFileTrigger.vue";
 import { readLocalImageAsset } from "./image-file";
-
-/** 页面背景图填充方式的可选项。 */
-const backgroundImageFitOptions = [
-  {
-    value: "cover",
-    label: "裁切铺满",
-  },
-  {
-    value: "contain",
-    label: "完整显示",
-  },
-  {
-    value: "fill",
-    label: "拉伸铺满",
-  },
-] as const;
 
 /** 页面设置面板的输入参数。 */
 const props = withDefaults(
@@ -75,10 +63,7 @@ const readNumberInputValue = (value: unknown, fallback: number, minimum: number)
 const readBackgroundImageFit = (
   value: unknown,
   fallback: NonNullable<Slide["background"]["image"]>["fit"],
-): NonNullable<Slide["background"]["image"]>["fit"] =>
-  backgroundImageFitOptions.some((option) => option.value === value)
-    ? (value as NonNullable<Slide["background"]["image"]>["fit"])
-    : fallback;
+): NonNullable<Slide["background"]["image"]>["fit"] => normalizeBackgroundImageFit(value, fallback);
 
 /** 统一发出页面更新事件。 */
 const updateSlide = (patch: Partial<Pick<Slide, "name" | "size" | "background">>) => {
@@ -312,7 +297,7 @@ const clearSlideBackgroundImage = () => {
             @change="handleSlideBackgroundImageFitChange"
           >
             <a-option
-              v-for="option in backgroundImageFitOptions"
+              v-for="option in BACKGROUND_IMAGE_FIT_OPTIONS"
               :key="option.value"
               :value="option.value"
             >

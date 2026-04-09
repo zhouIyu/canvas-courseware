@@ -4,6 +4,7 @@ import type {
   EditorSnapshot,
   NodeAnimation,
   NodePatch,
+  ObjectFit,
   SelectionState,
   Slide,
   TimelineStep,
@@ -47,7 +48,7 @@ export function reduceSnapshot(
     case "node.update":
       return updateNode(snapshot, command.slideId, command.nodeId, command.patch);
     case "node.image.set-as-background":
-      return setImageNodeAsBackground(snapshot, command.slideId, command.nodeId);
+      return setImageNodeAsBackground(snapshot, command.slideId, command.nodeId, command.fit);
     case "node.delete":
       return deleteNode(snapshot, command.slideId, command.nodeId);
     case "selection.set":
@@ -163,6 +164,7 @@ function setImageNodeAsBackground(
   snapshot: EditorSnapshot,
   slideId: string,
   nodeId: string,
+  fit?: ObjectFit,
 ): EditorSnapshot {
   const slide = findSlide(snapshot.document, slideId);
   const imageNode = slide ? findConvertibleImageNode(slide, nodeId) : null;
@@ -176,7 +178,7 @@ function setImageNodeAsBackground(
       ...currentSlide.background,
       image: {
         src: imageNode.props.src.trim(),
-        fit: imageNode.props.objectFit ?? currentSlide.background.image?.fit ?? "cover",
+        fit: fit ?? imageNode.props.objectFit ?? currentSlide.background.image?.fit ?? "cover",
       },
     },
     nodes: currentSlide.nodes.filter((node) => node.id !== nodeId),

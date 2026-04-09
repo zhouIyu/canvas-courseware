@@ -1,7 +1,7 @@
 {
   "baseUrl": "http://127.0.0.1:32173/projects",
   "backgroundImagePath": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-04-07-vnext-09-round-01/vnext09-bg-portrait.png",
-  "executedAt": "2026-04-07T12:37:12.660Z",
+  "executedAt": "2026-04-09T06:37:17.715Z",
   "desktopViewport": {
     "width": 1440,
     "height": 900
@@ -9,7 +9,7 @@
   "checks": [
     {
       "id": "toolbar-background-entry",
-      "projectId": "document-1f8b3b16-85e6-447a-8bc2-13c8d1bb01d7",
+      "projectId": "document-fd59c3be-930a-47bb-ac5d-1da6e3874844",
       "toolbarText": "插入文本矩形图片设为背景图片框",
       "hasBackgroundEntry": true,
       "metrics": {
@@ -24,7 +24,7 @@
     {
       "id": "set-background-result",
       "activeTabs": [
-        "页面设置"
+        "组件属性"
       ],
       "sourceLabel": "已导入本地图片，保存后会随项目一起恢复",
       "fitValue": "裁切铺满",

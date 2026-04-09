@@ -1,0 +1,50 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "imagePath": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-04-07-vnext-08-round-01/vnext08-sample.png",
+  "executedAt": "2026-04-09T06:37:17.715Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "empty-image-frame-context-menu",
+      "menuText": "插入文本 插入矩形 插入图片 插入图片框 复制所选 重复所选 删除所选 粘贴",
+      "hasSetBackground": false,
+      "hasDelete": true,
+      "metrics": {
+        "innerWidth": 1440,
+        "innerHeight": 900,
+        "bodyScrollWidth": 1440,
+        "docScrollWidth": 1440,
+        "bodyScrollHeight": 900,
+        "horizontalOverflow": false
+      }
+    },
+    {
+      "id": "image-context-menu",
+      "menuText": "插入文本 插入矩形 插入图片 插入图片框 复制所选 重复所选 设为背景 删除所选 粘贴",
+      "hasSetBackground": true,
+      "hasCopy": true,
+      "hasDuplicate": true,
+      "hasDelete": true
+    },
+    {
+      "id": "set-background-from-image-node",
+      "fitModalText": "选择背景填充方式当前来源画布图片 · vnext08-sample确认后会把当前图片写入页面背景，并保留页面设置中的后续手动调整能力。完整显示裁切铺满cover铺满整个页面，可能裁掉图片边缘，适合横图做封面。完整显示contain完整保留图片内容，可能在四周留白，适合竖图或信息图。拉伸铺满fill直接拉伸到整页，不留白也不裁切，但会改变图片比例。 竖图或信息图建议优先选择“完整显示”，避免默认铺满时主体被过度裁切。 取消确认设为背景",
+      "remainingNodeCount": 0,
+      "hasBackgroundImage": true,
+      "backgroundFit": "contain",
+      "sourceLabel": "已导入本地图片，保存后会随项目一起恢复",
+      "removedOriginalNode": true
+    },
+    {
+      "id": "reload-persistence",
+      "remainingNodeCount": 0,
+      "hasBackgroundImage": true,
+      "backgroundFit": "contain"
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

@@ -3,6 +3,7 @@ import type {
   CoursewareNode,
   NodeAnimation,
   NodePatch,
+  ObjectFit,
   Slide,
   TimelineStep,
 } from "./schema";
@@ -110,6 +111,8 @@ export interface SetImageNodeAsBackgroundCommand {
   type: "node.image.set-as-background";
   slideId: string;
   nodeId: string;
+  /** 可选的背景图填充方式；为空时沿用节点或页面已有配置。 */
+  fit?: ObjectFit;
 }
 
 export interface DeleteNodeCommand {

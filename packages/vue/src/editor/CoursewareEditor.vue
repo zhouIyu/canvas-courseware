@@ -5,6 +5,7 @@ import type {
   NodeAnimation,
   NodePatch,
   NodeTimelineSummary,
+  ObjectFit,
   ReorderPosition,
   Slide,
   TimelineStep,
@@ -15,7 +16,12 @@ import {
 } from "@canvas-courseware/core";
 import type { FabricEditorContextMenuRequest } from "@canvas-courseware/fabric";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { DEFAULT_EDITOR_HEIGHT } from "../shared";
+import {
+  DEFAULT_BACKGROUND_IMAGE_FIT,
+  DEFAULT_EDITOR_HEIGHT,
+  normalizeBackgroundImageFit,
+} from "../shared";
+import BackgroundImageFitModal from "./BackgroundImageFitModal.vue";
 import EditorToolbar from "./EditorToolbar.vue";
 import FloatingLayerManager from "./FloatingLayerManager.vue";
 import InspectorPanel from "./InspectorPanel.vue";
@@ -102,6 +108,29 @@ interface EditorContextMenuState {
   nodeId: string | null;
 }
 
+/** “设为背景”流程中待确认的图片来源。 */
+type PendingBackgroundImageAction =
+  | {
+      /** 待处理来源为本地图片文件。 */
+      sourceKind: "file";
+      /** 当前待写入页面背景的本地文件。 */
+      file: File;
+      /** 弹层中展示给用户的来源摘要。 */
+      sourceLabel: string;
+      /** 弹层打开时默认选中的填充方式。 */
+      preferredFit: ObjectFit;
+    }
+  | {
+      /** 待处理来源为当前画布中的图片节点。 */
+      sourceKind: "node";
+      /** 当前待转换为背景图的节点 id。 */
+      nodeId: string;
+      /** 弹层中展示给用户的来源摘要。 */
+      sourceLabel: string;
+      /** 弹层打开时默认选中的填充方式。 */
+      preferredFit: ObjectFit;
+    };
+
 /** 右键菜单预估宽度，用于避免贴边溢出。 */
 const CONTEXT_MENU_WIDTH = 188;
 
@@ -153,6 +182,12 @@ const workspaceShellRef = ref<HTMLElement | null>(null);
 /** 当前编辑区右键菜单状态。 */
 const contextMenuState = ref<EditorContextMenuState | null>(null);
 
+/** “设为背景”流程中暂存的待确认操作。 */
+const pendingBackgroundImageAction = ref<PendingBackgroundImageAction | null>(null);
+
+/** 当前“设为背景”确认动作是否正在提交。 */
+const isApplyingBackgroundImageFit = ref(false);
+
 /** 把数值约束到指定区间内，避免菜单超出容器。 */
 const clamp = (value: number, minimum: number, maximum: number): number =>
   Math.min(Math.max(value, minimum), maximum);
@@ -160,6 +195,12 @@ const clamp = (value: number, minimum: number, maximum: number): number =>
 /** 关闭当前右键菜单。 */
 const closeContextMenu = () => {
   contextMenuState.value = null;
+};
+
+/** 关闭“设为背景”确认弹层，并清理暂存来源。 */
+const closeBackgroundImageFitModal = () => {
+  pendingBackgroundImageAction.value = null;
+  isApplyingBackgroundImageFit.value = false;
 };
 
 /** 按工作区可用空间规整右键菜单坐标。 */
@@ -391,6 +432,7 @@ watch(
   () => snapshot.value.activeSlideId,
   () => {
     closeContextMenu();
+    closeBackgroundImageFitModal();
   },
 );
 
@@ -557,6 +599,19 @@ const contextMenuTargetImageNode = computed(() => {
 
 /** 当前右键菜单是否可以展示“设为背景”快捷入口。 */
 const contextMenuCanSetBackground = computed(() => Boolean(contextMenuTargetImageNode.value));
+
+/** 当前“设为背景”确认弹层是否展示。 */
+const isBackgroundImageFitModalVisible = computed(() => Boolean(pendingBackgroundImageAction.value));
+
+/** 当前“设为背景”确认弹层中的来源说明。 */
+const backgroundImageFitModalSourceLabel = computed(
+  () => pendingBackgroundImageAction.value?.sourceLabel ?? "当前图片",
+);
+
+/** 当前“设为背景”确认弹层中的默认填充方式。 */
+const backgroundImageFitModalInitialFit = computed(
+  () => pendingBackgroundImageAction.value?.preferredFit ?? DEFAULT_BACKGROUND_IMAGE_FIT,
+);
 
 /** 当前 slide 的更新入口。 */
 const handleSlideUpdate = (patch: Partial<Pick<Slide, "name" | "size" | "background">>) => {
@@ -773,17 +828,18 @@ const handleLocalImageImport = async (file: File) => {
   }
 };
 
-/** 从工具条上传图片并直接设置为当前页面背景。 */
-const handleBackgroundImageImport = async (file: File) => {
-  try {
-    closeContextMenu();
-    await setSlideBackgroundImageFromFile(file);
-    isSlideSettingsDrawerVisible.value = true;
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "背景图设置失败，请重试";
-    window.alert(message);
-    console.error(error);
-  }
+/** 从工具条上传图片后，先打开填充方式确认弹层。 */
+const handleBackgroundImageImport = (file: File) => {
+  closeContextMenu();
+  pendingBackgroundImageAction.value = {
+    sourceKind: "file",
+    file,
+    sourceLabel: `本地图片 · ${file.name}`,
+    preferredFit: normalizeBackgroundImageFit(
+      activeSlide.value?.background.image?.fit,
+      DEFAULT_BACKGROUND_IMAGE_FIT,
+    ),
+  };
 };
 
 /** 从属性面板直接替换当前图片节点，并保留节点布局和当前选中态。 */
@@ -835,19 +891,50 @@ const handleContextMenuDuplicate = () => {
 
 /** 右键菜单中把当前图片节点直接转换成页面背景。 */
 const handleContextMenuSetImageAsBackground = () => {
-  const nodeId = contextMenuTargetImageNode.value?.id;
-  if (!nodeId) {
+  const imageNode = contextMenuTargetImageNode.value;
+  if (!imageNode) {
     return;
   }
 
   closeContextMenu();
-  const backgroundSource = setSlideBackgroundImageFromNode(nodeId);
-  if (!backgroundSource) {
-    window.alert("当前图片还没有可用资源，暂时不能设为背景");
+  pendingBackgroundImageAction.value = {
+    sourceKind: "node",
+    nodeId: imageNode.id,
+    sourceLabel: `画布图片 · ${imageNode.name}`,
+    preferredFit: normalizeBackgroundImageFit(
+      imageNode.props.objectFit ?? activeSlide.value?.background.image?.fit,
+      DEFAULT_BACKGROUND_IMAGE_FIT,
+    ),
+  };
+};
+
+/** 根据弹层确认结果，真正执行“设为背景”写入。 */
+const handleBackgroundImageFitConfirm = async (fit: ObjectFit) => {
+  const pendingAction = pendingBackgroundImageAction.value;
+  if (!pendingAction) {
     return;
   }
 
-  isSlideSettingsDrawerVisible.value = true;
+  isApplyingBackgroundImageFit.value = true;
+
+  try {
+    if (pendingAction.sourceKind === "file") {
+      await setSlideBackgroundImageFromFile(pendingAction.file, fit);
+    } else {
+      const backgroundSource = setSlideBackgroundImageFromNode(pendingAction.nodeId, fit);
+      if (!backgroundSource) {
+        throw new Error("当前图片还没有可用资源，暂时不能设为背景");
+      }
+    }
+
+    isSlideSettingsDrawerVisible.value = true;
+    closeBackgroundImageFitModal();
+  } catch (error) {
+    isApplyingBackgroundImageFit.value = false;
+    const message = error instanceof Error ? error.message : "背景图设置失败，请重试";
+    window.alert(message);
+    console.error(error);
+  }
 };
 
 /** 右键菜单中删除当前选区。 */
@@ -993,6 +1080,15 @@ defineExpose({
 
 <template>
   <section class="editor-shell" :class="{ 'is-embedded': isEmbedded }" :style="editorShellStyle">
+    <BackgroundImageFitModal
+      :confirm-loading="isApplyingBackgroundImageFit"
+      :initial-fit="backgroundImageFitModalInitialFit"
+      :source-label="backgroundImageFitModalSourceLabel"
+      :visible="isBackgroundImageFitModalVisible"
+      @cancel="closeBackgroundImageFitModal"
+      @confirm="handleBackgroundImageFitConfirm"
+    />
+
     <header v-if="showHeader" class="editor-topbar">
       <div class="editor-heading">
         <div class="title-row">

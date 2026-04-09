@@ -1,0 +1,32 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "imagePath": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-04-07-vnext-08-round-01/vnext08-sample.png",
+  "executedAt": "2026-04-09T06:35:53.005Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "toolbar-background-fit-modal",
+      "modalText": "选择背景填充方式当前来源本地图片 · vnext08-sample.png确认后会把当前图片写入页面背景，并保留页面设置中的后续手动调整能力。裁切铺满裁切铺满cover铺满整个页面，可能裁掉图片边缘，适合横图做封面。完整显示contain完整保留图片内容，可能在四周留白，适合竖图或信息图。拉伸铺满fill直接拉伸到整页，不留白也不裁切，但会改变图片比例。 竖图或信息图建议优先选择“完整显示”，避免默认铺满时主体被过度裁切。 取消确认设为背景",
+      "backgroundFit": "contain",
+      "hasBackgroundImage": true
+    },
+    {
+      "id": "context-background-fit-modal",
+      "modalText": "选择背景填充方式当前来源画布图片 · vnext08-sample确认后会把当前图片写入页面背景，并保留页面设置中的后续手动调整能力。完整显示裁切铺满cover铺满整个页面，可能裁掉图片边缘，适合横图做封面。完整显示contain完整保留图片内容，可能在四周留白，适合竖图或信息图。拉伸铺满fill直接拉伸到整页，不留白也不裁切，但会改变图片比例。 竖图或信息图建议优先选择“完整显示”，避免默认铺满时主体被过度裁切。 取消确认设为背景",
+      "backgroundFit": "fill",
+      "hasBackgroundImage": true,
+      "remainingNodeCount": 0
+    },
+    {
+      "id": "reload-persistence",
+      "backgroundFit": "fill",
+      "hasBackgroundImage": true,
+      "remainingNodeCount": 0
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}
