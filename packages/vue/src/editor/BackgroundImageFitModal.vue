@@ -78,20 +78,17 @@ watch(
     :confirm-loading="props.confirmLoading"
     :mask-closable="false"
     class="background-fit-modal"
-    title="选择背景填充方式"
+    title="设为背景"
+    width="468px"
     ok-text="确认设为背景"
     cancel-text="取消"
     @cancel="emit('cancel')"
     @ok="handleConfirm"
   >
     <div class="background-fit-modal__body">
-      <section class="background-fit-modal__summary">
-        <div class="background-fit-modal__copy">
-          <span class="background-fit-modal__label">当前来源</span>
-          <h3>{{ props.sourceLabel }}</h3>
-          <p>确认后会把当前图片写入页面背景，并保留页面设置中的后续手动调整能力。</p>
-        </div>
-        <a-tag color="arcoblue" bordered>{{ activeOption.label }}</a-tag>
+      <section class="background-fit-modal__intro">
+        <p class="background-fit-modal__headline">{{ props.sourceLabel }}</p>
+        <p class="background-fit-modal__copy">选择铺满方式，确认后仍可在页面设置里继续调整。</p>
       </section>
 
       <section class="background-fit-modal__options">
@@ -105,15 +102,15 @@ watch(
         >
           <div class="background-fit-option__header">
             <strong>{{ option.label }}</strong>
-            <span>{{ option.value }}</span>
           </div>
           <p>{{ option.description }}</p>
         </button>
       </section>
 
-      <p class="background-fit-modal__hint">
-        竖图或信息图建议优先选择“完整显示”，避免默认铺满时主体被过度裁切。
-      </p>
+      <section class="background-fit-modal__selection">
+        <a-tag color="arcoblue" bordered size="small">{{ activeOption.label }}</a-tag>
+        <p>{{ activeOption.description }}</p>
+      </section>
     </div>
   </a-modal>
 </template>
@@ -121,63 +118,46 @@ watch(
 <style scoped>
 .background-fit-modal__body {
   display: grid;
-  gap: 18px;
+  gap: 14px;
 }
 
-.background-fit-modal__summary {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 16px 18px;
-  border: 1px solid rgba(19, 78, 74, 0.08);
-  border-radius: 18px;
-  background: linear-gradient(180deg, rgba(22, 93, 255, 0.06), rgba(255, 255, 255, 0.96));
-}
-
-.background-fit-modal__copy {
+.background-fit-modal__intro {
   display: grid;
-  gap: 6px;
+  gap: 4px;
 }
 
-.background-fit-modal__copy h3,
-.background-fit-modal__copy p {
+.background-fit-modal__headline,
+.background-fit-modal__copy,
+.background-fit-modal__selection p {
   margin: 0;
 }
 
-.background-fit-modal__label {
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.5;
-  letter-spacing: 0.06em;
-  color: var(--cw-color-muted);
-  text-transform: uppercase;
-}
-
-.background-fit-modal__copy h3 {
-  font-size: 18px;
-  line-height: 1.4;
+.background-fit-modal__headline {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.45;
   color: var(--cw-color-text);
 }
 
-.background-fit-modal__copy p {
-  font-size: 13px;
-  line-height: 1.6;
+.background-fit-modal__copy,
+.background-fit-modal__selection p {
+  font-size: 12px;
+  line-height: 1.55;
   color: var(--cw-color-muted);
 }
 
 .background-fit-modal__options {
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 
 .background-fit-option {
   display: grid;
-  gap: 8px;
+  gap: 4px;
   width: 100%;
-  padding: 16px;
+  padding: 12px 14px;
   border: 1px solid rgba(19, 78, 74, 0.1);
-  border-radius: 18px;
+  border-radius: 14px;
   background: rgba(255, 255, 255, 0.92);
   cursor: pointer;
   transition:
@@ -188,46 +168,45 @@ watch(
 
 .background-fit-option:hover {
   border-color: rgba(22, 93, 255, 0.28);
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
   transform: translateY(-1px);
 }
 
 .background-fit-option--active {
   border-color: rgba(22, 93, 255, 0.48);
-  background: linear-gradient(180deg, rgba(22, 93, 255, 0.08), rgba(255, 255, 255, 0.96));
-  box-shadow: 0 16px 36px rgba(22, 93, 255, 0.12);
+  background: linear-gradient(180deg, rgba(22, 93, 255, 0.07), rgba(255, 255, 255, 0.96));
+  box-shadow: 0 10px 24px rgba(22, 93, 255, 0.1);
 }
 
 .background-fit-option__header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
 }
 
 .background-fit-option__header strong {
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.4;
   color: var(--cw-color-text);
 }
 
-.background-fit-option__header span {
+.background-fit-option p {
+  margin: 0;
   font-size: 12px;
-  line-height: 1.5;
+  line-height: 1.55;
   color: var(--cw-color-muted);
-  text-transform: uppercase;
 }
 
-.background-fit-option p,
-.background-fit-modal__hint {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.6;
-  color: var(--cw-color-muted);
+.background-fit-modal__selection {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 2px;
 }
 
 @media (max-width: 640px) {
-  .background-fit-modal__summary {
+  .background-fit-modal__selection {
+    align-items: flex-start;
     flex-direction: column;
   }
 }
