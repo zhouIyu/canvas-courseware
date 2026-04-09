@@ -1,0 +1,63 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "projectTitle": "VNext-18 文本缩放测试 Round01",
+  "executedAt": "2026-04-08T07:14:52.671Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "before-resize",
+      "storedWidth": 420,
+      "storedHeight": 72,
+      "canvasGeometryBeforeResize": {
+        "width": 420,
+        "height": 36.16,
+        "scaledWidth": 421,
+        "scaledHeight": 37.16
+      }
+    },
+    {
+      "id": "after-resize",
+      "storedWidth": 588.368,
+      "storedHeight": 37.16,
+      "canvasGeometryAfterResize": {
+        "width": 588.368,
+        "height": 36.16,
+        "scaledWidth": 589.368,
+        "scaledHeight": 37.16
+      },
+      "widthIncreased": true,
+      "heightUpdated": true
+    },
+    {
+      "id": "reload-persistence",
+      "storedWidth": 588.368,
+      "storedHeight": 37.16,
+      "canvasGeometryAfterReload": {
+        "width": null,
+        "height": null,
+        "scaledWidth": null,
+        "scaledHeight": null
+      },
+      "widthPersisted": true,
+      "heightPersisted": true
+    },
+    {
+      "id": "preview-smoke",
+      "previewStageVisible": true,
+      "resetButtonVisible": true,
+      "metrics": {
+        "innerWidth": 1440,
+        "innerHeight": 900,
+        "bodyScrollWidth": 1440,
+        "docScrollWidth": 1440,
+        "bodyScrollHeight": 900,
+        "horizontalOverflow": false
+      }
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

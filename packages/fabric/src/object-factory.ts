@@ -23,6 +23,9 @@ const EDITOR_CONTROL_TOUCH_SIZE = 28;
 /** 编辑态控制框外围补白，用于扩大控制点附近的可操作区域。 */
 const EDITOR_CONTROL_PADDING = 8;
 
+/** Fabric 文本宽度调整动作名。 */
+const TEXTBOX_RESIZE_ACTION = "resizing";
+
 /** Fabric 适配层内部统一使用的对象类型。 */
 export type FabricRenderableObject = FabricObject & {
   left?: number;
@@ -268,6 +271,12 @@ function applyTextboxEditorControls(object: FabricRenderableObject): void {
     new Control({
       x,
       y,
+      /**
+       * 对 Textbox 而言，这里不是普通的等比缩放，而是“改宽度并自动重排高度”。
+       * 显式声明为 `resizing`，让 Fabric 在变换阶段按文本宽度调整语义处理角控制点，
+       * 避免继续沿用默认 `scale` 动作名带来的行为漂移。
+       */
+      actionName: TEXTBOX_RESIZE_ACTION,
       actionHandler: controlsUtils.changeWidth,
       cursorStyleHandler: controlsUtils.scaleSkewCursorStyleHandler,
     });

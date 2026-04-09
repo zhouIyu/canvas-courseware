@@ -1,7 +1,7 @@
 {
   "baseUrl": "http://127.0.0.1:32173/projects",
   "editedText": "画布内双击编辑成功",
-  "executedAt": "2026-04-07T14:07:36.357Z",
+  "executedAt": "2026-04-08T06:18:06.851Z",
   "desktopViewport": {
     "width": 1440,
     "height": 900
@@ -28,14 +28,14 @@
     {
       "id": "insert-text",
       "textNodeCount": 1,
-      "nodeId": "node-ac99ced9-8e4f-48ab-a6eb-cc0915c03fad",
+      "nodeId": "node-eed0c162-6e57-4dfe-a9d5-74e6e5ba49d7",
       "text": "新建文本",
       "x": 110,
       "y": 110
     },
     {
       "id": "double-click-edit",
-      "nodeId": "node-ac99ced9-8e4f-48ab-a6eb-cc0915c03fad",
+      "nodeId": "node-eed0c162-6e57-4dfe-a9d5-74e6e5ba49d7",
       "text": "画布内双击编辑成功",
       "inspectorTextValue": "画布内双击编辑成功",
       "textUpdated": true
@@ -50,7 +50,7 @@
     {
       "id": "duplicate-selected",
       "textNodeCount": 2,
-      "duplicatedNodeId": "node-04694e3f-2f43-4b5f-a0b4-01c209c4dd75",
+      "duplicatedNodeId": "node-4d38a185-a40f-4d8e-9bff-f20f17fa4402",
       "duplicatedText": "画布内双击编辑成功",
       "duplicatedOffsetX": 24,
       "duplicatedOffsetY": 24
@@ -58,7 +58,7 @@
     {
       "id": "delete-selected",
       "textNodeCount": 1,
-      "remainingNodeId": "node-ac99ced9-8e4f-48ab-a6eb-cc0915c03fad",
+      "remainingNodeId": "node-eed0c162-6e57-4dfe-a9d5-74e6e5ba49d7",
       "remainingText": "画布内双击编辑成功",
       "deletedDuplicate": true
     },

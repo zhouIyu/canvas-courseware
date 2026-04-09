@@ -734,7 +734,7 @@ export class FabricEditorAdapter {
 function isSelectionTransformAction(action: string): boolean {
   return (
     action.includes("scale") ||
-    action.includes("resize") ||
+    action.includes("resiz") ||
     action.includes("skew") ||
     action.includes("rotate")
   );
@@ -744,7 +744,7 @@ function isSelectionTransformAction(action: string): boolean {
 function isResizeAction(action: string): boolean {
   return (
     action.includes("scale") ||
-    action.includes("resize") ||
+    action.includes("resiz") ||
     action.includes("skew") ||
     !action
   );

@@ -108,6 +108,50 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
   /** 当前撤销/重做可用状态摘要。 */
   const historyState = shallowRef(controller.getHistoryState());
 
+  /** 开发态调试面板暴露给浏览器脚本的最小编辑器能力集合。 */
+  type CoursewareEditorDebugBridge = {
+    /** 读取当前 Fabric 编辑态画布实例，便于自动化定位真实控制点。 */
+    getCanvas: () => ReturnType<FabricEditorAdapter["getCanvas"]>;
+    /** 读取最新标准快照，便于自动化和调试核对文档状态。 */
+    getSnapshot: () => EditorSnapshot;
+    /** 读取编辑态适配器实例，便于开发态核对同步状态。 */
+    getAdapter: () => FabricEditorAdapter;
+    /** 读取标准控制器实例，便于开发态跟踪命令回写。 */
+    getController: () => EditorController;
+  };
+
+  /** 浏览器开发态下挂到 `window` 的调试入口键名。 */
+  const EDITOR_DEBUG_KEY = "__CW_EDITOR_DEBUG__" as const;
+
+  /** 仅在开发态暴露最小调试桥，避免生产环境泄漏内部实现。 */
+  const attachEditorDebugBridge = () => {
+    if (!import.meta.env.DEV || typeof window === "undefined") {
+      return;
+    }
+
+    const debugBridge: CoursewareEditorDebugBridge = {
+      getCanvas: () => adapter.getCanvas(),
+      getSnapshot: () => snapshot.value,
+      getAdapter: () => adapter,
+      getController: () => controller,
+    };
+
+    (window as Window & {
+      [EDITOR_DEBUG_KEY]?: CoursewareEditorDebugBridge;
+    })[EDITOR_DEBUG_KEY] = debugBridge;
+  };
+
+  /** 组件卸载时同步回收开发态调试桥，避免跨页面残留旧实例。 */
+  const detachEditorDebugBridge = () => {
+    if (!import.meta.env.DEV || typeof window === "undefined") {
+      return;
+    }
+
+    delete (window as Window & {
+      [EDITOR_DEBUG_KEY]?: CoursewareEditorDebugBridge;
+    })[EDITOR_DEBUG_KEY];
+  };
+
   /** 当前是否允许执行撤销。 */
   const canUndo = computed(() => historyState.value.canUndo);
 
@@ -204,12 +248,14 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
   /** 组件挂载后再真正连接画布。 */
   onMounted(() => {
     void mountAdapter();
+    attachEditorDebugBridge();
     window.addEventListener("keydown", handleEditorKeydown);
   });
 
   /** 组件卸载时销毁适配器和订阅，避免内存泄漏。 */
   onBeforeUnmount(() => {
     window.removeEventListener("keydown", handleEditorKeydown);
+    detachEditorDebugBridge();
     unsubscribe();
     unsubscribeHistoryState();
     void adapter.dispose();
