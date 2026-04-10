@@ -1032,9 +1032,15 @@ const updateToolbarHeight = () => {
 
 /** 读取中间编辑区当前可用尺寸，用于画布等比缩放。 */
 const updateStageViewportSize = () => {
+  const viewportRect = stageViewportRef.value?.getBoundingClientRect();
   stageViewportSize.value = {
-    width: stageViewportRef.value?.clientWidth ?? 0,
-    height: stageViewportRef.value?.clientHeight ?? 0,
+    /**
+     * 这里改为读取 border-box 尺寸，而不是 `clientWidth / clientHeight`。
+     * 在部分浏览器里，选中 Fabric 对象后如果出现滚动条预留或临时布局抖动，
+     * `clientWidth` 会短暂变小，进而把整块画布误判为“可用区域缩小”并重新缩放。
+     */
+    width: viewportRect ? Math.round(viewportRect.width) : 0,
+    height: viewportRect ? Math.round(viewportRect.height) : 0,
   };
 };
 /** 监听工具条和编辑区尺寸变化，让布局与画布缩放及时同步。 */

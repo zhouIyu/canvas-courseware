@@ -1,0 +1,42 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-04-10T04:25:14.474Z",
+  "viewport": {
+    "width": 1440,
+    "height": 900,
+    "deviceScaleFactor": 2
+  },
+  "checks": [
+    {
+      "id": "canvas-scale-stability",
+      "before": {
+        "label": "before-select",
+        "frameWidth": 752,
+        "frameHeight": 423,
+        "workspaceWidth": 842,
+        "stageWidth": 840,
+        "sideWidth": 300,
+        "transform": "matrix(0.5875, 0, 0, 0.5875, 0, 0)",
+        "gridColumns": "220px 842px 300px",
+        "selectionNodeIds": []
+      },
+      "after": {
+        "label": "after-select",
+        "frameWidth": 752,
+        "frameHeight": 423,
+        "workspaceWidth": 842,
+        "stageWidth": 840,
+        "sideWidth": 300,
+        "transform": "matrix(0.5875, 0, 0, 0.5875, 0, 0)",
+        "gridColumns": "220px 842px 300px",
+        "selectionNodeIds": [
+          "node-eda8a407-6839-42be-abb6-2185a988897e"
+        ]
+      },
+      "frameWidthDelta": 0,
+      "transformStable": true
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}
