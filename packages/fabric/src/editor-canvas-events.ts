@@ -1,4 +1,4 @@
-import type { Canvas, ModifiedEvent } from "fabric";
+import type { ActiveSelection, Canvas, ModifiedEvent } from "fabric";
 import type { FabricNodeObject } from "./editor-adapter-support";
 
 /** 编辑态画布事件注册所需的回调集合。 */
@@ -18,7 +18,10 @@ interface RegisterEditorCanvasEventsHandlers {
   /** 在文本编辑退出时提交最终文本。 */
   handleTextEditingExited: (target: FabricNodeObject | undefined) => void;
   /** 在右键菜单触发时同步目标对象与菜单请求。 */
-  handleContextMenu: (target: FabricNodeObject | undefined, nativeEvent?: Event) => void;
+  handleContextMenu: (
+    target: FabricNodeObject | ActiveSelection | undefined,
+    nativeEvent?: Event,
+  ) => void;
 }
 
 /** 为编辑态 Fabric 画布统一注册选中、变换和文本编辑事件。 */
@@ -75,6 +78,9 @@ export function registerEditorCanvasEvents(
   });
 
   canvas.on("contextmenu", (event) => {
-    handlers.handleContextMenu(event.target as FabricNodeObject | undefined, event.e);
+    handlers.handleContextMenu(
+      event.target as FabricNodeObject | ActiveSelection | undefined,
+      event.e,
+    );
   });
 }

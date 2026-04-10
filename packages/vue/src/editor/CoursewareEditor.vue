@@ -40,6 +40,9 @@ type EditorSideTab = "node" | "timeline";
 /** 标签切换控件传回值的兼容类型。 */
 type EditorSideTabValue = string | number;
 
+/** 编辑区右键菜单的上下文类型。 */
+type EditorContextMenuMode = "blank" | "single" | "multiple";
+
 /** 页面栏重命名事件的载荷。 */
 interface SlideRailRenamePayload {
   /** 被重命名的 slide id。 */
@@ -106,6 +109,8 @@ interface EditorContextMenuState {
   slideId: string | null;
   /** 触发时命中的节点 id。 */
   nodeId: string | null;
+  /** 触发当前菜单时的标准选中节点集合。 */
+  selectionNodeIds: string[];
 }
 
 /** “设为背景”流程中待确认的图片来源。 */
@@ -222,6 +227,7 @@ const openContextMenu = (payload: FabricEditorContextMenuRequest) => {
     ...normalizedPosition,
     slideId: payload.slideId,
     nodeId: payload.nodeId,
+    selectionNodeIds: [...payload.selectionNodeIds],
   };
 };
 
@@ -565,16 +571,34 @@ const contextMenuStyle = computed(() =>
     : {},
 );
 
-/** 当前右键菜单是否应显示“所选对象”快捷操作。 */
-const contextMenuHasSelection = computed(() => snapshot.value.selection.nodeIds.length > 0);
+/** 当前右键菜单对应的上下文模式。 */
+const contextMenuMode = computed<EditorContextMenuMode>(() => {
+  const selectionCount = contextMenuState.value?.selectionNodeIds.length ?? 0;
+  if (selectionCount === 0) {
+    return "blank";
+  }
+
+  return selectionCount === 1 ? "single" : "multiple";
+});
+
+/** 当前右键菜单是否为空白区上下文。 */
+const contextMenuIsBlank = computed(() => contextMenuMode.value === "blank");
+
+/** 当前右键菜单是否已命中对象级操作上下文。 */
+const contextMenuHasObjectSelection = computed(() => contextMenuMode.value !== "blank");
+
+/** 当前右键菜单唯一命中的节点 id。 */
+const contextMenuSingleNodeId = computed(() =>
+  contextMenuMode.value === "single" ? contextMenuState.value?.selectionNodeIds[0] ?? null : null,
+);
 
 /** 当前右键菜单命中的是否为一张已导入资源的图片节点。 */
 const contextMenuTargetImageNode = computed(() => {
-  if (!contextMenuState.value?.nodeId || !activeSlide.value) {
+  if (!contextMenuSingleNodeId.value || !activeSlide.value) {
     return null;
   }
 
-  const node = activeSlide.value.nodes.find((candidate) => candidate.id === contextMenuState.value?.nodeId);
+  const node = activeSlide.value.nodes.find((candidate) => candidate.id === contextMenuSingleNodeId.value);
   if (!node || node.type !== "image" || node.props.src.trim().length === 0) {
     return null;
   }
@@ -584,6 +608,9 @@ const contextMenuTargetImageNode = computed(() => {
 
 /** 当前右键菜单是否可以展示“设为背景”快捷入口。 */
 const contextMenuCanSetBackground = computed(() => Boolean(contextMenuTargetImageNode.value));
+
+/** 当前右键菜单是否可以展示“更换图片”快捷入口。 */
+const contextMenuCanReplaceImage = computed(() => Boolean(contextMenuTargetImageNode.value));
 
 /** 当前“设为背景”确认弹层是否展示。 */
 const isBackgroundImageFitModalVisible = computed(() => Boolean(pendingBackgroundImageAction.value));
@@ -842,6 +869,17 @@ const handleContextMenuImageImport = async (file: File) => {
   await handleLocalImageImport(file);
 };
 
+/** 右键菜单中直接替换当前图片节点资源。 */
+const handleContextMenuImageReplace = async (file: File) => {
+  const imageNodeId = contextMenuTargetImageNode.value?.id;
+  closeContextMenu();
+  if (!imageNodeId) {
+    return;
+  }
+
+  await handleImageReplace(imageNodeId, file);
+};
+
 /** 右键菜单中复制当前选区。 */
 const handleContextMenuCopy = () => {
   closeContextMenu();
@@ -958,6 +996,7 @@ const handleStageViewportContextMenu = (event: MouseEvent) => {
     clientY: event.clientY,
     slideId: activeSlide.value?.id ?? null,
     nodeId: null,
+    selectionNodeIds: [],
   });
 };
 
@@ -1176,45 +1215,59 @@ defineExpose({
             :style="contextMenuStyle"
             @contextmenu.prevent
           >
-            <div class="stage-context-menu__group">
-              <a-button class="stage-context-menu__item" type="text" @click="handleContextMenuAddText">
-                插入文本
-              </a-button>
-              <a-button class="stage-context-menu__item" type="text" @click="handleContextMenuAddRect">
-                插入矩形
-              </a-button>
-              <LocalImageFileTrigger
-                aria-label="从右键菜单插入图片"
-                label="插入图片"
-                variant="menu"
-                @select="handleContextMenuImageImport"
-              />
-            </div>
-
-            <template v-if="contextMenuHasSelection">
-              <div class="stage-context-menu__divider" />
+            <template v-if="contextMenuIsBlank">
               <div class="stage-context-menu__group">
+                <a-button class="stage-context-menu__item" type="text" @click="handleContextMenuAddText">
+                  插入文本
+                </a-button>
+                <a-button class="stage-context-menu__item" type="text" @click="handleContextMenuAddRect">
+                  插入矩形
+                </a-button>
+                <LocalImageFileTrigger
+                  aria-label="从右键菜单插入图片"
+                  label="插入图片"
+                  variant="menu"
+                  @select="handleContextMenuImageImport"
+                />
+              </div>
+              <div class="stage-context-menu__divider" />
+            </template>
+
+            <template v-else>
+              <template v-if="contextMenuCanReplaceImage">
+                <div class="stage-context-menu__group">
+                  <LocalImageFileTrigger
+                    aria-label="从右键菜单更换图片"
+                    label="更换图片"
+                    variant="menu"
+                    @select="handleContextMenuImageReplace"
+                  />
+                  <a-button
+                    v-if="contextMenuCanSetBackground"
+                    class="stage-context-menu__item"
+                    type="text"
+                    @click="handleContextMenuSetImageAsBackground"
+                  >
+                    设为背景
+                  </a-button>
+                </div>
+                <div class="stage-context-menu__divider" />
+              </template>
+
+              <div v-if="contextMenuHasObjectSelection" class="stage-context-menu__group">
                 <a-button class="stage-context-menu__item" type="text" @click="handleContextMenuCopy">
                   复制所选
                 </a-button>
                 <a-button class="stage-context-menu__item" type="text" @click="handleContextMenuDuplicate">
                   重复所选
                 </a-button>
-                <a-button
-                  v-if="contextMenuCanSetBackground"
-                  class="stage-context-menu__item"
-                  type="text"
-                  @click="handleContextMenuSetImageAsBackground"
-                >
-                  设为背景
-                </a-button>
                 <a-button class="stage-context-menu__item danger" type="text" @click="handleContextMenuDelete">
                   删除所选
                 </a-button>
               </div>
+              <div class="stage-context-menu__divider" />
             </template>
 
-            <div class="stage-context-menu__divider" />
             <div class="stage-context-menu__group">
               <a-button class="stage-context-menu__item" type="text" @click="handleContextMenuPaste">
                 粘贴

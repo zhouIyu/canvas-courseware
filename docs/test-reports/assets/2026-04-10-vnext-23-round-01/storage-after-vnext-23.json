@@ -1,0 +1,382 @@
+[
+  {
+    "id": "document-9b48de43-8cf6-4804-a2e5-5241503cb609",
+    "title": "未命名课件",
+    "updatedAt": "2026-04-10T03:37:59.798Z",
+    "thumbnail": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAcFBQYFBAcGBgYIBwcICxILCwoKCxYPEA0SGhYbGhkWGRgcICgiHB4mHhgZIzAkJiorLS4tGyIyNTEsNSgsLSz/2wBDAQcICAsJCxULCxUsHRkdLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCz/wAARCACsATMDASIAAhEBAxEB/8QAHAABAAIDAQEBAAAAAAAAAAAAAAQGAwUHAgEI/8QAPRAAAgEDAgIDDAgGAwAAAAAAAAECAwQRBRIGIRMxURQWIjJBVYGRkqHR0hUXNlRho7GzIzNxgoPwQlJi/8QAGgEBAQADAQEAAAAAAAAAAAAAAAECBAUGA//EACYRAQABAwIFBQEBAAAAAAAAAAABAgMRBBIUIUFSkQUTFVFTwdH/2gAMAwEAAhEDEQA/AP0iAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA0/FOp3WkcP1rqyhCdwpRjBT6llpN+hZfoKzacY6vd8Ld3SjbW9zObVPPitOnuj+PXy9BYjKZX4FFjxdrMtKsM0KKvq9xKlVgoOW1RfPsS5ZXpRG17jnVdNUJUoUNtei3Se1+PGbjJYfoLtky6GClR13W61LSZxdRSuYZuIwoxai+jlLEc9b5dR7fE1/LWXQhUj3PvhSpt0/HcnFJ58jzuyTBlcgUmXFmoR4jt7P+H0Epzpzwk5KW5pL0JZIWkcaahX1Zwu6su5XGTpylbbFLEZPxsf+S7ZMuhgpMuK9UVrqTnToU6ltCTgozU25KNN4x2eFL3EOPGGrRt7qo6tObo3MaWOiTajvis8u1SJtky6ECj6JxXf33D93WqVo1b5SSt4dGo725SUY+nbz7DPxPxbc2GlWl1p8qEJVd2+NeLe2S5beXU037hgyuIOda1xzqmnWNpVh0T6a3c51I0m0pKaTaz5MZ/Uz1uLte6a3r0begrONOg6jmm3UdTdHklzXNZ9DLtkyvwMNtcRr0l4cJVFFb4xfitrPV5DMYqAAAAAAAAAAAAAAAAAAAc84o4o1jTuJLq1tbzo6NPZtj0cHjME3zaz1s6Gcm41+2F7/Z+3E1tTVNNETEu56Jaou6iqm5TExjrz6wd+vEHnD8mn8o79eIPOH5NP5TQg5/uV/cvXcFpvzp8Q33frxB5w/Jp/KO/XiDzh+TT+U0IHuV/cnBab86fEN9368QecPyafyjv14g84fk0/lNCB7lf3JwWm/OnxC6cL8UaxqPElra3V50lGpv3R6OCziDa5pZ60dDOTcFfbCy/v/bkdZOhpqpqomZl5H1u1Ra1FNNumIjHTl1l5nThVjtqQjOPY1kjVNKsKtvGhO0pOlBYjHbyXLBLBsuGhQ0bTqdv0ELSmqe/pNuP+Xb/UVNG06rShTqWVGUKaainHxcvLx6SaAMNO0t6UKMIUoqND+Wv+vJrl6GzDPSNPqVVUlaU3NPcnjy5zn1kwARfoyy6WVTuWlvlJSctqznOcnt2Nq9maEGoRcIprqT60ZwBEp6TYUqjnC0oxk1hvb1/7hHj6F01S3Kyop4S8X8c/qTgBEt9KsbSop0LWlTkupqPV1/F+s9vT7SVbpXb03PLeWvK8ZfuRIAEP6JsMNO0pNNOOGs8nnl72ZVY2qluVCCfgvkuxtr1Nv1mcAYqVrQoVqtWlSjCpWadSSXOTSwsmUAAAAAAAAAAAAAAAAAAAABDr/wA6RMNBqfEWk2Go1ba5vI060MbouMnjKTXUuxmpq7Ny9RFNumapz0jLKmumjnVOG1VtNrOYjuafbE0i400ZLC1KHsS+A79dG85Q9iXwPhGhnHOzX4lOIo748t33NPtiO5p9sTSd+ujecoexL4Dv10bzlD2JfAvAz+NfiTiKO+PLd9zT7YjuafbE0nfro3nKHsS+A79dG85Q9iXwHAz+NfiTiKO+PLc0Fiul/UmGg03iPSr/AFGnb215GrWqZ2xUWs4Tb8nYjfn20lm5Zomm5TNM56xhaq6a+dM5AeKtanQpupVqRpwXXKTwjBLUrKNCNeV3RVKXVPesP0m2xSgRnqVlFUs3dFdKswzNeEsZ5eo+PU7FS2u8oKSko43rOXj4r1jAlAgw1rTaleVGF7RlUjnMVLmsdf6Hqjq+n3G7obylU2eNtlnHPBcSmYTARlqNnKLlG6pNLllSXZn9Dz9K2OynPuqltqrdB7vGX4etDC5SwQ5atYRqKDu6Sk0njd2rK93My0722rTcKdeE5RzlJ5xh4YwM4IVLWNPrxlKneUpKK3N56l2np6rYKhOs7ukqdOW2Ut3JPsGEylgiz1Kyp0elldUlTazu3Jr/AHmjJ3ZbYi3WglJbll4yiYVmAAAAAAAAAAAAAAAAAAAAADjvHf21v/8AH+3E7EULiXgXU9Z4hub+3r2kKVXbtVSclLlBLniL7Dr+k3qLN6ark4jH9hz9fbquW4iiM8/9c5Bcfqy1n7zY+3P5R9WWs/ebH25/Kel+Q03fDi8Je7ZU4Fx+rLWfvNj7c/lH1Zaz95sfbn8o+Q03fBwl7tlTgXH6stZ+82Ptz+UfVlrP3mx9ufyj5DTd8HCXu2Wv4E+2th/k/bkdiKFw1wLqejcQ21/cV7SdKlu3KnOTlzg1yzFdpfTzXq163evRVbnMY/su1oLdVu3MVxjn/jX65YT1PSKtpTxmrhZfkRoK3Cl4tBttPjVhWVOUpT54ST8kc/jzy+wt4OVFUw35iJVGPDN8qVlJuG62t5Uo01JJRlnlLOOfIh3/AARd3OswulOk6CqxqOmuTz4GffF+svQLvlNsKPb8EXVDV6126ylCaqRUOXgpp7fezDY8C6hb2dzRrXNOUq7UoyS5Re9See3q8hfgN8pshQ6fAt0tOqUXUjGcp785znwHHl2deT1PgS5lYW9BV4RqUqcoSqR5ZeU1heTqeS9Ab5NkKLV4Lv8A6XpXFOpS6GLgpLd4yUYx6v6Jr0ky04YurXUKlz0VGq5ufjTaa3Sk/wBHj0luA3yu2HPdJ4E1G0o3lKvOm1cU1TjKLScVmPwZO0/gapQh0d5Wjcw6ZVdr5LxZLmvL4xdAN8pshT7vhG6qaJbWcK8ZyjSVOq28N84t49lkmPD99ssvDpLuSEYyjJuXTYeUm/Jj49pZwTdK7YYbeVzJ1O6IQglLwNrzlfiZgDFkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/9k=",
+    "slideThumbnails": {
+      "slide-ade17792-583a-4aa1-8cb8-a7e4f4e27de3": "data:image/jpeg;base64,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"
+    },
+    "document": {
+      "version": "1.0.0",
+      "meta": {
+        "id": "document-9b48de43-8cf6-4804-a2e5-5241503cb609",
+        "title": "未命名课件"
+      },
+      "slides": [
+        {
+          "id": "slide-ade17792-583a-4aa1-8cb8-a7e4f4e27de3",
+          "name": "第1页",
+          "size": {
+            "width": 1280,
+            "height": 720
+          },
+          "background": {
+            "fill": "#FFFFFF",
+            "image": null
+          },
+          "nodes": [
+            {
+              "id": "node-2c75a4dd-94e3-41a0-bd79-3beb5dce6923",
+              "type": "image",
+              "name": "vnext09-bg-portrait",
+              "x": 110,
+              "y": 140,
+              "width": 250,
+              "height": 180,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAAHgCAIAAAAUlnfqAAAD1klEQVR42u3SUQkAIBBEQQua5PoYw3p+agfhUI5ZJsHy2o6AMpoLEDQIGgQNgkbQIGgQNAgaBI2gQdAgaBA0CBpBg6BB0CBoEDSCBkGDoEHQIGgEDYIGQYOgQdAIGgQNggZBg6ARNAgaBA2CRtAgaBA0CBoEjaBB0CBoEDQIGkGDoEHQIGgQNIIGQYOgQdAgaAQNggZBg6BB0AgaBA2CBkGDoBE0CBoEDYIGQSNoEDQIGgSNoEHQIGgQNAgaQYOgQdAgaBA0ggZBg6BB0CBoBA2CBkGDoEHQCBoEDYIGQYOgETQIGgQNggZBI2gQNAgaBI2gvYCgQdAgaBA0ggZBg6BB0CBoBA2CBkGDoEHQCBoEDYIGQYOgETQIGgQNggZBI2gQNAgaBA2CRtAgaBA0CBoEjaBB0CBoEDSCBkGDoEHQIGgEDYIGQUNW0GtCGYJG0CBoEDQIGkGDoEHQIGgQNIIGQYOgQdAgaAQNggZBg6BB0AgaBA2CBkGDoBE0CBoEDYIGQSNoEDQIGgQNgkbQIGgQNAgaQXsBQYOgQdAgaAQNggZBg6BB0AgaBA2Chs+DNrueoE3QgjZBC9oEbSZoE7SgTdCCNkEL2gRtJmgTtKBN0II2QQvaBG0maBO0oE3QgjZBC9oEbSZoE7SgTdCCNkEL2gRtJmgTtKBN0II2QQvaBG0maBO0oE3QgjZBmwnaTNAmaEGboAVtgjYTtAla0CZoQZugBW2CNhO0CVrQJmhBm6AFbYI2E7QJWtAmaEGboAVtgjYTtAn6ZdDwmqARNAgaBA2CRtAgaBA0CBoEjaBB0CBoEDQIGkGDoEHQIGgQNIIGQYOgQdAgaAQNggZBg6BB0AgaBA2CBkGDoBE0CBoEDYJG0F5A0CBoEDQIGkGDoEHQIGgQNIIGQcMvQfexoQxBI2gQNAgaBI2gQdAgaBA0CBpBg6BB0CBoEDSCBkGDoEHQIGgEDYIGQYOgQdAIGgQNggZBg6ARNAgaBA2CBkEjaBA0CBoEjaC9gKBB0CBoEDSCBkGDoEHQIGgEDYIGQYOgQdAIGgQNggZBg6ARNAgaBA2CBkEjaBA0CBoEDYJG0CBoEDQIGgSNoEHQIGgQNIIGQYOgQdAgaAQNggZBg6BB0AgaBA2CBkGDoBE0CBoEDYIGQSNoEDQIGgQNgkbQIGgQNAgaBI2gQdAgaBA0gvYCggZBg6BB0AgaBA2CBkGDoBE0CBoEDYIGQSNoEDQIGgQNgkbQIGgQNAgaBI2gQdAgaBA0CBpBg6BB0CBoEDSCBkGDoEHQCBoEDYIGQYOgETQIGgQNSQ46DM7Lj62AeAAAAABJRU5ErkJggg==",
+                "alt": "vnext09-bg-portrait.png",
+                "objectFit": "contain"
+              }
+            },
+            {
+              "id": "node-f4835103-c284-4aa2-960f-fb47eb19145c",
+              "type": "text",
+              "name": "主标题",
+              "x": 420,
+              "y": 110,
+              "width": 320,
+              "height": 88,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "text": "单选右键不应该再出现插入类操作。",
+                "fontSize": 30,
+                "color": "#172033",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-716102b3-11ac-4957-a949-a1cf491cb2dd",
+              "type": "text",
+              "name": "补充文案",
+              "x": 420,
+              "y": 260,
+              "width": 340,
+              "height": 88,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "text": "多选右键需要继续保留批量操作语义。",
+                "fontSize": 28,
+                "color": "#24415E",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            }
+          ],
+          "timeline": {
+            "steps": [],
+            "animations": []
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "document-3a39adee-557c-4bb6-bcd6-81a7b985dcf3",
+    "title": "古诗讲解示例",
+    "updatedAt": "2026-04-10T03:37:53.922Z",
+    "thumbnail": "#FFFFFF",
+    "slideThumbnails": {},
+    "document": {
+      "version": "1.0.0",
+      "meta": {
+        "id": "document-3a39adee-557c-4bb6-bcd6-81a7b985dcf3",
+        "title": "古诗讲解示例"
+      },
+      "slides": [
+        {
+          "id": "slide-65dfe518-61c5-4fec-a4ab-1aedd6871215",
+          "name": "课程封面",
+          "size": {
+            "width": 1280,
+            "height": 720
+          },
+          "background": {
+            "fill": "#FFFFFF",
+            "image": null
+          },
+          "nodes": [
+            {
+              "id": "node-1a8c9b04-3193-4d4d-92d3-c8a647a7739f",
+              "type": "text",
+              "name": "Course Title",
+              "x": 176,
+              "y": 104,
+              "width": 480,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "text": "送杜少府之任蜀州",
+                "fontSize": 42,
+                "color": "#6B4D2E",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-2c61eba4-9c8b-44e4-b1f0-96b93fc3d602",
+              "type": "text",
+              "name": "Author Name",
+              "x": 304,
+              "y": 168,
+              "width": 220,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "text": "唐 · 王勃",
+                "fontSize": 24,
+                "color": "#9A6B44",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-ce5bc92b-8b07-45f2-9a5d-4ec9a8295e07",
+              "type": "rect",
+              "name": "Poem Card",
+              "x": 144,
+              "y": 232,
+              "width": 548,
+              "height": 338,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "fill": "#FFF9ED",
+                "stroke": "#D6B489",
+                "strokeWidth": 2,
+                "radius": 28
+              }
+            },
+            {
+              "id": "node-14085d50-799f-484e-bc84-e69f12336151",
+              "type": "text",
+              "name": "Poem Body",
+              "x": 214,
+              "y": 292,
+              "width": 414,
+              "height": 242,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": false,
+              "locked": false,
+              "props": {
+                "text": "城阙辅三秦，风烟望五津。\n与君离别意，同是宦游人。\n海内存知己，天涯若比邻。\n无为在歧路，儿女共沾巾。",
+                "fontSize": 28,
+                "color": "#7E5834",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.9,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-79a1543f-0dba-4c00-aeb4-ed3083dcd3cd",
+              "type": "image",
+              "name": "Voice Button",
+              "x": 870,
+              "y": 258,
+              "width": 96,
+              "height": 96,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": false,
+              "locked": false,
+              "props": {
+                "src": "",
+                "objectFit": "cover"
+              }
+            }
+          ],
+          "timeline": {
+            "steps": [
+              {
+                "id": "step-b5d5d489-6d8a-4dfa-abf7-8353769f12a4",
+                "name": "展示诗句内容",
+                "trigger": {
+                  "type": "page-click"
+                },
+                "actions": [
+                  {
+                    "id": "action-ffcc9f63-1518-4fac-a49e-dae9a91bc6b4",
+                    "type": "show-node",
+                    "targetId": "node-14085d50-799f-484e-bc84-e69f12336151",
+                    "animationId": "animation-8b632a7f-273b-4591-888a-4425ba0b36a0"
+                  }
+                ]
+              },
+              {
+                "id": "step-34e6580f-d146-4364-b021-ed98c26e8015",
+                "name": "展示语音按钮",
+                "trigger": {
+                  "type": "auto",
+                  "delayMs": 900
+                },
+                "actions": [
+                  {
+                    "id": "action-e4f49187-99f2-421d-96ab-db008ad5c8cd",
+                    "type": "show-node",
+                    "targetId": "node-79a1543f-0dba-4c00-aeb4-ed3083dcd3cd",
+                    "animationId": "animation-bed891f0-9812-44bf-8ee1-5df803301c12"
+                  }
+                ]
+              }
+            ],
+            "animations": [
+              {
+                "id": "animation-8b632a7f-273b-4591-888a-4425ba0b36a0",
+                "targetId": "node-14085d50-799f-484e-bc84-e69f12336151",
+                "kind": "fade",
+                "durationMs": 320,
+                "easing": "ease-out"
+              },
+              {
+                "id": "animation-bed891f0-9812-44bf-8ee1-5df803301c12",
+                "targetId": "node-79a1543f-0dba-4c00-aeb4-ed3083dcd3cd",
+                "kind": "slide-up",
+                "durationMs": 360,
+                "easing": "ease-out",
+                "offsetY": 28
+              }
+            ]
+          }
+        },
+        {
+          "id": "slide-9c77639a-a64f-41eb-87cc-caa43797deeb",
+          "name": "教学流程",
+          "size": {
+            "width": 1280,
+            "height": 720
+          },
+          "background": {
+            "fill": "#F8FAFC",
+            "image": null
+          },
+          "nodes": [
+            {
+              "id": "node-2bbbdf79-a245-4f8f-9f56-eeb63c6735a3",
+              "type": "text",
+              "name": "Process Title",
+              "x": 110,
+              "y": 96,
+              "width": 340,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "text": "教学流程拆解",
+                "fontSize": 40,
+                "color": "#134E4A",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            },
+            {
+              "id": "node-acb163f3-1761-4293-9e1d-98a8c7c3f59f",
+              "type": "rect",
+              "name": "Process Card",
+              "x": 110,
+              "y": 190,
+              "width": 560,
+              "height": 280,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": true,
+              "locked": false,
+              "props": {
+                "fill": "#FFFFFF",
+                "stroke": "#CBD5E1",
+                "strokeWidth": 2,
+                "radius": 28
+              }
+            },
+            {
+              "id": "node-3942b624-ea80-4032-b76d-8c33b37e9c7d",
+              "type": "text",
+              "name": "Process Hint",
+              "x": 154,
+              "y": 264,
+              "width": 420,
+              "height": 72,
+              "rotation": 0,
+              "opacity": 1,
+              "visible": false,
+              "locked": false,
+              "props": {
+                "text": "点击继续后，再通过自动步骤补齐讲解节奏。",
+                "fontSize": 24,
+                "color": "#0F766E",
+                "fontFamily": "\"Noto Sans SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+                "lineHeight": 1.5,
+                "textAlign": "left"
+              }
+            }
+          ],
+          "timeline": {
+            "steps": [
+              {
+                "id": "step-d0c63079-5f45-4fb1-88bc-79256aeead14",
+                "name": "显示流程提示",
+                "trigger": {
+                  "type": "page-click"
+                },
+                "actions": [
+                  {
+                    "id": "action-36de849c-c9cf-4451-b047-abbba77c8a02",
+                    "type": "show-node",
+                    "targetId": "node-3942b624-ea80-4032-b76d-8c33b37e9c7d",
+                    "animationId": "animation-d08a5b52-ce64-4549-b3eb-558a0649c525"
+                  }
+                ]
+              }
+            ],
+            "animations": [
+              {
+                "id": "animation-d08a5b52-ce64-4549-b3eb-558a0649c525",
+                "targetId": "node-3942b624-ea80-4032-b76d-8c33b37e9c7d",
+                "kind": "fade",
+                "durationMs": 260,
+                "easing": "ease-out"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+]

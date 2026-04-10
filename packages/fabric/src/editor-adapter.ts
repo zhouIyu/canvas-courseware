@@ -39,6 +39,8 @@ export interface FabricEditorContextMenuRequest {
   slideId: string | null;
   /** 当前命中的节点 id；空值表示点在空白区域。 */
   nodeId: string | null;
+  /** 当前右键菜单对应的标准选中节点集合。 */
+  selectionNodeIds: string[];
 }
 
 export interface FabricEditorAdapterMountOptions {
@@ -597,7 +599,7 @@ export class FabricEditorAdapter {
 
   /** 统一处理右键菜单请求，并把命中目标同步回标准选中态。 */
   private handleContextMenu(
-    target: FabricNodeObject | undefined,
+    target: FabricNodeObject | ActiveSelection | undefined,
     nativeEvent?: Event,
   ): void {
     const mouseEvent = nativeEvent instanceof MouseEvent ? nativeEvent : null;
@@ -607,27 +609,70 @@ export class FabricEditorAdapter {
 
     mouseEvent.preventDefault();
 
-    const meta = target ? readNodeMeta(target) : null;
-    if (this.controller && this.currentSlideId) {
-      this.controller.handleAdapterEvent({
-        type: "adapter.selection.changed",
-        slideId: this.currentSlideId,
-        nodeIds: meta ? [meta.nodeId] : [],
-      });
-    }
-
-    if (meta) {
-      this.retainSelection(meta.nodeId);
-    } else {
-      this.clearRetainedSelection();
-    }
+    const selectionNodeIds = this.resolveContextMenuSelectionNodeIds(target);
+    const meta =
+      target instanceof ActiveSelection
+        ? null
+        : target
+          ? readNodeMeta(target)
+          : null;
+    this.syncContextMenuSelection(selectionNodeIds);
 
     this.onContextMenuRequest?.({
       clientX: mouseEvent.clientX,
       clientY: mouseEvent.clientY,
       slideId: this.currentSlideId,
       nodeId: meta?.nodeId ?? null,
+      selectionNodeIds,
     });
+  }
+
+  /** 解析右键请求真正对应的菜单上下文选中态。 */
+  private resolveContextMenuSelectionNodeIds(
+    target: FabricNodeObject | ActiveSelection | undefined,
+  ): string[] {
+    if (!this.canvas) {
+      return [];
+    }
+
+    const currentSelectionNodeIds = resolveCanvasSelectionNodeIds(this.canvas, null);
+    if (target instanceof ActiveSelection) {
+      return currentSelectionNodeIds;
+    }
+
+    const meta = target ? readNodeMeta(target) : null;
+    if (!meta) {
+      return [];
+    }
+
+    if (
+      currentSelectionNodeIds.length > 1 &&
+      currentSelectionNodeIds.includes(meta.nodeId)
+    ) {
+      return currentSelectionNodeIds;
+    }
+
+    return [meta.nodeId];
+  }
+
+  /** 把右键菜单对应的选中态同步回控制器，并维护单选保留窗口。 */
+  private syncContextMenuSelection(selectionNodeIds: string[]): void {
+    if (!this.controller || !this.currentSlideId) {
+      return;
+    }
+
+    this.controller.handleAdapterEvent({
+      type: "adapter.selection.changed",
+      slideId: this.currentSlideId,
+      nodeIds: selectionNodeIds,
+    });
+
+    if (selectionNodeIds.length === 1) {
+      this.retainSelection(selectionNodeIds[0]);
+      return;
+    }
+
+    this.clearRetainedSelection();
   }
 
   /** 从当前 Fabric 目标对象中提取要保留的单选节点。 */

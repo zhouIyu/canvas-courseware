@@ -1,0 +1,57 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "replaceImagePath": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-04-07-vnext-09-round-01/vnext09-bg-portrait.png",
+  "executedAt": "2026-04-10T03:37:53.295Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "blank-context-menu",
+      "menuText": "插入文本 插入矩形 插入图片 粘贴",
+      "hasInsertText": true,
+      "hasInsertRect": true,
+      "hasInsertImage": true,
+      "hasPaste": true,
+      "hasSelectionAction": false
+    },
+    {
+      "id": "single-text-context-menu",
+      "menuText": "复制所选 重复所选 删除所选 粘贴",
+      "hasCopy": true,
+      "hasDuplicate": true,
+      "hasDelete": true,
+      "hasInsertText": false,
+      "hasReplaceImage": false
+    },
+    {
+      "id": "multi-selection-context-menu",
+      "menuText": "复制所选 重复所选 删除所选 粘贴",
+      "selectionCount": 2,
+      "hasCopy": true,
+      "hasDuplicate": true,
+      "hasDelete": true,
+      "hasInsertText": false,
+      "hasReplaceImage": false
+    },
+    {
+      "id": "image-context-menu",
+      "menuText": "更换图片 设为背景 复制所选 重复所选 删除所选 粘贴",
+      "hasReplaceImage": true,
+      "hasSetBackground": true,
+      "hasInsertText": false
+    },
+    {
+      "id": "replace-image-from-context-menu",
+      "nodeId": "node-2c75a4dd-94e3-41a0-bd79-3beb5dce6923",
+      "name": "vnext09-bg-portrait",
+      "alt": "vnext09-bg-portrait.png",
+      "selectedNodeIds": [
+        "node-2c75a4dd-94e3-41a0-bd79-3beb5dce6923"
+      ]
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}
