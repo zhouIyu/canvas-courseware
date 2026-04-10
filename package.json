@@ -17,7 +17,8 @@
     "test:vnext-18": "node test/vnext-18/round-01.mjs",
     "test:vnext-19": "node test/vnext-19/round-01.mjs",
     "test:vnext-20": "node test/vnext-20/round-01.mjs",
-    "test:vnext-21": "node test/vnext-21/round-01.mjs"
+    "test:vnext-21": "node test/vnext-21/round-01.mjs",
+    "test:vnext-22": "node test/vnext-22/round-01.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

@@ -168,13 +168,11 @@ export function useEditorClipboardKeyboard(options: UseEditorClipboardKeyboardOp
       return;
     }
 
-    for (const nodeId of options.snapshot.value.selection.nodeIds) {
-      options.controller.execute({
-        type: "node.delete",
-        slideId: selectionContext.slideId,
-        nodeId,
-      });
-    }
+    options.controller.execute({
+      type: "node.batch.delete",
+      slideId: selectionContext.slideId,
+      nodeIds: options.snapshot.value.selection.nodeIds,
+    });
   };
 
   /** 处理组合键相关的编辑器快捷键。 */

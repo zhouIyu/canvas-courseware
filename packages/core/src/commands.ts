@@ -22,6 +22,7 @@ export type EditorCommand =
   | BatchUpdateNodesCommand
   | UpdateNodeCommand
   | SetImageNodeAsBackgroundCommand
+  | BatchDeleteNodesCommand
   | DeleteNodeCommand
   | SetSelectionCommand
   | ClearSelectionCommand
@@ -113,6 +114,14 @@ export interface SetImageNodeAsBackgroundCommand {
   nodeId: string;
   /** 可选的背景图填充方式；为空时沿用节点或页面已有配置。 */
   fit?: ObjectFit;
+}
+
+/** 一次性删除同一页面中的多个节点，避免批量删除拆成多条历史记录。 */
+export interface BatchDeleteNodesCommand {
+  type: "node.batch.delete";
+  slideId: string;
+  /** 需要被统一删除的节点 id 列表。 */
+  nodeIds: string[];
 }
 
 export interface DeleteNodeCommand {

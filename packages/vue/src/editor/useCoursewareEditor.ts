@@ -346,13 +346,11 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
       return;
     }
 
-    for (const nodeId of snapshot.value.selection.nodeIds) {
-      controller.execute({
-        type: "node.delete",
-        slideId,
-        nodeId,
-      });
-    }
+    controller.execute({
+      type: "node.batch.delete",
+      slideId,
+      nodeIds: snapshot.value.selection.nodeIds,
+    });
   };
 
   /** 切换当前激活的 slide。 */

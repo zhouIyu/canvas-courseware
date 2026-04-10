@@ -2,17 +2,25 @@ import type { NodeBatchUpdateEntry, ReorderPosition } from "./commands";
 import type {
   CoursewareNode,
   EditorSnapshot,
-  NodeAnimation,
   NodePatch,
   ObjectFit,
   SelectionState,
-  Slide,
-  TimelineStep,
 } from "./schema";
+import {
+  findConvertibleImageNode,
+  removeNodeIdsFromSelection,
+  removeNodesFromSlide,
+} from "./reducer/node-removal";
 import { activateSlide, createSnapshotForDocument, deleteSlide, insertSlide, reorderSlide, updateSlide } from "./reducer/slide";
 import {
+  removeAnimation,
+  removeTimelineStep,
+  reorderTimelineStep,
+  upsertAnimation,
+  upsertTimelineStep,
+} from "./reducer/timeline";
+import {
   applyNodePatch,
-  clamp,
   createNodePatchMap,
   findSlide,
   insertAt,
@@ -20,7 +28,6 @@ import {
   resolveReorderIndex,
   unique,
   updateDocumentSlide,
-  upsertById,
 } from "./reducer/shared";
 
 /** 按命令类型收敛 editor snapshot 的所有状态变更。 */
@@ -49,6 +56,8 @@ export function reduceSnapshot(
       return updateNode(snapshot, command.slideId, command.nodeId, command.patch);
     case "node.image.set-as-background":
       return setImageNodeAsBackground(snapshot, command.slideId, command.nodeId, command.fit);
+    case "node.batch.delete":
+      return deleteNodes(snapshot, command.slideId, command.nodeIds);
     case "node.delete":
       return deleteNode(snapshot, command.slideId, command.nodeId);
     case "selection.set":
@@ -149,14 +158,32 @@ function updateNodes(
 
 /** 删除单个节点，并同步清理当前选择态。 */
 function deleteNode(snapshot: EditorSnapshot, slideId: string, nodeId: string): EditorSnapshot {
+  return deleteNodes(snapshot, slideId, [nodeId]);
+}
+
+/** 统一删除同一页面中的多个节点，并同步收敛时间轴与当前选择态。 */
+function deleteNodes(
+  snapshot: EditorSnapshot,
+  slideId: string,
+  nodeIds: string[],
+): EditorSnapshot {
+  let removedNodeIds: string[] = [];
   const nextSnapshot = updateDocumentSlide(snapshot, slideId, (slide) => {
-    const nextNodes = slide.nodes.filter((node) => node.id !== nodeId);
-    return nextNodes.length === slide.nodes.length ? slide : { ...slide, nodes: nextNodes };
+    const cleanupResult = removeNodesFromSlide(slide, nodeIds);
+    removedNodeIds = cleanupResult.removedNodeIds;
+
+    return cleanupResult.removedNodeIds.length === 0
+      ? slide
+      : {
+          ...slide,
+          nodes: cleanupResult.nodes,
+          timeline: cleanupResult.timeline,
+        };
   });
 
   return nextSnapshot === snapshot
     ? snapshot
-    : removeNodeFromSelection(nextSnapshot, snapshot.selection, slideId, nodeId);
+    : syncSelectionAfterNodeRemoval(nextSnapshot, snapshot.selection, slideId, removedNodeIds);
 }
 
 /** 把当前图片节点转换成 slide 背景，并同步清理原节点与相关时间轴引用。 */
@@ -172,106 +199,48 @@ function setImageNodeAsBackground(
     return snapshot;
   }
 
-  const nextSnapshot = updateDocumentSlide(snapshot, slideId, (currentSlide) => ({
-    ...currentSlide,
-    background: {
-      ...currentSlide.background,
-      image: {
-        src: imageNode.props.src.trim(),
-        fit: fit ?? imageNode.props.objectFit ?? currentSlide.background.image?.fit ?? "cover",
-      },
-    },
-    nodes: currentSlide.nodes.filter((node) => node.id !== nodeId),
-    timeline: stripNodeReferencesFromTimeline(currentSlide, nodeId),
-  }));
+  let removedNodeIds: string[] = [];
+  const nextSnapshot = updateDocumentSlide(snapshot, slideId, (currentSlide) => {
+    const cleanupResult = removeNodesFromSlide(currentSlide, [nodeId]);
+    removedNodeIds = cleanupResult.removedNodeIds;
+
+    return cleanupResult.removedNodeIds.length === 0
+      ? currentSlide
+      : {
+          ...currentSlide,
+          background: {
+            ...currentSlide.background,
+            image: {
+              src: imageNode.props.src.trim(),
+              fit: fit ?? imageNode.props.objectFit ?? currentSlide.background.image?.fit ?? "cover",
+            },
+          },
+          nodes: cleanupResult.nodes,
+          timeline: cleanupResult.timeline,
+        };
+  });
 
   return nextSnapshot === snapshot
     ? snapshot
-    : removeNodeFromSelection(nextSnapshot, snapshot.selection, slideId, nodeId);
+    : syncSelectionAfterNodeRemoval(nextSnapshot, snapshot.selection, slideId, removedNodeIds);
 }
 
-/** 读取可被转换为背景图的图片节点，过滤空图片框等无效场景。 */
-function findConvertibleImageNode(
-  slide: Slide,
-  nodeId: string,
-): Extract<CoursewareNode, { type: "image" }> | null {
-  const node = slide.nodes.find((candidate) => candidate.id === nodeId);
-  if (!node || node.type !== "image" || node.props.src.trim().length === 0) {
-    return null;
-  }
-
-  return node;
-}
-
-/** 从当前选择态中剔除一个已被移除的节点 id。 */
-function removeNodeFromSelection(
+/** 把当前选择态与实际删除结果重新对齐，避免 UI 继续保留已失效的选中对象。 */
+function syncSelectionAfterNodeRemoval(
   snapshot: EditorSnapshot,
   selection: SelectionState,
   slideId: string,
-  nodeId: string,
+  nodeIds: string[],
 ): EditorSnapshot {
-  if (selection.slideId !== slideId) {
-    return snapshot;
-  }
-
-  const nextSelectionIds = selection.nodeIds.filter((id) => id !== nodeId);
-  if (nextSelectionIds.length === selection.nodeIds.length) {
+  const nextSelection = removeNodeIdsFromSelection(selection, slideId, nodeIds);
+  if (nextSelection === selection) {
     return snapshot;
   }
 
   return {
     ...snapshot,
-    selection: {
-      slideId,
-      nodeIds: nextSelectionIds,
-    },
+    selection: nextSelection,
   };
-}
-
-/** 清理时间轴中对被转为背景的节点与其动画的引用，避免留下悬空配置。 */
-function stripNodeReferencesFromTimeline(slide: Slide, nodeId: string): Slide["timeline"] {
-  const removedAnimationIds = new Set(
-    slide.timeline.animations
-      .filter((animation) => animation.targetId === nodeId)
-      .map((animation) => animation.id),
-  );
-
-  return {
-    animations: slide.timeline.animations.filter((animation) => animation.targetId !== nodeId),
-    steps: slide.timeline.steps
-      .map((step) => ({
-        ...step,
-        actions: step.actions.filter((action) =>
-          shouldKeepTimelineAction(action, nodeId, removedAnimationIds),
-        ),
-      }))
-      .filter((step) => step.actions.length > 0),
-  };
-}
-
-/** 判断某条时间轴动作是否仍然保留有效目标。 */
-function shouldKeepTimelineAction(
-  action: TimelineStep["actions"][number],
-  nodeId: string,
-  removedAnimationIds: ReadonlySet<string>,
-): boolean {
-  if ("targetId" in action && action.targetId === nodeId) {
-    return false;
-  }
-
-  if (action.type === "play-animation" && removedAnimationIds.has(action.animationId)) {
-    return false;
-  }
-
-  if (
-    action.type === "show-node" &&
-    action.animationId &&
-    removedAnimationIds.has(action.animationId)
-  ) {
-    return false;
-  }
-
-  return true;
 }
 
 /** 设置当前 slide 的选中节点列表。 */
@@ -349,121 +318,6 @@ function reorderNode(
     return {
       ...slide,
       nodes: nextNodes,
-    };
-  });
-}
-
-/** 新增或更新某个 timeline 步骤。 */
-function upsertTimelineStep(
-  snapshot: EditorSnapshot,
-  slideId: string,
-  step: TimelineStep,
-  index?: number,
-): EditorSnapshot {
-  return updateDocumentSlide(snapshot, slideId, (slide) => {
-    const stepExists = slide.timeline.steps.some((item) => item.id === step.id);
-    return {
-      ...slide,
-      timeline: {
-        ...slide.timeline,
-        steps: stepExists
-          ? upsertById(slide.timeline.steps, step)
-          : insertAt(slide.timeline.steps, step, index),
-      },
-    };
-  });
-}
-
-/** 删除指定的 timeline 步骤。 */
-function removeTimelineStep(
-  snapshot: EditorSnapshot,
-  slideId: string,
-  stepId: string,
-): EditorSnapshot {
-  return updateDocumentSlide(snapshot, slideId, (slide) => {
-    const nextSteps = slide.timeline.steps.filter((step) => step.id !== stepId);
-    if (nextSteps.length === slide.timeline.steps.length) {
-      return slide;
-    }
-
-    return {
-      ...slide,
-      timeline: {
-        ...slide.timeline,
-        steps: nextSteps,
-      },
-    };
-  });
-}
-
-/** 调整指定 timeline 步骤在当前 slide 中的位置。 */
-function reorderTimelineStep(
-  snapshot: EditorSnapshot,
-  slideId: string,
-  stepId: string,
-  index: number,
-): EditorSnapshot {
-  return updateDocumentSlide(snapshot, slideId, (slide) => {
-    const currentIndex = slide.timeline.steps.findIndex((step) => step.id === stepId);
-    if (currentIndex === -1) {
-      return slide;
-    }
-
-    const nextSteps = [...slide.timeline.steps];
-    const [targetStep] = nextSteps.splice(currentIndex, 1);
-    const nextIndex = clamp(index, 0, nextSteps.length);
-    nextSteps.splice(nextIndex, 0, targetStep);
-
-    if (nextSteps.every((step, stepIndex) => step.id === slide.timeline.steps[stepIndex]?.id)) {
-      return slide;
-    }
-
-    return {
-      ...slide,
-      timeline: {
-        ...slide.timeline,
-        steps: nextSteps,
-      },
-    };
-  });
-}
-
-/** 新增或更新某个节点动画资源。 */
-function upsertAnimation(
-  snapshot: EditorSnapshot,
-  slideId: string,
-  animation: NodeAnimation,
-): EditorSnapshot {
-  return updateDocumentSlide(snapshot, slideId, (slide) => ({
-    ...slide,
-    timeline: {
-      ...slide.timeline,
-      animations: upsertById(slide.timeline.animations, animation),
-    },
-  }));
-}
-
-/** 删除指定的节点动画资源。 */
-function removeAnimation(
-  snapshot: EditorSnapshot,
-  slideId: string,
-  animationId: string,
-): EditorSnapshot {
-  return updateDocumentSlide(snapshot, slideId, (slide) => {
-    const nextAnimations = slide.timeline.animations.filter(
-      (animation) => animation.id !== animationId,
-    );
-
-    if (nextAnimations.length === slide.timeline.animations.length) {
-      return slide;
-    }
-
-    return {
-      ...slide,
-      timeline: {
-        ...slide.timeline,
-        animations: nextAnimations,
-      },
     };
   });
 }
