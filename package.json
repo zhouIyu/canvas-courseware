@@ -22,6 +22,7 @@
     "test:vnext-23": "node test/vnext-23/round-01.mjs",
     "test:vnext-24": "node test/vnext-24/round-01.mjs",
     "test:vnext-30": "node test/vnext-30/round-01.mjs",
+    "test:vnext-31": "node test/vnext-31/round-01.mjs",
     "test:bug-canvas-scale-on-select": "node test/bug-canvas-scale-on-select/round-01.mjs",
     "test:bug-sidebar-handle-offset-on-zoom": "node test/bug-sidebar-handle-offset-on-zoom/round-01.mjs"
   },

@@ -3,6 +3,10 @@ import {
   createCoursewareDocument,
   createRectNode,
   createTextNode,
+  describeEditorCommand,
+  type DiagnosticLogContext,
+  type DiagnosticLogLevel,
+  type DiagnosticLogger,
   EditorController,
   type CoursewareDocument,
   type EditorSnapshot,
@@ -45,6 +49,8 @@ export interface UseCoursewareEditorOptions {
   document?: CoursewareDocument;
   /** 当编辑区请求打开右键菜单时，向外层抛出菜单定位与命中信息。 */
   onContextMenuRequest?: (payload: FabricEditorContextMenuRequest) => void;
+  /** 外部注入的统一诊断 logger。 */
+  diagnosticLogger?: DiagnosticLogger | null;
 }
 
 /**
@@ -79,6 +85,46 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     createCoursewareDocument({
       title: "Canvas Courseware Editor",
     });
+
+  /** 组合当前命令日志需要的最小上下文，避免每条记录手工拼接。 */
+  const buildDiagnosticContext = (
+    nextSnapshot: EditorSnapshot,
+    context: DiagnosticLogContext = {},
+  ): DiagnosticLogContext => ({
+    projectId: nextSnapshot.document.meta.id,
+    activeSlideId: nextSnapshot.activeSlideId ?? null,
+    ...context,
+  });
+
+  /** 按级别把一条结构化日志统一写入外部注入的 logger。 */
+  const writeDiagnosticLog = (
+    level: DiagnosticLogLevel,
+    payload: {
+      event: string;
+      message: string;
+      context?: DiagnosticLogContext;
+    },
+  ) => {
+    if (!options.diagnosticLogger) {
+      return;
+    }
+
+    switch (level) {
+      case "debug":
+        options.diagnosticLogger.debug(payload);
+        break;
+      case "warn":
+        options.diagnosticLogger.warn(payload);
+        break;
+      case "error":
+        options.diagnosticLogger.error(payload);
+        break;
+      case "info":
+      default:
+        options.diagnosticLogger.info(payload);
+        break;
+    }
+  };
 
   controller.replaceDocument(initialDocument);
   snapshot.value = controller.getSnapshot();
@@ -237,8 +283,24 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
   };
 
   /** 订阅 controller 快照变化，让 Vue 层保持响应式同步。 */
-  const unsubscribe = controller.subscribe((nextSnapshot) => {
+  const unsubscribe = controller.subscribe((nextSnapshot, envelope) => {
     snapshot.value = nextSnapshot;
+
+    const commandDiagnostic = describeEditorCommand(envelope.command);
+    if (!commandDiagnostic) {
+      return;
+    }
+
+    writeDiagnosticLog(commandDiagnostic.level, {
+      event: commandDiagnostic.event,
+      message: commandDiagnostic.message,
+      context: buildDiagnosticContext(nextSnapshot, {
+        commandId: envelope.id,
+        commandType: envelope.command.type,
+        commandSource: envelope.source,
+        ...commandDiagnostic.context,
+      }),
+    });
   });
 
   /** 订阅适配层事件，统一刷新文本内联工具条的显隐与定位。 */
@@ -323,6 +385,7 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     snapshot,
     controller,
     activeSlide,
+    diagnosticLogger: options.diagnosticLogger,
   });
 
   /** 在当前 slide 中新增文本节点。 */

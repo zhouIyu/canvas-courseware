@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { DiagnosticLogContext } from "@canvas-courseware/core";
 import type { Slide } from "@canvas-courseware/core";
 import { computed, ref } from "vue";
 import {
@@ -6,6 +7,7 @@ import {
   createSlideBackgroundStyle,
   normalizeBackgroundImageFit,
 } from "../shared";
+import { useCoursewareDiagnosticLogger } from "./diagnostics";
 import LocalImageFileTrigger from "./LocalImageFileTrigger.vue";
 import { readLocalImageAsset } from "./image-file";
 import type { SlideSettingsFeedbackTone } from "./useSlideSettingsDrawer";
@@ -155,6 +157,17 @@ const backgroundFitLabel = computed(() => {
 /** 当前背景图操作的错误提示。 */
 const backgroundImageError = ref("");
 
+/** 当前编辑器组件树共享的诊断 logger。 */
+const diagnosticLogger = useCoursewareDiagnosticLogger();
+
+/** 统一拼装页面背景链路所需的最小诊断上下文。 */
+const buildDiagnosticContext = (
+  context: DiagnosticLogContext = {},
+): DiagnosticLogContext => ({
+  slideId: props.slide?.id ?? null,
+  ...context,
+});
+
 /** 更新页面名称。 */
 const handleSlideNameInput = (value: string | number | undefined) => {
   if (!props.slide) {
@@ -274,9 +287,28 @@ const handleSlideBackgroundImageFileSelect = async (file: File) => {
         },
       },
     });
+
+    diagnosticLogger?.info({
+      event: "background.import.completed",
+      message: "已导入页面背景图",
+      context: buildDiagnosticContext({
+        fileName: asset.fileName,
+        width: asset.width,
+        height: asset.height,
+      }),
+    });
   } catch (error) {
     backgroundImageError.value =
       error instanceof Error ? error.message : "背景图导入失败，请重试";
+
+    diagnosticLogger?.error({
+      event: "background.import.failed",
+      message: "页面背景图导入失败",
+      context: buildDiagnosticContext({
+        fileName: file.name,
+      }),
+      error,
+    });
   }
 };
 

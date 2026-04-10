@@ -1,0 +1,105 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-04-10T14:00:11.024Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "targetBackgroundFill": "#FFF1F2",
+  "targetStepId": "diagnostic-step-01",
+  "checks": [
+    {
+      "id": "debug-bridges",
+      "hasEditorBridge": true,
+      "hasDiagnosticsBridge": true,
+      "activeSlideId": "slide-821e8407-61d2-4b96-8dc6-6bb5df58ddac",
+      "firstNodeId": "node-e2a74428-ac44-4c05-b833-e9db11c8a8df"
+    },
+    {
+      "id": "diagnostic-events",
+      "entryCount": 10,
+      "events": [
+        "background.write",
+        "project.autosave.scheduled",
+        "background.write",
+        "project.autosave.scheduled",
+        "timeline.changed",
+        "project.autosave.scheduled",
+        "project.autosave.scheduled",
+        "project.autosave.scheduled",
+        "project.save.started",
+        "project.save.completed"
+      ],
+      "backgroundEntry": {
+        "id": "diag-1775829615723-6",
+        "scope": "workspace",
+        "event": "background.write",
+        "message": "已写入当前页面背景配置",
+        "level": "info",
+        "timestamp": "2026-04-10T14:00:15.723Z",
+        "context": {
+          "projectId": "document-cd0dd8b1-2a05-4a0b-9f71-c9586e26d8c4",
+          "activeSlideId": "slide-821e8407-61d2-4b96-8dc6-6bb5df58ddac",
+          "commandId": "command-ea114c40-f0e0-42da-9693-1585d4fe876d",
+          "commandType": "slide.update",
+          "commandSource": "ui",
+          "slideId": "slide-821e8407-61d2-4b96-8dc6-6bb5df58ddac",
+          "hasBackgroundImage": false,
+          "backgroundFit": null
+        }
+      },
+      "timelineEntry": {
+        "id": "diag-1775829615730-10",
+        "scope": "workspace",
+        "event": "timeline.changed",
+        "message": "已新增或更新时间轴步骤",
+        "level": "info",
+        "timestamp": "2026-04-10T14:00:15.730Z",
+        "context": {
+          "projectId": "document-cd0dd8b1-2a05-4a0b-9f71-c9586e26d8c4",
+          "activeSlideId": "slide-821e8407-61d2-4b96-8dc6-6bb5df58ddac",
+          "commandId": "command-81c748ff-e39c-4006-a4a9-0bd3c59d75b0",
+          "commandType": "timeline.step.upsert",
+          "commandSource": "ui",
+          "slideId": "slide-821e8407-61d2-4b96-8dc6-6bb5df58ddac",
+          "stepId": "diagnostic-step-01",
+          "changeType": "step.upsert",
+          "triggerType": "page-click",
+          "actionCount": 1
+        }
+      },
+      "autosaveScheduledEntry": {
+        "id": "diag-1775829615724-7",
+        "scope": "workspace",
+        "event": "project.autosave.scheduled",
+        "message": "已重新安排自动保存",
+        "level": "debug",
+        "timestamp": "2026-04-10T14:00:15.724Z",
+        "context": {
+          "projectId": "document-cd0dd8b1-2a05-4a0b-9f71-c9586e26d8c4",
+          "activeSlideId": "slide-821e8407-61d2-4b96-8dc6-6bb5df58ddac",
+          "workspaceMode": "edit",
+          "delayMs": 800
+        }
+      },
+      "saveCompletedEntry": {
+        "id": "diag-1775829616540-15",
+        "scope": "workspace",
+        "event": "project.save.completed",
+        "message": "自动保存成功",
+        "level": "info",
+        "timestamp": "2026-04-10T14:00:16.540Z",
+        "context": {
+          "projectId": "document-cd0dd8b1-2a05-4a0b-9f71-c9586e26d8c4",
+          "activeSlideId": "slide-821e8407-61d2-4b96-8dc6-6bb5df58ddac",
+          "workspaceMode": "edit",
+          "trigger": "auto",
+          "updatedAt": "2026-04-10T14:00:16.540Z",
+          "slideCount": 1
+        }
+      }
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

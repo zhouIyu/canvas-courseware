@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type {
   CoursewareDocument,
+  DiagnosticLogger,
   EditorSnapshot,
   NodeAnimation,
   NodePatch,
@@ -31,6 +32,7 @@ import type {
   LayerAlignMode,
   LayerDistributeMode,
 } from "./useEditorBatchLayout";
+import { provideCoursewareDiagnosticLogger } from "./diagnostics";
 import { useCoursewareEditor } from "./useCoursewareEditor";
 import { useSlideSettingsDrawer } from "./useSlideSettingsDrawer";
 /** 编辑器右侧管理区的标签名。 */
@@ -132,14 +134,20 @@ const props = withDefaults(
     showHeader?: boolean;
     /** 外部传入的 slide 缩略图缓存，供左侧页面栏优先展示真实封面。 */
     slideThumbnailMap?: Record<string, string | null>;
+    /** 外部注入的统一诊断 logger，供编辑器关键链路复用。 */
+    diagnosticLogger?: DiagnosticLogger | null;
   }>(),
   {
     title: "课件编辑工作台",
     height: DEFAULT_EDITOR_HEIGHT,
     showHeader: true,
     slideThumbnailMap: () => ({}),
+    diagnosticLogger: null,
   },
 );
+
+/** 在编辑器组件树内提供统一 logger，避免子组件各自维护独立日志入口。 */
+provideCoursewareDiagnosticLogger(props.diagnosticLogger);
 
 /** 编辑器对外暴露的事件。 */
 const emit = defineEmits<{
@@ -300,6 +308,7 @@ const {
 } = useCoursewareEditor({
   document: documentModel.value,
   onContextMenuRequest: handleCanvasContextMenuRequest,
+  diagnosticLogger: props.diagnosticLogger,
 });
 
 /** 统一收口页面设置抽屉与“设为背景”快捷链路的状态。 */
@@ -866,7 +875,6 @@ const handleLocalImageImport = async (file: File) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : "图片导入失败，请重试";
     window.alert(message);
-    console.error(error);
   }
 };
 
@@ -877,7 +885,6 @@ const handleImageReplace = async (nodeId: string, file: File) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : "图片替换失败，请重试";
     window.alert(message);
-    console.error(error);
   }
 };
 

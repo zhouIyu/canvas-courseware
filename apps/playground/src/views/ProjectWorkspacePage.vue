@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import type { CoursewareDocument, EditorSnapshot } from "@canvas-courseware/core";
+import type {
+  CoursewareDocument,
+  DiagnosticLogContext,
+  EditorSnapshot,
+} from "@canvas-courseware/core";
 import type { RequestOption } from "@arco-design/web-vue";
 import { CoursewareEditor, CoursewarePreview } from "@canvas-courseware/vue";
 import { IconLeft } from "@arco-design/web-vue/es/icon";
@@ -22,6 +26,11 @@ import {
   sanitizeProjectSlideThumbnails,
 } from "../projects/project-thumbnails";
 import { projectRepository } from "../projects/project-repository";
+import {
+  attachWorkspaceDiagnosticsBridge,
+  detachWorkspaceDiagnosticsBridge,
+  workspaceDiagnosticLogger,
+} from "../diagnostics/workspace-diagnostics";
 import type {
   ProjectRecord,
   ProjectSlideThumbnailMap,
@@ -37,6 +46,9 @@ type SaveStatus = "saved" | "saving" | "dirty" | "error";
 
 /** 导入导出反馈语义。 */
 type IoFeedbackTone = "success" | "error";
+
+/** 当前保存动作的触发来源。 */
+type PersistTrigger = "manual" | "auto" | "import";
 
 /** 模式切换控件传回值的兼容类型。 */
 type WorkspaceModeToggleValue = string | number | boolean;
@@ -199,6 +211,16 @@ const clearSaveTimer = () => {
   saveTimer = null;
 };
 
+/** 统一拼装工作台日志所需的最小上下文，避免保存链路各处重复手写。 */
+const buildWorkspaceDiagnosticContext = (
+  context: DiagnosticLogContext = {},
+): DiagnosticLogContext => ({
+  projectId: projectId.value || null,
+  activeSlideId: activeSlideId.value ?? null,
+  workspaceMode: workspaceMode.value,
+  ...context,
+});
+
 /** 把当前页面状态拼成一条可保存的项目记录。 */
 const buildProjectRecord = (): ProjectRecord | null => {
   if (!documentModel.value || !projectId.value) {
@@ -243,24 +265,59 @@ const syncActiveSlideThumbnailBeforeSave = async () => {
 };
 
 /** 执行一次显式或自动保存。 */
-const persistProject = async (): Promise<boolean> => {
+const persistProject = async (trigger: PersistTrigger = "manual"): Promise<boolean> => {
   await syncActiveSlideThumbnailBeforeSave();
   const projectRecord = buildProjectRecord();
   if (!projectRecord) {
+    workspaceDiagnosticLogger.warn({
+      event: "project.save.skipped",
+      message: "项目保存已跳过，因为当前没有可持久化的数据",
+      context: buildWorkspaceDiagnosticContext({
+        trigger,
+      }),
+    });
     return false;
   }
 
   clearSaveTimer();
   saveStatus.value = "saving";
 
+  workspaceDiagnosticLogger.info({
+    event: "project.save.started",
+    message: trigger === "auto" ? "已触发自动保存" : "已触发项目保存",
+    context: buildWorkspaceDiagnosticContext({
+      trigger,
+      slideCount: projectRecord.document.slides.length,
+    }),
+  });
+
   try {
     const savedRecord = projectRepository.save(projectRecord);
     projectTitle.value = savedRecord.title;
     lastSavedAt.value = savedRecord.updatedAt;
     saveStatus.value = "saved";
+
+    workspaceDiagnosticLogger.info({
+      event: "project.save.completed",
+      message: trigger === "auto" ? "自动保存成功" : "项目保存成功",
+      context: buildWorkspaceDiagnosticContext({
+        trigger,
+        updatedAt: savedRecord.updatedAt,
+        slideCount: savedRecord.document.slides.length,
+      }),
+    });
+
     return true;
-  } catch {
+  } catch (error) {
     saveStatus.value = "error";
+    workspaceDiagnosticLogger.error({
+      event: "project.save.failed",
+      message: trigger === "auto" ? "自动保存失败" : "项目保存失败",
+      context: buildWorkspaceDiagnosticContext({
+        trigger,
+      }),
+      error,
+    });
     return false;
   }
 };
@@ -273,8 +330,15 @@ const scheduleAutoSave = () => {
 
   saveStatus.value = "dirty";
   clearSaveTimer();
+  workspaceDiagnosticLogger.debug({
+    event: "project.autosave.scheduled",
+    message: "已重新安排自动保存",
+    context: buildWorkspaceDiagnosticContext({
+      delayMs: AUTO_SAVE_DELAY_MS,
+    }),
+  });
   saveTimer = setTimeout(() => {
-    void persistProject();
+    void persistProject("auto");
   }, AUTO_SAVE_DELAY_MS);
 };
 
@@ -305,6 +369,11 @@ const loadProject = () => {
 
   const projectRecord = projectRepository.get(projectId.value);
   if (!projectRecord) {
+    workspaceDiagnosticLogger.warn({
+      event: "project.load.missing",
+      message: "当前项目不存在或已被删除",
+      context: buildWorkspaceDiagnosticContext(),
+    });
     isProjectMissing.value = true;
     isLoading.value = false;
     isHydrating.value = false;
@@ -320,6 +389,14 @@ const loadProject = () => {
   lastSavedAt.value = projectRecord.updatedAt;
   saveStatus.value = "saved";
   isLoading.value = false;
+
+  workspaceDiagnosticLogger.info({
+    event: "project.load.completed",
+    message: "已加载本地项目",
+    context: buildWorkspaceDiagnosticContext({
+      slideCount: projectRecord.document.slides.length,
+    }),
+  });
 
   queueMicrotask(() => {
     isHydrating.value = false;
@@ -375,7 +452,7 @@ const goBackToProjects = async () => {
 
 /** 手动保存当前项目。 */
 const handleSaveClick = async () => {
-  await persistProject();
+  await persistProject("manual");
 };
 
 /** 记录一条导入导出反馈，供顶部状态区展示。 */
@@ -390,11 +467,24 @@ const setIoFeedback = (tone: IoFeedbackTone, message: string) => {
 const handleJsonExportClick = () => {
   const projectRecord = buildProjectRecord();
   if (!projectRecord) {
+    workspaceDiagnosticLogger.warn({
+      event: "project.export.skipped",
+      message: "JSON 导出已跳过，因为当前没有可导出的项目数据",
+      context: buildWorkspaceDiagnosticContext(),
+    });
     return;
   }
 
   const exportedFileName = downloadCoursewareJson(projectRecord.document, projectRecord.title);
   setIoFeedback("success", `已导出 ${exportedFileName}`);
+  workspaceDiagnosticLogger.info({
+    event: "project.export.completed",
+    message: "已导出课件 JSON",
+    context: buildWorkspaceDiagnosticContext({
+      fileName: exportedFileName,
+      slideCount: projectRecord.document.slides.length,
+    }),
+  });
 };
 
 /** 把一份导入文档安全地应用到当前工作台并立即保存。 */
@@ -416,7 +506,7 @@ const applyImportedDocument = async (nextDocument: CoursewareDocument): Promise<
   };
 
   try {
-    return await persistProject();
+    return await persistProject("import");
   } finally {
     queueMicrotask(() => {
       isHydrating.value = false;
@@ -428,24 +518,60 @@ const applyImportedDocument = async (nextDocument: CoursewareDocument): Promise<
 const handleJsonImportRequest = async (option: RequestOption) => {
   const selectedFile = option.fileItem.file;
   if (!selectedFile) {
+    workspaceDiagnosticLogger.warn({
+      event: "project.import.skipped",
+      message: "JSON 导入已跳过，因为没有选择文件",
+      context: buildWorkspaceDiagnosticContext(),
+    });
     option.onError?.(new Error("未选择文件"));
     return {};
   }
 
   try {
+    workspaceDiagnosticLogger.info({
+      event: "project.import.started",
+      message: "已开始导入课件 JSON",
+      context: buildWorkspaceDiagnosticContext({
+        fileName: selectedFile.name,
+      }),
+    });
+
     const importedDocument = await readCoursewareJsonFile(selectedFile);
     const saved = await applyImportedDocument(importedDocument);
 
     if (saved) {
       setIoFeedback("success", `已导入 ${selectedFile.name} 并保存到本地项目`);
+      workspaceDiagnosticLogger.info({
+        event: "project.import.completed",
+        message: "已导入并保存课件 JSON",
+        context: buildWorkspaceDiagnosticContext({
+          fileName: selectedFile.name,
+          slideCount: importedDocument.slides.length,
+        }),
+      });
       option.onSuccess?.();
       return {};
     }
 
     setIoFeedback("error", `已导入 ${selectedFile.name}，但本地保存失败`);
+    workspaceDiagnosticLogger.error({
+      event: "project.import.persist-failed",
+      message: "课件 JSON 已导入，但保存到本地项目失败",
+      context: buildWorkspaceDiagnosticContext({
+        fileName: selectedFile.name,
+      }),
+    });
     option.onError?.(new Error("save_failed"));
   } catch (error) {
     setIoFeedback("error", formatCoursewareJsonError(error));
+    workspaceDiagnosticLogger.error({
+      event: "project.import.failed",
+      message: "课件 JSON 导入失败",
+      context: buildWorkspaceDiagnosticContext({
+        fileName: selectedFile.name,
+      }),
+      error,
+    });
     option.onError?.(error);
   }
 
@@ -544,9 +670,11 @@ onBeforeUnmount(() => {
   clearSaveTimer();
   workspaceStageResizeObserver?.disconnect();
   workspaceStageResizeObserver = null;
+  detachWorkspaceDiagnosticsBridge();
 });
 
 onMounted(() => {
+  attachWorkspaceDiagnosticsBridge();
   updateWorkspaceViewportHeight();
 
   if (!workspaceStageRef.value) {
@@ -654,6 +782,7 @@ onMounted(() => {
           ref="workspaceEditorRef"
           v-show="workspaceMode === 'edit'"
           v-model="documentModel"
+          :diagnostic-logger="workspaceDiagnosticLogger"
           :height="workspaceContentHeight"
           :slide-thumbnail-map="slideThumbnails"
           :show-header="false"

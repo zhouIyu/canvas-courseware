@@ -1,5 +1,6 @@
 export * from "./controller";
 export * from "./commands";
+export * from "./diagnostics";
 export * from "./document-io";
 export * from "./events";
 export * from "./factories";
