@@ -1,0 +1,60 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "targetTextColor": "#165DFF",
+  "appendedText": " TextTool 已保持编辑态",
+  "executedAt": "2026-04-10T13:10:39.191Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "insert-text",
+      "nodeId": "node-1bc6d364-13c0-43c2-b495-ef78672d4937",
+      "fontSize": 32,
+      "color": "#172033"
+    },
+    {
+      "id": "text-tool-visible",
+      "textToolBox": {
+        "x": 283.875,
+        "y": 293.203125,
+        "width": 420,
+        "height": 58
+      },
+      "textToolVisibleAboveNode": true
+    },
+    {
+      "id": "inspector-keeps-editing",
+      "inspectorKeepsEditing": true
+    },
+    {
+      "id": "text-tool-keeps-editing",
+      "focusStillInTextarea": true
+    },
+    {
+      "id": "style-persisted",
+      "fontSize": 34,
+      "fontWeight": 700,
+      "fontStyle": "italic",
+      "color": "#165DFF",
+      "text": " TextTool 已保持编辑态新建文本",
+      "inspectorFontSizeValue": "34",
+      "inspectorBoldActive": true,
+      "inspectorItalicActive": true
+    },
+    {
+      "id": "reload-restore",
+      "fontSize": 34,
+      "fontWeight": 700,
+      "fontStyle": "italic",
+      "color": "#165DFF",
+      "text": " TextTool 已保持编辑态新建文本",
+      "reloadedInspectorFontSize": "34",
+      "reloadedInspectorBoldActive": true,
+      "reloadedInspectorItalicActive": true
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

@@ -141,6 +141,9 @@ export function mapAdapterEventToCommand(event: AdapterEvent): EditorCommand | n
           rotation: event.rotation,
         },
       };
+    case "adapter.text.editing.entered":
+    case "adapter.text.editing.exited":
+      return null;
     case "adapter.text.changed":
       return {
         type: COMMAND_TYPES.NODE_UPDATE,

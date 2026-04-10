@@ -12,6 +12,7 @@ import type {
   Slide,
   StepTrigger,
   TextAlign,
+  TextFontStyle,
   TextNode,
   TextNodeProps,
   TimelineAction,
@@ -203,6 +204,12 @@ function parseTextNodeProps(value: unknown, path: string): TextNodeProps {
     color: readString(propsRecord, "color", `${path}.color`),
     fontFamily: readOptionalString(propsRecord, "fontFamily", `${path}.fontFamily`),
     fontWeight: readOptionalStringOrNumber(propsRecord, "fontWeight", `${path}.fontWeight`),
+    fontStyle: readOptionalEnum<TextFontStyle>(
+      propsRecord,
+      "fontStyle",
+      `${path}.fontStyle`,
+      ["normal", "italic"],
+    ),
     lineHeight: readOptionalNumber(propsRecord, "lineHeight", `${path}.lineHeight`, 0),
     textAlign: readOptionalEnum<TextAlign>(
       propsRecord,

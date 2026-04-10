@@ -7,6 +7,7 @@ import type {
   NodeTimelineSummary,
   ReorderPosition,
   Slide,
+  TextNode,
   TimelineStep,
 } from "@canvas-courseware/core";
 import {
@@ -24,6 +25,7 @@ import LocalImageFileTrigger from "./LocalImageFileTrigger.vue";
 import SlideRailPanel from "./SlideRailPanel.vue";
 import SlideSettingsDrawer from "./SlideSettingsDrawer.vue";
 import SlideSettingsEntryButton from "./SlideSettingsEntryButton.vue";
+import TextTool from "./TextTool.vue";
 import TimelinePanel from "./TimelinePanel.vue";
 import type {
   LayerAlignMode,
@@ -270,12 +272,14 @@ const {
   distributeSelectedNodes,
   editorCanvasRef,
   duplicateSlideById,
+  inlineTextEditingLayout,
   removeTimelineAnimation,
   removeTimelineStep,
   removeSlide,
   removeSelected,
   redo,
   pasteClipboard,
+  refreshInlineTextEditingLayout,
   setSlideBackgroundImageFromNode,
   replaceImageFromFile,
   reorderNode,
@@ -554,6 +558,36 @@ const inspectorSelectedCount = computed(() =>
 const selectedNodeTimelineSummary = computed<NodeTimelineSummary | null>(() =>
   inspectorNode.value ? nodeTimelineSummaryMap.value[inspectorNode.value.id] ?? null : null,
 );
+
+/** 当前文本浮动工具条绑定的文本节点。 */
+const editingTextToolNode = computed<TextNode | null>(() => {
+  if (
+    !activeSlide.value ||
+    !inlineTextEditingLayout.value ||
+    inlineTextEditingLayout.value.slideId !== activeSlide.value.id
+  ) {
+    return null;
+  }
+
+  const node = activeSlide.value.nodes.find(
+    (candidate) => candidate.id === inlineTextEditingLayout.value?.nodeId,
+  );
+  return node?.type === "text" ? node : null;
+});
+
+/** 把视口坐标换算成工作区内的绝对定位，供文本浮层直接挂载。 */
+const textToolStyle = computed<Record<string, string>>(() => {
+  const hostRect = workspaceShellRef.value?.getBoundingClientRect();
+  const layout = inlineTextEditingLayout.value;
+  if (!hostRect || !layout) {
+    return {} as Record<string, string>;
+  }
+
+  return {
+    left: `${layout.clientRect.left + layout.clientRect.width / 2 - hostRect.left}px`,
+    top: `${layout.clientRect.top - hostRect.top - 14}px`,
+  };
+});
 
 /** 当前右键菜单的定位样式。 */
 const contextMenuStyle = computed(() =>
@@ -962,7 +996,18 @@ const handleStageViewportContextMenu = (event: MouseEvent) => {
 /** 点击菜单外区域时关闭右键菜单。 */
 const handleGlobalPointerDown = (event: PointerEvent) => {
   const target = event.target;
-  if (!(target instanceof HTMLElement) || !target.closest("canvas")) {
+  const clickedInsideEditorShell = target instanceof HTMLElement && target.closest(".editor-shell");
+  const clickedTextTool = target instanceof HTMLElement && target.closest(".text-tool");
+  const clickedCanvas = target instanceof HTMLElement && target.closest("canvas");
+  const clickedContextMenu = target instanceof HTMLElement && target.closest(".stage-context-menu");
+  const clickedBlankStage =
+    target instanceof HTMLElement &&
+    target.closest(".stage-scroll") &&
+    !clickedCanvas &&
+    !clickedTextTool &&
+    !clickedContextMenu;
+
+  if (clickedBlankStage || !clickedInsideEditorShell) {
     requestInlineTextEditingExit();
   }
 
@@ -970,7 +1015,10 @@ const handleGlobalPointerDown = (event: PointerEvent) => {
     return;
   }
 
-  if (target instanceof HTMLElement && target.closest(".stage-context-menu")) {
+  if (
+    target instanceof HTMLElement &&
+    (target.closest(".stage-context-menu") || target.closest(".text-tool"))
+  ) {
     return;
   }
 
@@ -1001,6 +1049,10 @@ const updateStageViewportSize = () => {
     width: viewportRect ? Math.round(viewportRect.width) : 0,
     height: viewportRect ? Math.round(viewportRect.height) : 0,
   };
+
+  if (inlineTextEditingLayout.value) {
+    refreshInlineTextEditingLayout();
+  }
 };
 /** 监听工具条和编辑区尺寸变化，让布局与画布缩放及时同步。 */
 let toolbarResizeObserver: ResizeObserver | null = null;
@@ -1146,6 +1198,12 @@ defineExpose({
               @open-timeline="activateSideTab('timeline')"
             />
           </div>
+
+          <TextTool
+            :node="editingTextToolNode"
+            :overlay-style="textToolStyle"
+            @update-node="handleNodeUpdate"
+          />
 
           <div
             ref="stageViewportRef"

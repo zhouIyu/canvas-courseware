@@ -15,6 +15,7 @@ import {
 import {
   FabricEditorAdapter,
   type FabricEditorContextMenuRequest,
+  type FabricInlineTextEditingLayout,
 } from "@canvas-courseware/fabric";
 import { useEditorBatchLayout } from "./useEditorBatchLayout";
 import { useEditorClipboardKeyboard } from "./useEditorClipboardKeyboard";
@@ -65,6 +66,9 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
 
   /** 当前快照，UI 只订阅这份标准状态。 */
   const snapshot = shallowRef<EditorSnapshot>(controller.getSnapshot());
+
+  /** 当前内联文本编辑态对应的浮层定位信息。 */
+  const inlineTextEditingLayout = shallowRef<FabricInlineTextEditingLayout | null>(null);
 
   /** 标记当前是否正在应用外部文档，避免 v-model 回写时形成循环。 */
   const applyingExternalDocument = shallowRef(false);
@@ -204,6 +208,11 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     adapter.exitActiveTextEditing();
   };
 
+  /** 重新读取当前文本内联工具条的定位信息，供布局变化后复用。 */
+  const refreshInlineTextEditingLayout = () => {
+    inlineTextEditingLayout.value = adapter.getInlineTextEditingLayout();
+  };
+
   /** 导出当前激活页的缩略图 data URL，供应用层持久化页面封面。 */
   const captureActiveSlideThumbnail = async (): Promise<string | null> => {
     if (!activeSlide.value) {
@@ -232,6 +241,18 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     snapshot.value = nextSnapshot;
   });
 
+  /** 订阅适配层事件，统一刷新文本内联工具条的显隐与定位。 */
+  const unsubscribeAdapterEvent = controller.subscribeAdapterEvent((event) => {
+    switch (event.type) {
+      case "adapter.text.editing.entered":
+      case "adapter.text.editing.exited":
+        refreshInlineTextEditingLayout();
+        break;
+      default:
+        break;
+    }
+  });
+
   /** 订阅撤销/重做历史状态变化，供工具栏按钮直接消费。 */
   const unsubscribeHistoryState = controller.subscribeHistoryState((nextHistoryState) => {
     historyState.value = nextHistoryState;
@@ -244,7 +265,22 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
   watch(
     () => snapshot.value.activeSlideId,
     (slideId) => {
+      inlineTextEditingLayout.value = null;
       void adapter.setSlideId(slideId);
+    },
+  );
+
+  /** 当文本样式在编辑中被调整后，重新计算浮层位置，避免字号变化后错位。 */
+  watch(
+    () => snapshot.value.document,
+    () => {
+      if (!inlineTextEditingLayout.value) {
+        return;
+      }
+
+      queueMicrotask(() => {
+        refreshInlineTextEditingLayout();
+      });
     },
   );
 
@@ -260,6 +296,7 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     window.removeEventListener("keydown", handleEditorKeydown);
     detachEditorDebugBridge();
     unsubscribe();
+    unsubscribeAdapterEvent();
     unsubscribeHistoryState();
     void adapter.dispose();
   });
@@ -511,10 +548,12 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     copySelected,
     duplicateSelected,
     editorCanvasRef,
+    inlineTextEditingLayout,
     mountAdapter,
     nudgeSelectedNodes,
     pasteClipboard,
     redo,
+    refreshInlineTextEditingLayout,
     removeSlide,
     reorderNode,
     reorderSlide,

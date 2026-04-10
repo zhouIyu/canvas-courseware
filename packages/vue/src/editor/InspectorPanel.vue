@@ -93,6 +93,21 @@ const nodeOpacityPercent = computed(() =>
   props.selectedNode ? Math.round(props.selectedNode.opacity * 100) : 100,
 );
 
+/** 当前文本节点是否处于加粗状态。 */
+const isTextBold = computed(() => {
+  if (props.selectedNode?.type !== "text") {
+    return false;
+  }
+
+  const fontWeight = props.selectedNode.props.fontWeight ?? 400;
+  return fontWeight === "bold" || Number(fontWeight) >= 600;
+});
+
+/** 当前文本节点是否处于斜体状态。 */
+const isTextItalic = computed(
+  () => props.selectedNode?.type === "text" && props.selectedNode.props.fontStyle === "italic",
+);
+
 /** 当前节点是否已经加入了至少一个步骤。 */
 const hasTimelineSummary = computed(() => (props.timelineSummary?.stepReferences.length ?? 0) > 0);
 
@@ -292,6 +307,32 @@ const handleTextAlignChange = (value: string | number | boolean | undefined) => 
         | "left"
         | "center"
         | "right",
+    },
+  });
+};
+
+/** 切换文本粗细，供属性面板与浮动工具条共用同一套文档字段。 */
+const handleTextBoldToggle = () => {
+  if (props.selectedNode?.type !== "text") {
+    return;
+  }
+
+  updateNode({
+    props: {
+      fontWeight: isTextBold.value ? 400 : 700,
+    },
+  });
+};
+
+/** 切换文本斜体状态。 */
+const handleTextItalicToggle = () => {
+  if (props.selectedNode?.type !== "text") {
+    return;
+  }
+
+  updateNode({
+    props: {
+      fontStyle: isTextItalic.value ? "normal" : "italic",
     },
   });
 };
@@ -655,6 +696,28 @@ const handleAnimationOffsetYChange = (
               show-text
               @change="handleTextColorChange"
             />
+          </div>
+
+          <div class="field field-span-2">
+            <span class="field-label">字形样式</span>
+            <div class="text-style-toggle-row">
+              <a-button
+                class="text-style-toggle"
+                :class="{ 'is-active': isTextBold }"
+                type="outline"
+                @click="handleTextBoldToggle"
+              >
+                加粗
+              </a-button>
+              <a-button
+                class="text-style-toggle"
+                :class="{ 'is-active': isTextItalic }"
+                type="outline"
+                @click="handleTextItalicToggle"
+              >
+                斜体
+              </a-button>
+            </div>
           </div>
 
           <div class="field field-span-2">
@@ -1171,6 +1234,26 @@ const handleAnimationOffsetYChange = (
 
 .color-input {
   padding: 6px;
+}
+
+.text-style-toggle-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cw-space-2);
+}
+
+.text-style-toggle {
+  min-width: 84px;
+  min-height: 40px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.text-style-toggle.is-active {
+  color: var(--cw-color-primary);
+  border-color: rgba(22, 93, 255, 0.28);
+  background: rgba(22, 93, 255, 0.08);
 }
 
 .advanced-fields {

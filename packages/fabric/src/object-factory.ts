@@ -93,6 +93,7 @@ export function createFabricTextObject(
     fontSize: node.props.fontSize,
     fontFamily: node.props.fontFamily ?? DEFAULT_TEXT_FONT_FAMILY,
     fontWeight: node.props.fontWeight,
+    fontStyle: node.props.fontStyle ?? "normal",
     lineHeight: node.props.lineHeight ?? 1.5,
     textAlign: node.props.textAlign,
     /**

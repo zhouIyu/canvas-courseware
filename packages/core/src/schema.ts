@@ -4,6 +4,7 @@ export type CoursewareNodeType = "text" | "image" | "rect";
 export type AnimationKind = "appear" | "fade" | "slide-up";
 export type StepTriggerType = "page-click" | "auto" | "node-click";
 export type TextAlign = "left" | "center" | "right";
+export type TextFontStyle = "normal" | "italic";
 export type ObjectFit = "fill" | "contain" | "cover";
 export type EasingName = "linear" | "ease-in" | "ease-out" | "ease-in-out";
 
@@ -70,6 +71,7 @@ export interface TextNodeProps {
   color: string;
   fontFamily?: string;
   fontWeight?: string | number;
+  fontStyle?: TextFontStyle;
   lineHeight?: number;
   textAlign?: TextAlign;
 }

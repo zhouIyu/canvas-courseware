@@ -191,7 +191,7 @@
   height: var(--cw-editor-pane-height);
   min-width: 0;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid color-mix(in srgb, var(--cw-color-border) 90%, #ffffff);
   border-radius: 18px;
   background: linear-gradient(180deg, #eef2f6 0%, #edf1f5 100%);

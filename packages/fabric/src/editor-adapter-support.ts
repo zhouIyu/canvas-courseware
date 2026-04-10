@@ -35,6 +35,13 @@ export type FabricNodeObject = FabricRenderableObject & {
   [NODE_META_KEY]?: FabricNodeMeta;
   getScaledWidth?: () => number;
   getScaledHeight?: () => number;
+  getBoundingRect?: () => {
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  };
+  set?: (key: string | Record<string, unknown>, value?: unknown) => unknown;
 };
 
 /** 根据当前激活页面 id 从快照里解析页面。 */

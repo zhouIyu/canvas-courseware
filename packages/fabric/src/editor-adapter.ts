@@ -1,5 +1,12 @@
 import { ActiveSelection, Canvas, type ModifiedEvent } from "fabric";
-import { type CoursewareNode, EditorController, type EditorSnapshot, type Slide } from "@canvas-courseware/core";
+import {
+  DEFAULT_TEXT_FONT_FAMILY,
+  type CoursewareNode,
+  EditorController,
+  type EditorSnapshot,
+  type Slide,
+  type TextNode,
+} from "@canvas-courseware/core";
 import { registerEditorCanvasEvents } from "./editor-canvas-events";
 import {
   applyCanvasBackgroundImage,
@@ -55,12 +62,29 @@ export interface FabricEditorAdapterOptions {
   onContextMenuRequest?: (payload: FabricEditorContextMenuRequest) => void;
 }
 
+/** 文本内联编辑浮动工具条所需的定位结果。 */
+export interface FabricInlineTextEditingLayout {
+  /** 当前正在编辑的 slide id。 */
+  slideId: string;
+  /** 当前正在编辑的文本节点 id。 */
+  nodeId: string;
+  /** 文本对象在当前视口中的包围盒。 */
+  clientRect: {
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  };
+}
+
 /** 编辑态文本对象需要额外使用的 Fabric 能力。 */
 type EditableFabricTextObject = FabricNodeObject & {
   /** 当前对象是否允许进入文本编辑。 */
   editable: boolean;
   /** 当前是否处于文本编辑中。 */
   isEditing?: boolean;
+  /** 当前对象是否需要在下一帧重新绘制。 */
+  dirty?: boolean;
   /** 进入 Fabric 文本编辑态。 */
   enterEditing?: (event?: Event) => void;
   /** 退出 Fabric 文本编辑态。 */
@@ -128,12 +152,42 @@ export class FabricEditorAdapter {
 
   /** 当用户点击非画布区域时，主动结束当前文本对象的内联编辑态。 */
   exitActiveTextEditing(): void {
-    const activeObject = this.canvas?.getActiveObject() as EditableFabricTextObject | undefined;
+    const activeObject = this.getActiveEditingTextObject();
     if (!activeObject?.isEditing || typeof activeObject.exitEditing !== "function") {
       return;
     }
 
     activeObject.exitEditing();
+  }
+
+  /** 读取当前内联文本编辑态的浮层定位信息。 */
+  getInlineTextEditingLayout(): FabricInlineTextEditingLayout | null {
+    const canvas = this.canvas;
+    const activeObject = this.getActiveEditingTextObject();
+    const meta = activeObject ? readNodeMeta(activeObject) : null;
+    const canvasElement = this.readCanvasDomElement();
+    const bounds = activeObject?.getBoundingRect?.();
+
+    if (!canvas || !activeObject || !meta || !canvasElement || !bounds) {
+      return null;
+    }
+
+    const canvasRect = canvasElement.getBoundingClientRect();
+    const canvasWidth = Math.max(canvas.getWidth(), 1);
+    const canvasHeight = Math.max(canvas.getHeight(), 1);
+    const scaleX = canvasRect.width / canvasWidth;
+    const scaleY = canvasRect.height / canvasHeight;
+
+    return {
+      slideId: meta.slideId,
+      nodeId: meta.nodeId,
+      clientRect: {
+        left: canvasRect.left + bounds.left * scaleX,
+        top: canvasRect.top + bounds.top * scaleY,
+        width: bounds.width * scaleX,
+        height: bounds.height * scaleY,
+      },
+    };
   }
 
   async mount(options: FabricEditorAdapterMountOptions): Promise<void> {
@@ -239,6 +293,17 @@ export class FabricEditorAdapter {
 
     this.currentSlideId = slide.id;
 
+    const didSyncInlineTextEditing =
+      this.lastDocumentRef !== snapshot.document &&
+      this.lastRenderedSlideId === slide.id &&
+      this.objectMap.size === slide.nodes.length &&
+      this.syncInlineTextEditingFromSnapshot(canvas, slide);
+
+    if (didSyncInlineTextEditing) {
+      this.lastDocumentRef = snapshot.document;
+      return;
+    }
+
     if (
       this.lastDocumentRef !== snapshot.document ||
       this.lastRenderedSlideId !== slide.id ||
@@ -306,6 +371,54 @@ export class FabricEditorAdapter {
     } finally {
       this.isSyncing = false;
     }
+  }
+
+  /**
+   * 当文本仍处于 Fabric 内联编辑态时，优先只把样式类字段增量同步回活动对象。
+   * 这样可以避免字号/颜色等高频样式调整触发整页重渲染，从而打断用户正在输入的文本。
+   */
+  private syncInlineTextEditingFromSnapshot(canvas: Canvas, slide: Slide): boolean {
+    const activeObject = this.getActiveEditingTextObject();
+    const meta = activeObject ? readNodeMeta(activeObject) : null;
+    const previousSlide =
+      this.lastDocumentRef?.slides.find((candidate) => candidate.id === slide.id) ?? null;
+    if (
+      !activeObject ||
+      !meta ||
+      meta.nodeType !== "text" ||
+      meta.slideId !== slide.id ||
+      !previousSlide
+    ) {
+      return false;
+    }
+
+    const nextNode = resolveInlineTextStyleSyncNode(previousSlide, slide, meta.nodeId);
+    if (!nextNode) {
+      return false;
+    }
+
+    this.applyInlineTextStyleToEditingTarget(activeObject, nextNode);
+    canvas.renderAll();
+    activeObject.hiddenTextarea?.focus();
+    return true;
+  }
+
+  /** 把文档中的文本样式字段增量写回当前正在编辑的 Fabric 文本对象。 */
+  private applyInlineTextStyleToEditingTarget(
+    target: EditableFabricTextObject,
+    node: TextNode,
+  ): void {
+    target.set?.({
+      fill: node.props.color,
+      fontSize: node.props.fontSize,
+      fontFamily: node.props.fontFamily ?? DEFAULT_TEXT_FONT_FAMILY,
+      fontWeight: node.props.fontWeight ?? 400,
+      fontStyle: node.props.fontStyle ?? "normal",
+      lineHeight: node.props.lineHeight ?? 1.5,
+      textAlign: node.props.textAlign ?? "left",
+    });
+    target.dirty = true;
+    target.setCoords?.();
   }
 
   /** 仅当 Fabric 画布逻辑尺寸或背景色与当前 slide 不一致时，才需要重同步 frame。 */
@@ -564,6 +677,16 @@ export class FabricEditorAdapter {
     }
 
     editableTarget.editable = true;
+    const meta = readNodeMeta(target);
+    if (!this.controller || !meta) {
+      return;
+    }
+
+    this.controller.handleAdapterEvent({
+      type: "adapter.text.editing.entered",
+      slideId: meta.slideId,
+      nodeId: meta.nodeId,
+    });
   }
 
   /** 文本编辑完成后，统一回写最终内容并恢复到普通选中态。 */
@@ -575,12 +698,20 @@ export class FabricEditorAdapter {
     const editableTarget = target as EditableFabricTextObject;
     editableTarget.editable = false;
 
+    const meta = readNodeMeta(target);
+    const slideId = meta?.slideId ?? this.currentSlideId;
+    if (this.controller && meta) {
+      this.controller.handleAdapterEvent({
+        type: "adapter.text.editing.exited",
+        slideId: meta.slideId,
+        nodeId: meta.nodeId,
+      });
+    }
+
     if (!this.controller) {
       return;
     }
 
-    const meta = readNodeMeta(target);
-    const slideId = meta?.slideId ?? this.currentSlideId;
     if (!slideId) {
       return;
     }
@@ -643,6 +774,21 @@ export class FabricEditorAdapter {
       nodeId: meta?.nodeId ?? null,
       selectionNodeIds,
     });
+  }
+
+  /** 读取当前 Fabric 画布中仍处于编辑态的文本对象。 */
+  private getActiveEditingTextObject(): EditableFabricTextObject | null {
+    const activeObject = this.canvas?.getActiveObject() as EditableFabricTextObject | undefined;
+    return activeObject?.isEditing ? activeObject : null;
+  }
+
+  /** 读取当前可用于定位浮层的真实 canvas DOM。 */
+  private readCanvasDomElement(): HTMLCanvasElement | null {
+    const runtimeCanvas = this.canvas as (Canvas & {
+      upperCanvasEl?: HTMLCanvasElement | null;
+      lowerCanvasEl?: HTMLCanvasElement | null;
+    }) | null;
+    return runtimeCanvas?.upperCanvasEl ?? runtimeCanvas?.lowerCanvasEl ?? null;
   }
 
   /** 解析右键请求真正对应的菜单上下文选中态。 */
@@ -790,6 +936,67 @@ export class FabricEditorAdapter {
       });
     }, 0);
   }
+}
+
+/**
+ * 判断本次快照变化是否只涉及当前编辑中文本节点的样式字段。
+ * 只要出现结构变化、非目标节点改动、背景变化或文本内容变化，就回退到完整重渲染路径。
+ */
+function resolveInlineTextStyleSyncNode(
+  previousSlide: Slide,
+  nextSlide: Slide,
+  editingNodeId: string,
+): TextNode | null {
+  if (
+    previousSlide.background !== nextSlide.background ||
+    previousSlide.nodes.length !== nextSlide.nodes.length
+  ) {
+    return null;
+  }
+
+  for (let index = 0; index < nextSlide.nodes.length; index += 1) {
+    const previousNode = previousSlide.nodes[index];
+    const nextNode = nextSlide.nodes[index];
+    if (previousNode.id !== nextNode.id) {
+      return null;
+    }
+
+    if (nextNode.id !== editingNodeId) {
+      if (previousNode !== nextNode) {
+        return null;
+      }
+      continue;
+    }
+
+    if (previousNode === nextNode) {
+      return null;
+    }
+
+    return isInlineTextStyleOnlyChanged(previousNode, nextNode) ? nextNode : null;
+  }
+
+  return null;
+}
+
+/** 限定内联同步只放行字号、颜色、字重、斜体等样式类字段。 */
+function isInlineTextStyleOnlyChanged(
+  previousNode: CoursewareNode,
+  nextNode: CoursewareNode,
+): nextNode is TextNode {
+  return (
+    previousNode.type === "text" &&
+    nextNode.type === "text" &&
+    previousNode.name === nextNode.name &&
+    previousNode.x === nextNode.x &&
+    previousNode.y === nextNode.y &&
+    previousNode.width === nextNode.width &&
+    previousNode.height === nextNode.height &&
+    previousNode.rotation === nextNode.rotation &&
+    previousNode.opacity === nextNode.opacity &&
+    previousNode.visible === nextNode.visible &&
+    previousNode.locked === nextNode.locked &&
+    previousNode.props.text === nextNode.props.text
+  );
 }
 
 /** 判断多选整体变换是否属于不应回写平移结果的缩放/旋转类动作。 */

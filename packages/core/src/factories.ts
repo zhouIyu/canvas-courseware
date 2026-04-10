@@ -9,6 +9,7 @@ import type {
   RectNode,
   Slide,
   StepTrigger,
+  TextFontStyle,
   TextNode,
   TimelineAction,
   TimelineStep,
@@ -48,6 +49,8 @@ export interface CreateTextNodeOptions {
   height?: number;
   fontSize?: number;
   color?: string;
+  fontWeight?: string | number;
+  fontStyle?: TextFontStyle;
 }
 
 export interface CreateImageNodeOptions {
@@ -197,6 +200,8 @@ export function createTextNode(options: CreateTextNodeOptions = {}): TextNode {
       fontSize: options.fontSize ?? 32,
       color: options.color ?? "#172033",
       fontFamily: DEFAULT_TEXT_FONT_FAMILY,
+      fontWeight: options.fontWeight ?? 400,
+      fontStyle: options.fontStyle ?? "normal",
       lineHeight: 1.5,
       textAlign: "left",
     },

@@ -13,6 +13,8 @@ export type AdapterEvent =
   | AdapterNodesTranslatedEvent
   | AdapterNodeResizedEvent
   | AdapterNodeRotatedEvent
+  | AdapterTextEditingEnteredEvent
+  | AdapterTextEditingExitedEvent
   | AdapterTextChangedEvent;
 
 export interface AdapterReadyEvent {
@@ -63,6 +65,18 @@ export interface AdapterNodeRotatedEvent {
   slideId: string;
   nodeId: string;
   rotation: number;
+}
+
+export interface AdapterTextEditingEnteredEvent {
+  type: "adapter.text.editing.entered";
+  slideId: string;
+  nodeId: string;
+}
+
+export interface AdapterTextEditingExitedEvent {
+  type: "adapter.text.editing.exited";
+  slideId: string;
+  nodeId: string;
 }
 
 export interface AdapterTextChangedEvent {
