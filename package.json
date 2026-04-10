@@ -20,7 +20,8 @@
     "test:vnext-21": "node test/vnext-21/round-01.mjs",
     "test:vnext-22": "node test/vnext-22/round-01.mjs",
     "test:vnext-23": "node test/vnext-23/round-01.mjs",
-    "test:bug-canvas-scale-on-select": "node test/bug-canvas-scale-on-select/round-01.mjs"
+    "test:bug-canvas-scale-on-select": "node test/bug-canvas-scale-on-select/round-01.mjs",
+    "test:bug-sidebar-handle-offset-on-zoom": "node test/bug-sidebar-handle-offset-on-zoom/round-01.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

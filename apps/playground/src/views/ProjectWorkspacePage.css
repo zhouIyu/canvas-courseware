@@ -1,4 +1,5 @@
 .workspace-page {
+  --cw-workspace-min-width: 1280px;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   gap: 0;
@@ -9,7 +10,9 @@
   max-width: none;
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-gutter: stable both-edges;
   background: linear-gradient(180deg, #ffffff 0%, #f6f8fb 42%, #eef2f6 100%);
 }
 
@@ -21,6 +24,14 @@
   border-radius: 0;
   background: transparent;
   box-shadow: none;
+}
+
+.workspace-topbar,
+.workspace-stage {
+  box-sizing: border-box;
+  justify-self: start;
+  width: max(100%, var(--cw-workspace-min-width));
+  min-width: var(--cw-workspace-min-width);
 }
 
 .workspace-topbar {
@@ -153,14 +164,15 @@
   min-height: 0;
   min-width: 0;
   padding: 12px 14px 14px;
-  overflow: hidden;
+  overflow: visible;
   background: transparent;
 }
 
 .workspace-editor,
 .workspace-preview {
   height: 100%;
-  min-width: 0;
+  width: 100%;
+  min-width: 100%;
 }
 
 .state-shell {
@@ -186,53 +198,4 @@
 
 .state-shell :deep(.arco-result) {
   max-width: 420px;
-}
-
-@media (max-width: 1240px) {
-  .workspace-actions,
-  .io-feedback {
-    margin-left: 0;
-    justify-content: flex-start;
-  }
-
-  .save-inline-meta {
-    border-left: 0;
-    padding-left: 0;
-    margin-left: 0;
-  }
-}
-
-@media (max-width: 900px) {
-  .topbar-primary-row,
-  .workspace-actions,
-  .workspace-mode-switch,
-  .title-field,
-  .save-inline-meta,
-  .io-feedback {
-    width: 100%;
-  }
-}
-
-@media (max-width: 768px) {
-  .workspace-page {
-    padding: 0;
-  }
-
-  .workspace-topbar {
-    padding: 10px 12px;
-  }
-
-  .topbar-main-row,
-  .topbar-primary-row,
-  .workspace-actions {
-    flex-wrap: wrap;
-  }
-
-  .io-feedback {
-    max-width: 100%;
-  }
-
-  .workspace-stage {
-    padding: 10px 12px 12px;
-  }
 }

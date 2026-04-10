@@ -1,4 +1,5 @@
 .preview-shell {
+  container-type: inline-size;
   display: grid;
   height: 100%;
   gap: 0;
@@ -587,11 +588,27 @@
   transform: translateY(-1px);
 }
 
-@media (max-width: 1100px) {
+@container (max-width: 920px) {
   .preview-topbar,
   .preview-layout,
   .inline-status-strip {
     grid-template-columns: 1fr;
+  }
+
+  .preview-layout .preview-side-badge-left,
+  .preview-layout.is-left-collapsed .preview-side-badge-left,
+  .preview-layout.is-left-collapsed.is-right-collapsed .preview-side-badge-left {
+    top: 24px;
+    bottom: auto;
+    left: 11px;
+  }
+
+  .preview-layout .preview-side-badge-right,
+  .preview-layout.is-right-collapsed .preview-side-badge-right,
+  .preview-layout.is-left-collapsed.is-right-collapsed .preview-side-badge-right {
+    top: auto;
+    right: 11px;
+    bottom: 24px;
   }
 
   .preview-layout.is-left-collapsed,
@@ -601,7 +618,7 @@
   }
 }
 
-@media (max-width: 768px) {
+@container (max-width: 768px) {
   .preview-topbar,
   .preview-stage-shell,
   .timeline-shell,

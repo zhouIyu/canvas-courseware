@@ -1,0 +1,90 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-04-10T07:29:38.008Z",
+  "viewport": {
+    "width": 960,
+    "height": 760
+  },
+  "checks": [
+    {
+      "id": "editor-workspace-min-width",
+      "snapshot": {
+        "pageWidth": 960,
+        "pageClientWidth": 930,
+        "pageScrollWidth": 1280,
+        "topbarWidth": 1280,
+        "stageWidth": 1280
+      }
+    },
+    {
+      "id": "editor-handle-docked",
+      "snapshot": {
+        "badge": {
+          "left": -59,
+          "right": -41,
+          "top": 220,
+          "width": 18,
+          "height": 60
+        },
+        "rail": {
+          "left": -278,
+          "right": -58,
+          "top": 140,
+          "width": 220,
+          "height": 619
+        },
+        "stage": {
+          "left": -46,
+          "right": 636,
+          "top": 140,
+          "width": 682,
+          "height": 619
+        },
+        "gridTemplateColumns": "220px 682px 300px"
+      },
+      "boundaryOffset": 2,
+      "gridColumnCount": 3
+    },
+    {
+      "id": "preview-workspace-min-width",
+      "snapshot": {
+        "pageWidth": 960,
+        "pageClientWidth": 930,
+        "pageScrollWidth": 1280,
+        "topbarWidth": 1280,
+        "stageWidth": 1280
+      }
+    },
+    {
+      "id": "preview-handle-docked",
+      "snapshot": {
+        "badge": {
+          "left": 217,
+          "right": 235,
+          "top": 158,
+          "width": 18,
+          "height": 60
+        },
+        "rail": {
+          "left": 42,
+          "right": 218,
+          "top": 78,
+          "width": 176,
+          "height": 655
+        },
+        "stage": {
+          "left": 230,
+          "right": 992,
+          "top": 78,
+          "width": 762,
+          "height": 655
+        },
+        "gridTemplateColumns": "176px 762px 264px"
+      },
+      "boundaryOffset": 2,
+      "gridColumnCount": 3
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

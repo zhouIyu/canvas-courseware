@@ -1,0 +1,70 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-04-10T07:05:51.652Z",
+  "viewport": {
+    "width": 960,
+    "height": 760
+  },
+  "checks": [
+    {
+      "id": "editor-handle-docked",
+      "snapshot": {
+        "badge": {
+          "left": 246,
+          "right": 264,
+          "top": 220,
+          "width": 18,
+          "height": 60
+        },
+        "rail": {
+          "left": 27,
+          "right": 247,
+          "top": 140,
+          "width": 220,
+          "height": 619
+        },
+        "stage": {
+          "left": 259,
+          "right": 933,
+          "top": 140,
+          "width": 674,
+          "height": 619
+        },
+        "gridTemplateColumns": "220px 674px"
+      },
+      "boundaryOffset": 2,
+      "gridColumnCount": 2
+    },
+    {
+      "id": "preview-handle-docked",
+      "snapshot": {
+        "badge": {
+          "left": 202,
+          "right": 220,
+          "top": 158,
+          "width": 18,
+          "height": 60
+        },
+        "rail": {
+          "left": 27,
+          "right": 203,
+          "top": 78,
+          "width": 176,
+          "height": 655
+        },
+        "stage": {
+          "left": 215,
+          "right": 657,
+          "top": 78,
+          "width": 442,
+          "height": 655
+        },
+        "gridTemplateColumns": "176px 442px 264px"
+      },
+      "boundaryOffset": 2,
+      "gridColumnCount": 3
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

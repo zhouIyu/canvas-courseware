@@ -1,4 +1,5 @@
 .editor-shell {
+  container-type: inline-size;
   display: grid;
   height: 100%;
   gap: 0;
@@ -604,7 +605,7 @@
   box-shadow: none !important;
 }
 
-@media (max-width: 1240px) {
+@container (max-width: 920px) {
   .editor-layout {
     grid-template-columns: 1fr;
   }
@@ -614,13 +615,38 @@
     height: auto;
   }
 
-  .slide-list,
+  .slide-rail-host {
+    overflow: visible;
+  }
+
+  .slide-rail-host :deep(.slide-rail) {
+    height: auto;
+    min-height: 0;
+  }
+
+  .slide-rail-host :deep(.slide-list),
   .editor-side-body {
     overflow: visible;
   }
 
   .editor-side {
     grid-column: auto;
+  }
+
+  .editor-layout .stage-side-badge-left,
+  .editor-layout.is-left-collapsed .stage-side-badge-left,
+  .editor-layout.is-left-collapsed.is-right-collapsed .stage-side-badge-left {
+    top: 24px;
+    bottom: auto;
+    left: 11px;
+  }
+
+  .editor-layout .stage-side-badge-right,
+  .editor-layout.is-right-collapsed .stage-side-badge-right,
+  .editor-layout.is-left-collapsed.is-right-collapsed .stage-side-badge-right {
+    top: auto;
+    right: 11px;
+    bottom: 24px;
   }
 
   .editor-layout.is-left-collapsed,
@@ -630,7 +656,7 @@
   }
 }
 
-@media (max-width: 1100px) {
+@container (max-width: 1100px) {
   .editor-topbar,
   .editor-layout,
   .stat-grid {
@@ -642,7 +668,7 @@
   }
 }
 
-@media (max-width: 768px) {
+@container (max-width: 768px) {
   .side-tabs {
     padding: 10px;
   }
