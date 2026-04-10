@@ -223,16 +223,17 @@ try {
     await page.locator(".slide-settings-drawer .slide-settings-summary").textContent(),
   );
   const basicSectionText = normalizeInlineText(
-    await page.locator(".slide-settings-drawer .arco-collapse-item").first().textContent(),
+    await page.locator(".slide-settings-drawer .group-card").first().textContent(),
   );
 
   summary.checks.push({
     id: "manual-slide-settings-entry",
     summaryText: slideSettingsSummaryText,
     basicSectionText,
-    hasScopeHint: slideSettingsSummaryText.includes("仅作用于当前页"),
+    hasScopeHint: slideSettingsSummaryText.includes("只影响当前页"),
     hasCurrentSlideLabel: slideSettingsSummaryText.includes("第 1 页"),
-    hasBasicGroup: basicSectionText.includes("页面基础信息"),
+    hasBasicGroup: basicSectionText.includes("基础信息"),
+    hasSlideTitle: slideSettingsSummaryText.includes(UPDATED_SLIDE_NAME),
   });
 
   logStep("rename slide inside drawer");
@@ -246,8 +247,7 @@ try {
   summary.checks.push({
     id: "entry-reflects-current-slide",
     entryButtonText,
-    hasUpdatedSlideName: entryButtonText.includes(UPDATED_SLIDE_NAME),
-    hasPageIndex: entryButtonText.includes("P1"),
+    isIconOnly: entryButtonText.length === 0,
   });
 
   logStep("insert local image node");
@@ -300,7 +300,7 @@ try {
     feedbackText,
     summaryAfterShortcutText,
     hasFeedback: feedbackText.includes("设为当前页背景"),
-    hasScopeHint: summaryAfterShortcutText.includes("仅作用于当前页"),
+    hasScopeHint: summaryAfterShortcutText.includes("只影响当前页"),
     backgroundFit: slideAfterSetBackground?.background?.image?.fit ?? null,
     hasBackgroundImage: Boolean(slideAfterSetBackground?.background?.image?.src),
   });

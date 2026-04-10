@@ -75,8 +75,6 @@ const handleSlideUpdate = (
       <SlideSettingsPanel
         :feedback-message="props.feedbackMessage"
         :feedback-tone="props.feedbackTone"
-        :focus-token="props.focusToken"
-        :preferred-section="props.preferredSection"
         :slide="props.slide"
         :slide-count="props.slideCount"
         :slide-index="props.slideIndex"

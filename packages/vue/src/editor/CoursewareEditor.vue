@@ -1130,7 +1130,6 @@ defineExpose({
           <div class="stage-floating-tools">
             <SlideSettingsEntryButton
               :slide-index="activeSlideIndex"
-              :slide-name="activeSlide?.name ?? null"
               @open="openSlideSettingsDrawer"
             />
             <FloatingLayerManager
