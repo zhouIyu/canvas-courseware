@@ -246,7 +246,13 @@ export class FabricEditorAdapter {
     ) {
       await this.renderSlide(canvas, slide);
       this.lastDocumentRef = snapshot.document;
-    } else {
+    } else if (this.shouldSyncCanvasFrame(canvas, slide)) {
+      /**
+       * 纯选中态变化也会走到 `syncFromSnapshot`。
+       * 如果这里每次都重新 `setDimensions`，在部分浏览器与显示缩放环境下，
+       * 点击对象会触发整个 Fabric 画布的瞬时重排，表现成“画布整体收缩 / 抖动”。
+       * 因此这里只在画布逻辑尺寸或背景色真的漂移时才补做 frame 同步。
+       */
       syncCanvasFrame(canvas, slide);
     }
 
@@ -300,6 +306,18 @@ export class FabricEditorAdapter {
     } finally {
       this.isSyncing = false;
     }
+  }
+
+  /** 仅当 Fabric 画布逻辑尺寸或背景色与当前 slide 不一致时，才需要重同步 frame。 */
+  private shouldSyncCanvasFrame(canvas: Canvas, slide: Slide): boolean {
+    const hasSizeDrift =
+      canvas.getWidth() !== slide.size.width || canvas.getHeight() !== slide.size.height;
+    const hasBackgroundDrift =
+      typeof canvas.backgroundColor === "string"
+        ? canvas.backgroundColor !== slide.background.fill
+        : true;
+
+    return hasSizeDrift || hasBackgroundDrift;
   }
 
   private emitSelectionChange(): void {
