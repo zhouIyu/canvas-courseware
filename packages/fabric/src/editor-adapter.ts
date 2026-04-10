@@ -776,14 +776,13 @@ export class FabricEditorAdapter {
         return;
       }
 
-      this.isSyncing = true;
-      try {
-        this.canvas.setActiveObject(targetObject);
-        this.canvas.renderAll();
-      } finally {
-        this.isSyncing = false;
-      }
-
+      /**
+       * 这里不再直接调用 `canvas.setActiveObject(...)`。
+       * 在 Fabric 刚完成对象变换或文本编辑退出的瞬间，控制点集合仍可能处于中间态；
+       * 此时手动二次激活对象，部分场景会触发 Fabric 读取尚未稳定的控制点（例如 `ml`）并报错。
+       * 统一回到标准控制器，让订阅链在下一拍通过 `applySelectionToCanvas(...)` 恢复选中态，
+       * 可以避开这一段脆弱窗口，同时保持 UI 与适配层的一致性。
+       */
       this.controller.handleAdapterEvent({
         type: "adapter.selection.changed",
         slideId,
