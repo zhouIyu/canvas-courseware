@@ -1,4 +1,5 @@
 import {
+  COMMAND_TYPES,
   createCoursewareDocument,
   createRectNode,
   createTextNode,
@@ -111,6 +112,8 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
   type CoursewareEditorDebugBridge = {
     /** 读取当前 Fabric 编辑态画布实例，便于自动化定位真实控制点。 */
     getCanvas: () => ReturnType<FabricEditorAdapter["getCanvas"]>;
+    /** 读取标准命令类型常量，供自动化脚本复用统一协议值。 */
+    getCommandTypes: () => typeof COMMAND_TYPES;
     /** 读取最新标准快照，便于自动化和调试核对文档状态。 */
     getSnapshot: () => EditorSnapshot;
     /** 读取编辑态适配器实例，便于开发态核对同步状态。 */
@@ -130,6 +133,7 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
 
     const debugBridge: CoursewareEditorDebugBridge = {
       getCanvas: () => adapter.getCanvas(),
+      getCommandTypes: () => COMMAND_TYPES,
       getSnapshot: () => snapshot.value,
       getAdapter: () => adapter,
       getController: () => controller,
@@ -299,13 +303,13 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     });
 
     controller.execute({
-      type: "node.create",
+      type: COMMAND_TYPES.NODE_CREATE,
       slideId,
       node,
       index: activeSlide.value?.nodes.length,
     });
     controller.execute({
-      type: "selection.set",
+      type: COMMAND_TYPES.SELECTION_SET,
       slideId,
       nodeIds: [node.id],
     });
@@ -327,13 +331,13 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     });
 
     controller.execute({
-      type: "node.create",
+      type: COMMAND_TYPES.NODE_CREATE,
       slideId,
       node,
       index: activeSlide.value?.nodes.length,
     });
     controller.execute({
-      type: "selection.set",
+      type: COMMAND_TYPES.SELECTION_SET,
       slideId,
       nodeIds: [node.id],
     });
@@ -347,7 +351,7 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     }
 
     controller.execute({
-      type: "node.batch.delete",
+      type: COMMAND_TYPES.NODE_BATCH_DELETE,
       slideId,
       nodeIds: snapshot.value.selection.nodeIds,
     });
@@ -356,7 +360,7 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
   /** 切换当前激活的 slide。 */
   const activateSlide = (slideId: string) => {
     controller.execute({
-      type: "slide.activate",
+      type: COMMAND_TYPES.SLIDE_ACTIVATE,
       slideId,
     });
   };
@@ -364,7 +368,7 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
   /** 通过标准命令显式设置当前选中节点。 */
   const selectNodes = (slideId: string, nodeIds: string[]) => {
     controller.execute({
-      type: "selection.set",
+      type: COMMAND_TYPES.SELECTION_SET,
       slideId,
       nodeIds,
     });
@@ -373,7 +377,7 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
   /** 清空当前页面的选中状态。 */
   const clearSelection = () => {
     controller.execute({
-      type: "selection.clear",
+      type: COMMAND_TYPES.SELECTION_CLEAR,
       slideId: snapshot.value.activeSlideId ?? undefined,
     });
   };
@@ -394,7 +398,7 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     patch: Partial<Pick<Slide, "name" | "size" | "background">>,
   ) => {
     controller.execute({
-      type: "slide.update",
+      type: COMMAND_TYPES.SLIDE_UPDATE,
       slideId,
       patch,
     });
@@ -403,7 +407,7 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
   /** 更新某个节点的标准属性。 */
   const updateNode = (slideId: string, nodeId: string, patch: NodePatch) => {
     controller.execute({
-      type: "node.update",
+      type: COMMAND_TYPES.NODE_UPDATE,
       slideId,
       nodeId,
       patch,
@@ -419,7 +423,7 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     targetNodeId?: string,
   ) => {
     controller.execute({
-      type: "node.reorder",
+      type: COMMAND_TYPES.NODE_REORDER,
       slideId,
       nodeId,
       position,
@@ -431,7 +435,7 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
   /** 新增或更新某个时间轴步骤。 */
   const upsertTimelineStep = (slideId: string, step: TimelineStep, index?: number) => {
     controller.execute({
-      type: "timeline.step.upsert",
+      type: COMMAND_TYPES.TIMELINE_STEP_UPSERT,
       slideId,
       step,
       index,
@@ -441,7 +445,7 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
   /** 删除某个时间轴步骤。 */
   const removeTimelineStep = (slideId: string, stepId: string) => {
     controller.execute({
-      type: "timeline.step.remove",
+      type: COMMAND_TYPES.TIMELINE_STEP_REMOVE,
       slideId,
       stepId,
     });
@@ -450,7 +454,7 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
   /** 调整某个时间轴步骤在当前页面中的顺序。 */
   const reorderTimelineStep = (slideId: string, stepId: string, index: number) => {
     controller.execute({
-      type: "timeline.step.reorder",
+      type: COMMAND_TYPES.TIMELINE_STEP_REORDER,
       slideId,
       stepId,
       index,
@@ -460,7 +464,7 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
   /** 新增或更新某个动画资源。 */
   const upsertTimelineAnimation = (slideId: string, animation: NodeAnimation) => {
     controller.execute({
-      type: "timeline.animation.upsert",
+      type: COMMAND_TYPES.TIMELINE_ANIMATION_UPSERT,
       slideId,
       animation,
     });
@@ -469,7 +473,7 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
   /** 删除某个动画资源。 */
   const removeTimelineAnimation = (slideId: string, animationId: string) => {
     controller.execute({
-      type: "timeline.animation.remove",
+      type: COMMAND_TYPES.TIMELINE_ANIMATION_REMOVE,
       slideId,
       animationId,
     });

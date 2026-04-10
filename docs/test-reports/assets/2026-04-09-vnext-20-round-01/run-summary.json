@@ -1,7 +1,7 @@
 {
   "baseUrl": "http://127.0.0.1:32173/projects",
   "imagePath": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-04-07-vnext-08-round-01/vnext08-sample.png",
-  "executedAt": "2026-04-10T03:39:35.472Z",
+  "executedAt": "2026-04-10T08:29:05.111Z",
   "desktopViewport": {
     "width": 1440,
     "height": 900
@@ -9,7 +9,7 @@
   "checks": [
     {
       "id": "toolbar-actions",
-      "projectId": "document-bfd5b0de-41a3-49ca-a8c6-25fe449d48f8",
+      "projectId": "document-962174b1-fc6e-4793-99f0-b1c2530b6f6f",
       "toolbarText": "插入文本矩形图片",
       "hasBackgroundEntry": false,
       "hasImageFrameEntry": false

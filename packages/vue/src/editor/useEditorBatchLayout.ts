@@ -1,6 +1,6 @@
+import { COMMAND_TYPES, type EditorController } from "@canvas-courseware/core";
 import type {
   CoursewareNode,
-  EditorController,
   EditorSnapshot,
   NodePatch,
   Slide,
@@ -74,7 +74,7 @@ export function useEditorBatchLayout(options: UseEditorBatchLayoutOptions) {
     }
 
     options.controller.execute({
-      type: "node.batch.update",
+      type: COMMAND_TYPES.NODE_BATCH_UPDATE,
       slideId: slide.id,
       updates,
     });
@@ -94,7 +94,7 @@ export function useEditorBatchLayout(options: UseEditorBatchLayoutOptions) {
     }
 
     options.controller.execute({
-      type: "node.batch.update",
+      type: COMMAND_TYPES.NODE_BATCH_UPDATE,
       slideId: slide.id,
       updates,
     });

@@ -1,4 +1,4 @@
-import type { NodeBatchUpdateEntry, ReorderPosition } from "./commands";
+import { COMMAND_TYPES, type NodeBatchUpdateEntry, type ReorderPosition } from "./commands";
 import type {
   CoursewareNode,
   EditorSnapshot,
@@ -36,35 +36,35 @@ export function reduceSnapshot(
   command: import("./commands").EditorCommand,
 ): EditorSnapshot {
   switch (command.type) {
-    case "document.replace":
+    case COMMAND_TYPES.DOCUMENT_REPLACE:
       return createSnapshotForDocument(command.document);
-    case "slide.create":
+    case COMMAND_TYPES.SLIDE_CREATE:
       return insertSlide(snapshot, command.slide, command.index);
-    case "slide.update":
+    case COMMAND_TYPES.SLIDE_UPDATE:
       return updateSlide(snapshot, command.slideId, command.patch);
-    case "slide.delete":
+    case COMMAND_TYPES.SLIDE_DELETE:
       return deleteSlide(snapshot, command.slideId);
-    case "slide.reorder":
+    case COMMAND_TYPES.SLIDE_REORDER:
       return reorderSlide(snapshot, command.slideId, command.index);
-    case "slide.activate":
+    case COMMAND_TYPES.SLIDE_ACTIVATE:
       return activateSlide(snapshot, command.slideId);
-    case "node.create":
+    case COMMAND_TYPES.NODE_CREATE:
       return createNode(snapshot, command.slideId, command.node, command.index);
-    case "node.batch.update":
+    case COMMAND_TYPES.NODE_BATCH_UPDATE:
       return updateNodes(snapshot, command.slideId, command.updates);
-    case "node.update":
+    case COMMAND_TYPES.NODE_UPDATE:
       return updateNode(snapshot, command.slideId, command.nodeId, command.patch);
-    case "node.image.set-as-background":
+    case COMMAND_TYPES.NODE_IMAGE_SET_AS_BACKGROUND:
       return setImageNodeAsBackground(snapshot, command.slideId, command.nodeId, command.fit);
-    case "node.batch.delete":
+    case COMMAND_TYPES.NODE_BATCH_DELETE:
       return deleteNodes(snapshot, command.slideId, command.nodeIds);
-    case "node.delete":
+    case COMMAND_TYPES.NODE_DELETE:
       return deleteNode(snapshot, command.slideId, command.nodeId);
-    case "selection.set":
+    case COMMAND_TYPES.SELECTION_SET:
       return setSelection(snapshot, command.slideId, command.nodeIds);
-    case "selection.clear":
+    case COMMAND_TYPES.SELECTION_CLEAR:
       return clearSelection(snapshot, command.slideId);
-    case "node.reorder":
+    case COMMAND_TYPES.NODE_REORDER:
       return reorderNode(
         snapshot,
         command.slideId,
@@ -73,21 +73,21 @@ export function reduceSnapshot(
         command.index,
         command.targetNodeId,
       );
-    case "timeline.step.upsert":
+    case COMMAND_TYPES.TIMELINE_STEP_UPSERT:
       return upsertTimelineStep(snapshot, command.slideId, command.step, command.index);
-    case "timeline.step.remove":
+    case COMMAND_TYPES.TIMELINE_STEP_REMOVE:
       return removeTimelineStep(snapshot, command.slideId, command.stepId);
-    case "timeline.step.reorder":
+    case COMMAND_TYPES.TIMELINE_STEP_REORDER:
       return reorderTimelineStep(snapshot, command.slideId, command.stepId, command.index);
-    case "timeline.animation.upsert":
+    case COMMAND_TYPES.TIMELINE_ANIMATION_UPSERT:
       return upsertAnimation(snapshot, command.slideId, command.animation);
-    case "timeline.animation.remove":
+    case COMMAND_TYPES.TIMELINE_ANIMATION_REMOVE:
       return removeAnimation(snapshot, command.slideId, command.animationId);
-    case "playback.slide.set":
+    case COMMAND_TYPES.PLAYBACK_SLIDE_SET:
       return setPlaybackSlide(snapshot, command.slideId);
-    case "playback.step.advance":
+    case COMMAND_TYPES.PLAYBACK_STEP_ADVANCE:
       return advancePlaybackStep(snapshot);
-    case "playback.reset":
+    case COMMAND_TYPES.PLAYBACK_RESET:
       return resetPlayback(snapshot, command.slideId);
     default:
       return snapshot;

@@ -1,5 +1,5 @@
 import mitt, { type Emitter } from "mitt";
-import type { CommandEnvelope, EditorCommand } from "./commands";
+import { COMMAND_TYPES, type CommandEnvelope, type EditorCommand } from "./commands";
 import type { EditorEvent } from "./events";
 import type {
   CoursewareDocument,
@@ -135,11 +135,11 @@ export class EditorStore {
       ? commandOrEnvelope
       : createCommandEnvelope(commandOrEnvelope, "system");
 
-    if (envelope.command.type === "history.undo") {
+    if (envelope.command.type === COMMAND_TYPES.HISTORY_UNDO) {
       return this.dispatchUndo(envelope);
     }
 
-    if (envelope.command.type === "history.redo") {
+    if (envelope.command.type === COMMAND_TYPES.HISTORY_REDO) {
       return this.dispatchRedo(envelope);
     }
 
@@ -256,22 +256,22 @@ export class EditorStore {
 /** 判断命令是否会生成可撤销的历史记录。 */
 function shouldTrackHistoryCommand(command: EditorCommand): boolean {
   switch (command.type) {
-    case "slide.create":
-    case "slide.update":
-    case "slide.delete":
-    case "slide.reorder":
-    case "node.create":
-    case "node.batch.update":
-    case "node.update":
-    case "node.image.set-as-background":
-    case "node.batch.delete":
-    case "node.delete":
-    case "node.reorder":
-    case "timeline.step.upsert":
-    case "timeline.step.remove":
-    case "timeline.step.reorder":
-    case "timeline.animation.upsert":
-    case "timeline.animation.remove":
+    case COMMAND_TYPES.SLIDE_CREATE:
+    case COMMAND_TYPES.SLIDE_UPDATE:
+    case COMMAND_TYPES.SLIDE_DELETE:
+    case COMMAND_TYPES.SLIDE_REORDER:
+    case COMMAND_TYPES.NODE_CREATE:
+    case COMMAND_TYPES.NODE_BATCH_UPDATE:
+    case COMMAND_TYPES.NODE_UPDATE:
+    case COMMAND_TYPES.NODE_IMAGE_SET_AS_BACKGROUND:
+    case COMMAND_TYPES.NODE_BATCH_DELETE:
+    case COMMAND_TYPES.NODE_DELETE:
+    case COMMAND_TYPES.NODE_REORDER:
+    case COMMAND_TYPES.TIMELINE_STEP_UPSERT:
+    case COMMAND_TYPES.TIMELINE_STEP_REMOVE:
+    case COMMAND_TYPES.TIMELINE_STEP_REORDER:
+    case COMMAND_TYPES.TIMELINE_ANIMATION_UPSERT:
+    case COMMAND_TYPES.TIMELINE_ANIMATION_REMOVE:
       return true;
     default:
       return false;
@@ -280,7 +280,7 @@ function shouldTrackHistoryCommand(command: EditorCommand): boolean {
 
 /** 判断命令是否需要重置历史栈。 */
 function shouldResetHistory(command: EditorCommand): boolean {
-  return command.type === "document.replace";
+  return command.type === COMMAND_TYPES.DOCUMENT_REPLACE;
 }
 
 function isHistoryStateEqual(

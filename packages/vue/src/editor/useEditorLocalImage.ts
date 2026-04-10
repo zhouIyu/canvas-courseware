@@ -1,4 +1,5 @@
 import {
+  COMMAND_TYPES,
   createImageNode,
   EditorController,
   type EditorSnapshot,
@@ -76,13 +77,13 @@ export function useEditorLocalImage(options: UseEditorLocalImageOptions) {
     node.props.objectFit = "contain";
 
     options.controller.execute({
-      type: "node.create",
+      type: COMMAND_TYPES.NODE_CREATE,
       slideId,
       node,
       index: options.activeSlide.value?.nodes.length,
     });
     options.controller.execute({
-      type: "selection.set",
+      type: COMMAND_TYPES.SELECTION_SET,
       slideId,
       nodeIds: [node.id],
     });
@@ -103,7 +104,7 @@ export function useEditorLocalImage(options: UseEditorLocalImageOptions) {
     }
 
     options.controller.execute({
-      type: "node.image.set-as-background",
+      type: COMMAND_TYPES.NODE_IMAGE_SET_AS_BACKGROUND,
       slideId,
       nodeId,
       fit: resolveBackgroundImageFit(preferredFit ?? imageNode.props.objectFit),
@@ -132,7 +133,7 @@ export function useEditorLocalImage(options: UseEditorLocalImageOptions) {
     const nextAlt = syncPatch.alt ?? imageNode.props.alt ?? asset.fileName;
 
     options.controller.execute({
-      type: "node.update",
+      type: COMMAND_TYPES.NODE_UPDATE,
       slideId,
       nodeId,
       patch: {
@@ -144,7 +145,7 @@ export function useEditorLocalImage(options: UseEditorLocalImageOptions) {
       },
     });
     options.controller.execute({
-      type: "selection.set",
+      type: COMMAND_TYPES.SELECTION_SET,
       slideId,
       nodeIds: [nodeId],
     });

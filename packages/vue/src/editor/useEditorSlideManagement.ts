@@ -1,4 +1,5 @@
 import {
+  COMMAND_TYPES,
   cloneSlide,
   createSlide,
   EditorController,
@@ -41,12 +42,12 @@ export function useEditorSlideManagement(options: UseEditorSlideManagementOption
   /** 统一派发 slide 创建并切到新页，避免各个入口重复写两条命令。 */
   const insertSlideAndActivate = (slide: Slide, index?: number) => {
     options.controller.execute({
-      type: "slide.create",
+      type: COMMAND_TYPES.SLIDE_CREATE,
       slide,
       index,
     });
     options.controller.execute({
-      type: "slide.activate",
+      type: COMMAND_TYPES.SLIDE_ACTIVATE,
       slideId: slide.id,
     });
   };
@@ -92,7 +93,7 @@ export function useEditorSlideManagement(options: UseEditorSlideManagementOption
   /** 删除指定页面。 */
   const removeSlide = (slideId: string) => {
     options.controller.execute({
-      type: "slide.delete",
+      type: COMMAND_TYPES.SLIDE_DELETE,
       slideId,
     });
   };
@@ -100,7 +101,7 @@ export function useEditorSlideManagement(options: UseEditorSlideManagementOption
   /** 按最终索引重排页面顺序。 */
   const reorderSlide = (slideId: string, index: number) => {
     options.controller.execute({
-      type: "slide.reorder",
+      type: COMMAND_TYPES.SLIDE_REORDER,
       slideId,
       index,
     });

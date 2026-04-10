@@ -1,4 +1,4 @@
-import type { CommandEnvelope, CommandSource, EditorCommand } from "./commands";
+import { COMMAND_TYPES, type CommandEnvelope, type CommandSource, type EditorCommand } from "./commands";
 import type { AdapterEvent } from "./events";
 import type { CoursewareDocument, EditorSnapshot } from "./schema";
 import { createCommandEnvelope, createCoursewareDocument } from "./factories";
@@ -26,7 +26,7 @@ export class EditorController {
   replaceDocument(document: CoursewareDocument): EditorSnapshot {
     return this.execute(
       {
-        type: "document.replace",
+        type: COMMAND_TYPES.DOCUMENT_REPLACE,
         document,
       },
       "system",
@@ -41,7 +41,7 @@ export class EditorController {
     return this.store.dispatch(
       createCommandEnvelope(
         {
-          type: "history.undo",
+          type: COMMAND_TYPES.HISTORY_UNDO,
         },
         source,
       ),
@@ -52,7 +52,7 @@ export class EditorController {
     return this.store.dispatch(
       createCommandEnvelope(
         {
-          type: "history.redo",
+          type: COMMAND_TYPES.HISTORY_REDO,
         },
         source,
       ),
@@ -109,13 +109,13 @@ export function mapAdapterEventToCommand(event: AdapterEvent): EditorCommand | n
       return null;
     case "adapter.selection.changed":
       return {
-        type: "selection.set",
+        type: COMMAND_TYPES.SELECTION_SET,
         slideId: event.slideId,
         nodeIds: event.nodeIds,
       };
     case "adapter.node.translated":
       return {
-        type: "node.update",
+        type: COMMAND_TYPES.NODE_UPDATE,
         slideId: event.slideId,
         nodeId: event.nodeId,
         patch: {
@@ -127,14 +127,14 @@ export function mapAdapterEventToCommand(event: AdapterEvent): EditorCommand | n
       return createTranslatedNodesCommand(event);
     case "adapter.node.resized":
       return {
-        type: "node.update",
+        type: COMMAND_TYPES.NODE_UPDATE,
         slideId: event.slideId,
         nodeId: event.nodeId,
         patch: event.patch,
       };
     case "adapter.node.rotated":
       return {
-        type: "node.update",
+        type: COMMAND_TYPES.NODE_UPDATE,
         slideId: event.slideId,
         nodeId: event.nodeId,
         patch: {
@@ -143,7 +143,7 @@ export function mapAdapterEventToCommand(event: AdapterEvent): EditorCommand | n
       };
     case "adapter.text.changed":
       return {
-        type: "node.update",
+        type: COMMAND_TYPES.NODE_UPDATE,
         slideId: event.slideId,
         nodeId: event.nodeId,
         patch: {
@@ -162,7 +162,7 @@ function createTranslatedNodesCommand(
   event: Extract<AdapterEvent, { type: "adapter.nodes.translated" }>,
 ): EditorCommand {
   return {
-    type: "node.batch.update",
+    type: COMMAND_TYPES.NODE_BATCH_UPDATE,
     slideId: event.slideId,
     updates: event.updates.map((update) => ({
       nodeId: update.nodeId,

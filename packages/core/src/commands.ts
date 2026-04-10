@@ -10,6 +10,36 @@ import type {
 
 export type CommandSource = "ui" | "adapter" | "system";
 export type ReorderPosition = "forward" | "backward" | "front" | "back" | "index";
+/** 统一维护编辑器标准命令类型，避免跨层重复手写字符串协议。 */
+export const COMMAND_TYPES = {
+  DOCUMENT_REPLACE: "document.replace",
+  SLIDE_CREATE: "slide.create",
+  SLIDE_UPDATE: "slide.update",
+  SLIDE_DELETE: "slide.delete",
+  SLIDE_REORDER: "slide.reorder",
+  SLIDE_ACTIVATE: "slide.activate",
+  NODE_CREATE: "node.create",
+  NODE_BATCH_UPDATE: "node.batch.update",
+  NODE_UPDATE: "node.update",
+  NODE_IMAGE_SET_AS_BACKGROUND: "node.image.set-as-background",
+  NODE_BATCH_DELETE: "node.batch.delete",
+  NODE_DELETE: "node.delete",
+  SELECTION_SET: "selection.set",
+  SELECTION_CLEAR: "selection.clear",
+  NODE_REORDER: "node.reorder",
+  TIMELINE_STEP_UPSERT: "timeline.step.upsert",
+  TIMELINE_STEP_REMOVE: "timeline.step.remove",
+  TIMELINE_STEP_REORDER: "timeline.step.reorder",
+  TIMELINE_ANIMATION_UPSERT: "timeline.animation.upsert",
+  TIMELINE_ANIMATION_REMOVE: "timeline.animation.remove",
+  HISTORY_UNDO: "history.undo",
+  HISTORY_REDO: "history.redo",
+  PLAYBACK_SLIDE_SET: "playback.slide.set",
+  PLAYBACK_STEP_ADVANCE: "playback.step.advance",
+  PLAYBACK_RESET: "playback.reset",
+} as const;
+/** 编辑器标准命令 type 的字面量联合。 */
+export type EditorCommandType = (typeof COMMAND_TYPES)[keyof typeof COMMAND_TYPES];
 
 export type EditorCommand =
   | ReplaceDocumentCommand
@@ -45,41 +75,41 @@ export interface CommandEnvelope<TCommand extends EditorCommand = EditorCommand>
 }
 
 export interface ReplaceDocumentCommand {
-  type: "document.replace";
+  type: typeof COMMAND_TYPES.DOCUMENT_REPLACE;
   document: CoursewareDocument;
 }
 
 export interface CreateSlideCommand {
-  type: "slide.create";
+  type: typeof COMMAND_TYPES.SLIDE_CREATE;
   slide: Slide;
   index?: number;
 }
 
 export interface UpdateSlideCommand {
-  type: "slide.update";
+  type: typeof COMMAND_TYPES.SLIDE_UPDATE;
   slideId: string;
   patch: Partial<Pick<Slide, "name" | "size" | "background">>;
 }
 
 export interface DeleteSlideCommand {
-  type: "slide.delete";
+  type: typeof COMMAND_TYPES.SLIDE_DELETE;
   slideId: string;
 }
 
 /** 调整 slide 在文档中的顺序。 */
 export interface ReorderSlideCommand {
-  type: "slide.reorder";
+  type: typeof COMMAND_TYPES.SLIDE_REORDER;
   slideId: string;
   index: number;
 }
 
 export interface ActivateSlideCommand {
-  type: "slide.activate";
+  type: typeof COMMAND_TYPES.SLIDE_ACTIVATE;
   slideId: string;
 }
 
 export interface CreateNodeCommand {
-  type: "node.create";
+  type: typeof COMMAND_TYPES.NODE_CREATE;
   slideId: string;
   node: CoursewareNode;
   index?: number;
@@ -95,13 +125,13 @@ export interface NodeBatchUpdateEntry {
 
 /** 以一次标准命令批量更新多个节点，避免多选操作拆成多条历史记录。 */
 export interface BatchUpdateNodesCommand {
-  type: "node.batch.update";
+  type: typeof COMMAND_TYPES.NODE_BATCH_UPDATE;
   slideId: string;
   updates: NodeBatchUpdateEntry[];
 }
 
 export interface UpdateNodeCommand {
-  type: "node.update";
+  type: typeof COMMAND_TYPES.NODE_UPDATE;
   slideId: string;
   nodeId: string;
   patch: NodePatch;
@@ -109,7 +139,7 @@ export interface UpdateNodeCommand {
 
 /** 把一个图片节点转换为当前 slide 背景，并同步移除原节点。 */
 export interface SetImageNodeAsBackgroundCommand {
-  type: "node.image.set-as-background";
+  type: typeof COMMAND_TYPES.NODE_IMAGE_SET_AS_BACKGROUND;
   slideId: string;
   nodeId: string;
   /** 可选的背景图填充方式；为空时沿用节点或页面已有配置。 */
@@ -118,31 +148,31 @@ export interface SetImageNodeAsBackgroundCommand {
 
 /** 一次性删除同一页面中的多个节点，避免批量删除拆成多条历史记录。 */
 export interface BatchDeleteNodesCommand {
-  type: "node.batch.delete";
+  type: typeof COMMAND_TYPES.NODE_BATCH_DELETE;
   slideId: string;
   /** 需要被统一删除的节点 id 列表。 */
   nodeIds: string[];
 }
 
 export interface DeleteNodeCommand {
-  type: "node.delete";
+  type: typeof COMMAND_TYPES.NODE_DELETE;
   slideId: string;
   nodeId: string;
 }
 
 export interface SetSelectionCommand {
-  type: "selection.set";
+  type: typeof COMMAND_TYPES.SELECTION_SET;
   slideId: string;
   nodeIds: string[];
 }
 
 export interface ClearSelectionCommand {
-  type: "selection.clear";
+  type: typeof COMMAND_TYPES.SELECTION_CLEAR;
   slideId?: string;
 }
 
 export interface ReorderNodeCommand {
-  type: "node.reorder";
+  type: typeof COMMAND_TYPES.NODE_REORDER;
   slideId: string;
   nodeId: string;
   position: ReorderPosition;
@@ -151,58 +181,58 @@ export interface ReorderNodeCommand {
 }
 
 export interface UpsertTimelineStepCommand {
-  type: "timeline.step.upsert";
+  type: typeof COMMAND_TYPES.TIMELINE_STEP_UPSERT;
   slideId: string;
   step: TimelineStep;
   index?: number;
 }
 
 export interface RemoveTimelineStepCommand {
-  type: "timeline.step.remove";
+  type: typeof COMMAND_TYPES.TIMELINE_STEP_REMOVE;
   slideId: string;
   stepId: string;
 }
 
 /** 调整某个时间轴步骤在当前 slide 中的顺序。 */
 export interface ReorderTimelineStepCommand {
-  type: "timeline.step.reorder";
+  type: typeof COMMAND_TYPES.TIMELINE_STEP_REORDER;
   slideId: string;
   stepId: string;
   index: number;
 }
 
 export interface UpsertAnimationCommand {
-  type: "timeline.animation.upsert";
+  type: typeof COMMAND_TYPES.TIMELINE_ANIMATION_UPSERT;
   slideId: string;
   animation: NodeAnimation;
 }
 
 export interface RemoveAnimationCommand {
-  type: "timeline.animation.remove";
+  type: typeof COMMAND_TYPES.TIMELINE_ANIMATION_REMOVE;
   slideId: string;
   animationId: string;
 }
 
 /** 回退到上一条可恢复的编辑快照。 */
 export interface HistoryUndoCommand {
-  type: "history.undo";
+  type: typeof COMMAND_TYPES.HISTORY_UNDO;
 }
 
 /** 重新应用一条被撤销的编辑快照。 */
 export interface HistoryRedoCommand {
-  type: "history.redo";
+  type: typeof COMMAND_TYPES.HISTORY_REDO;
 }
 
 export interface PlaybackSetSlideCommand {
-  type: "playback.slide.set";
+  type: typeof COMMAND_TYPES.PLAYBACK_SLIDE_SET;
   slideId: string;
 }
 
 export interface PlaybackAdvanceStepCommand {
-  type: "playback.step.advance";
+  type: typeof COMMAND_TYPES.PLAYBACK_STEP_ADVANCE;
 }
 
 export interface PlaybackResetCommand {
-  type: "playback.reset";
+  type: typeof COMMAND_TYPES.PLAYBACK_RESET;
   slideId?: string;
 }

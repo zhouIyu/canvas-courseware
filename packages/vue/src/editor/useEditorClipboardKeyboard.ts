@@ -1,4 +1,5 @@
 import {
+  COMMAND_TYPES,
   createId,
   type CoursewareNode,
   type EditorController,
@@ -113,7 +114,7 @@ export function useEditorClipboardKeyboard(options: UseEditorClipboardKeyboardOp
       const pastedNode = createNodeFromClipboard(sourceNode, nextOffset);
 
       options.controller.execute({
-        type: "node.create",
+        type: COMMAND_TYPES.NODE_CREATE,
         slideId: activeSlideId,
         node: pastedNode,
         index: activeNodesLength + index,
@@ -124,7 +125,7 @@ export function useEditorClipboardKeyboard(options: UseEditorClipboardKeyboardOp
 
     pasteCount.value = isSameSlidePaste ? pasteCount.value + 1 : 0;
     options.controller.execute({
-      type: "selection.set",
+      type: COMMAND_TYPES.SELECTION_SET,
       slideId: activeSlideId,
       nodeIds: createdNodeIds,
     });
@@ -150,7 +151,7 @@ export function useEditorClipboardKeyboard(options: UseEditorClipboardKeyboardOp
       }
 
       options.controller.execute({
-        type: "node.update",
+        type: COMMAND_TYPES.NODE_UPDATE,
         slideId: selectionContext.slideId,
         nodeId,
         patch: {
@@ -169,7 +170,7 @@ export function useEditorClipboardKeyboard(options: UseEditorClipboardKeyboardOp
     }
 
     options.controller.execute({
-      type: "node.batch.delete",
+      type: COMMAND_TYPES.NODE_BATCH_DELETE,
       slideId: selectionContext.slideId,
       nodeIds: options.snapshot.value.selection.nodeIds,
     });

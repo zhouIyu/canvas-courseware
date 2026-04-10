@@ -168,6 +168,7 @@ async function seedTimelineCleanupScenario(page) {
     }
 
     const controller = debugBridge.getController();
+    const commandTypes = debugBridge.getCommandTypes();
     const snapshot = debugBridge.getSnapshot();
     const slideId = snapshot.activeSlideId;
     if (!slideId) {
@@ -251,7 +252,7 @@ async function seedTimelineCleanupScenario(page) {
 
     Object.values(nodes).forEach((node, index) => {
       controller.execute({
-        type: "node.create",
+        type: commandTypes.NODE_CREATE,
         slideId,
         node,
         index: currentSlide.nodes.length + index,
@@ -275,7 +276,7 @@ async function seedTimelineCleanupScenario(page) {
 
     Object.values(animations).forEach((animation) => {
       controller.execute({
-        type: "timeline.animation.upsert",
+        type: commandTypes.TIMELINE_ANIMATION_UPSERT,
         slideId,
         animation,
       });
@@ -370,7 +371,7 @@ async function seedTimelineCleanupScenario(page) {
 
     steps.forEach((step, index) => {
       controller.execute({
-        type: "timeline.step.upsert",
+        type: commandTypes.TIMELINE_STEP_UPSERT,
         slideId,
         step,
         index,
@@ -378,7 +379,7 @@ async function seedTimelineCleanupScenario(page) {
     });
 
     controller.execute({
-      type: "selection.clear",
+      type: commandTypes.SELECTION_CLEAR,
       slideId,
     });
 
@@ -409,8 +410,9 @@ async function setSelection(page, slideId, nodeIds) {
       throw new Error("编辑器调试桥缺失，无法设置 selection");
     }
 
+    const commandTypes = debugBridge.getCommandTypes();
     debugBridge.getController().execute({
-      type: "selection.set",
+      type: commandTypes.SELECTION_SET,
       slideId: activeSlideId,
       nodeIds: activeNodeIds,
     });

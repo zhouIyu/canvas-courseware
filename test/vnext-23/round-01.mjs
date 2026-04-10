@@ -170,6 +170,7 @@ async function seedContextMenuScenario(page) {
     }
 
     const controller = debugBridge.getController();
+    const commandTypes = debugBridge.getCommandTypes();
     const snapshot = debugBridge.getSnapshot();
     const slideId = snapshot.activeSlideId;
     if (!slideId) {
@@ -244,7 +245,7 @@ async function seedContextMenuScenario(page) {
 
     [imagePrimary, textPrimary, textSecondary].forEach((node, offset) => {
       controller.execute({
-        type: "node.create",
+        type: commandTypes.NODE_CREATE,
         slideId,
         node,
         index: baseIndex + offset,
@@ -295,8 +296,9 @@ async function setCanvasSelection(page, slideId, nodeIds) {
       throw new Error("编辑器调试桥尚未就绪，无法设置选中态");
     }
 
+    const commandTypes = debugBridge.getCommandTypes();
     debugBridge.getController().execute({
-      type: "selection.set",
+      type: commandTypes.SELECTION_SET,
       slideId: currentSlideId,
       nodeIds: currentNodeIds,
     });
