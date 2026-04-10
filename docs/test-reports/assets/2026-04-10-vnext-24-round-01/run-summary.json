@@ -1,0 +1,37 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-04-10T08:28:24.042Z",
+  "updatedSlideName": "VNext-24 页面设置页",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "manual-slide-settings-entry",
+      "summaryText": "页面级配置第1页第 1 页共 1 页仅作用于当前页这里的配置只作用于当前页；组件属性仍需在右侧“组件属性”面板中编辑。页面尺寸1280 × 720背景状态纯色背景",
+      "basicSectionText": "页面基础信息 页面名称与尺寸会同步影响当前页画布、缩略页和预览结果，优先放在首屏可直接编辑。 页面名称宽度高度",
+      "hasScopeHint": true,
+      "hasCurrentSlideLabel": true,
+      "hasBasicGroup": true
+    },
+    {
+      "id": "entry-reflects-current-slide",
+      "entryButtonText": "当前页设置P1 · VNext-24 页面设置页",
+      "hasUpdatedSlideName": true,
+      "hasPageIndex": true
+    },
+    {
+      "id": "shortcut-jumps-to-background-group",
+      "fitModalText": "设为背景画布图片 · vnext08-sample选择铺满方式，确认后仍可在页面设置里继续调整。裁切铺满铺满整个页面，可能裁掉图片边缘，适合横图做封面。完整显示完整保留图片内容，可能在四周留白，适合竖图或信息图。拉伸铺满直接拉伸到整页，不留白也不裁切，但会改变图片比例。完整显示完整保留图片内容，可能在四周留白，适合竖图或信息图。取消确认设为背景",
+      "feedbackText": "已将画布图片 · vnext08-sample设为当前页背景，可继续调整背景色与铺满方式。",
+      "summaryAfterShortcutText": "页面级配置VNext-24 页面设置页第 1 页共 1 页仅作用于当前页这里的配置只作用于当前页；组件属性仍需在右侧“组件属性”面板中编辑。页面尺寸1280 × 720背景状态已配置背景图",
+      "hasFeedback": true,
+      "hasScopeHint": true,
+      "backgroundFit": "contain",
+      "hasBackgroundImage": true
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

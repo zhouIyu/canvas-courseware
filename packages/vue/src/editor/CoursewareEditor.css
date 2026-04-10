@@ -271,19 +271,6 @@
   max-width: calc(100% - 24px);
 }
 
-.stage-floating-button {
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
-}
-
-.stage-floating-button :deep(.arco-btn-icon) {
-  font-size: 18px;
-}
-
 .stage-context-menu {
   position: absolute;
   z-index: 6;
@@ -585,24 +572,6 @@
 
 .editor-shell.is-embedded .side-tabs {
   padding-inline: 12px;
-}
-
-.slide-settings-drawer :deep(.arco-drawer-body) {
-  padding: 0;
-  background: #f6f8fb;
-}
-
-.slide-settings-drawer__body {
-  padding: 16px;
-}
-
-.slide-settings-drawer__body :deep(.slide-settings-panel) {
-  gap: 12px;
-  padding: 0 !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
 }
 
 @container (max-width: 920px) {

@@ -5,7 +5,6 @@ import type {
   NodeAnimation,
   NodePatch,
   NodeTimelineSummary,
-  ObjectFit,
   ReorderPosition,
   Slide,
   TimelineStep,
@@ -16,24 +15,22 @@ import {
 } from "@canvas-courseware/core";
 import type { FabricEditorContextMenuRequest } from "@canvas-courseware/fabric";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import {
-  DEFAULT_BACKGROUND_IMAGE_FIT,
-  DEFAULT_EDITOR_HEIGHT,
-  normalizeBackgroundImageFit,
-} from "../shared";
+import { DEFAULT_EDITOR_HEIGHT } from "../shared";
 import BackgroundImageFitModal from "./BackgroundImageFitModal.vue";
 import EditorToolbar from "./EditorToolbar.vue";
 import FloatingLayerManager from "./FloatingLayerManager.vue";
 import InspectorPanel from "./InspectorPanel.vue";
 import LocalImageFileTrigger from "./LocalImageFileTrigger.vue";
 import SlideRailPanel from "./SlideRailPanel.vue";
-import SlideSettingsPanel from "./SlideSettingsPanel.vue";
+import SlideSettingsDrawer from "./SlideSettingsDrawer.vue";
+import SlideSettingsEntryButton from "./SlideSettingsEntryButton.vue";
 import TimelinePanel from "./TimelinePanel.vue";
 import type {
   LayerAlignMode,
   LayerDistributeMode,
 } from "./useEditorBatchLayout";
 import { useCoursewareEditor } from "./useCoursewareEditor";
+import { useSlideSettingsDrawer } from "./useSlideSettingsDrawer";
 /** 编辑器右侧管理区的标签名。 */
 type EditorSideTab = "node" | "timeline";
 
@@ -113,16 +110,6 @@ interface EditorContextMenuState {
   selectionNodeIds: string[];
 }
 
-/** “设为背景”流程中待确认的图片来源。 */
-interface PendingBackgroundImageAction {
-  /** 当前待转换为背景图的节点 id。 */
-  nodeId: string;
-  /** 弹层中展示给用户的来源摘要。 */
-  sourceLabel: string;
-  /** 弹层打开时默认选中的填充方式。 */
-  preferredFit: ObjectFit;
-}
-
 /** 右键菜单预估宽度，用于避免贴边溢出。 */
 const CONTEXT_MENU_WIDTH = 188;
 
@@ -174,12 +161,6 @@ const workspaceShellRef = ref<HTMLElement | null>(null);
 /** 当前编辑区右键菜单状态。 */
 const contextMenuState = ref<EditorContextMenuState | null>(null);
 
-/** “设为背景”流程中暂存的待确认操作。 */
-const pendingBackgroundImageAction = ref<PendingBackgroundImageAction | null>(null);
-
-/** 当前“设为背景”确认动作是否正在提交。 */
-const isApplyingBackgroundImageFit = ref(false);
-
 /** 把数值约束到指定区间内，避免菜单超出容器。 */
 const clamp = (value: number, minimum: number, maximum: number): number =>
   Math.min(Math.max(value, minimum), maximum);
@@ -187,12 +168,6 @@ const clamp = (value: number, minimum: number, maximum: number): number =>
 /** 关闭当前右键菜单。 */
 const closeContextMenu = () => {
   contextMenuState.value = null;
-};
-
-/** 关闭“设为背景”确认弹层，并清理暂存来源。 */
-const closeBackgroundImageFitModal = () => {
-  pendingBackgroundImageAction.value = null;
-  isApplyingBackgroundImageFit.value = false;
 };
 
 /** 按工作区可用空间规整右键菜单坐标。 */
@@ -256,9 +231,6 @@ const isSlideRailCollapsed = ref(false);
 
 /** 当前右侧管理栏是否已收起。 */
 const isEditorSideCollapsed = ref(true);
-
-/** 当前页面设置抽屉是否打开。 */
-const isSlideSettingsDrawerVisible = ref(false);
 
 /** 属性面板最近一次稳定选中的节点 id。 */
 const retainedInspectorNodeId = ref<string | null>(null);
@@ -326,6 +298,28 @@ const {
   onContextMenuRequest: handleCanvasContextMenuRequest,
 });
 
+/** 统一收口页面设置抽屉与“设为背景”快捷链路的状态。 */
+const {
+  backgroundImageFitModalInitialFit,
+  backgroundImageFitModalSourceLabel,
+  closeBackgroundImageFitModal,
+  closeSlideSettingsDrawer,
+  handleBackgroundImageFitConfirm,
+  isApplyingBackgroundImageFit,
+  isBackgroundImageFitModalVisible,
+  isSlideSettingsDrawerVisible,
+  openBackgroundImageFitModal,
+  openSlideSettingsDrawer,
+  resetSlideSettingsContext,
+  slideSettingsFeedbackMessage,
+  slideSettingsFeedbackTone,
+  slideSettingsFocusToken,
+  slideSettingsPreferredSection,
+} = useSlideSettingsDrawer({
+  activeSlide,
+  setSlideBackgroundImageFromNode,
+});
+
 /**
  * 外层 v-model 文档变化时，同步替换内部文档。
  * 这里显式跳过内部主动回写的那一轮，避免形成循环。
@@ -388,7 +382,7 @@ watch(
 
     if (activeSlideId !== previousSlideId) {
       retainedInspectorNodeId.value = null;
-      isSlideSettingsDrawerVisible.value = false;
+      closeSlideSettingsDrawer();
       return;
     }
 
@@ -423,7 +417,7 @@ watch(
   () => snapshot.value.activeSlideId,
   () => {
     closeContextMenu();
-    closeBackgroundImageFitModal();
+    resetSlideSettingsContext();
   },
 );
 
@@ -612,18 +606,20 @@ const contextMenuCanSetBackground = computed(() => Boolean(contextMenuTargetImag
 /** 当前右键菜单是否可以展示“更换图片”快捷入口。 */
 const contextMenuCanReplaceImage = computed(() => Boolean(contextMenuTargetImageNode.value));
 
-/** 当前“设为背景”确认弹层是否展示。 */
-const isBackgroundImageFitModalVisible = computed(() => Boolean(pendingBackgroundImageAction.value));
+/** 当前激活页在文档中的 1-based 页序。 */
+const activeSlideIndex = computed(() => {
+  if (!activeSlide.value) {
+    return null;
+  }
 
-/** 当前“设为背景”确认弹层中的来源说明。 */
-const backgroundImageFitModalSourceLabel = computed(
-  () => pendingBackgroundImageAction.value?.sourceLabel ?? "当前图片",
-);
+  const slideIndex = snapshot.value.document.slides.findIndex(
+    (slide) => slide.id === activeSlide.value?.id,
+  );
+  return slideIndex >= 0 ? slideIndex + 1 : null;
+});
 
-/** 当前“设为背景”确认弹层中的默认填充方式。 */
-const backgroundImageFitModalInitialFit = computed(
-  () => pendingBackgroundImageAction.value?.preferredFit ?? DEFAULT_BACKGROUND_IMAGE_FIT,
-);
+/** 当前文档的页面总数，供页面设置摘要直接消费。 */
+const slideCount = computed(() => snapshot.value.document.slides.length);
 
 /** 当前 slide 的更新入口。 */
 const handleSlideUpdate = (patch: Partial<Pick<Slide, "name" | "size" | "background">>) => {
@@ -900,39 +896,11 @@ const handleContextMenuSetImageAsBackground = () => {
   }
 
   closeContextMenu();
-  pendingBackgroundImageAction.value = {
+  openBackgroundImageFitModal({
     nodeId: imageNode.id,
     sourceLabel: `画布图片 · ${imageNode.name}`,
-    preferredFit: normalizeBackgroundImageFit(
-      imageNode.props.objectFit ?? activeSlide.value?.background.image?.fit,
-      DEFAULT_BACKGROUND_IMAGE_FIT,
-    ),
-  };
-};
-
-/** 根据弹层确认结果，真正执行“设为背景”写入。 */
-const handleBackgroundImageFitConfirm = async (fit: ObjectFit) => {
-  const pendingAction = pendingBackgroundImageAction.value;
-  if (!pendingAction) {
-    return;
-  }
-
-  isApplyingBackgroundImageFit.value = true;
-
-  try {
-    const backgroundSource = setSlideBackgroundImageFromNode(pendingAction.nodeId, fit);
-    if (!backgroundSource) {
-      throw new Error("当前图片还没有可用资源，暂时不能设为背景");
-    }
-
-    isSlideSettingsDrawerVisible.value = true;
-    closeBackgroundImageFitModal();
-  } catch (error) {
-    isApplyingBackgroundImageFit.value = false;
-    const message = error instanceof Error ? error.message : "背景图设置失败，请重试";
-    window.alert(message);
-    console.error(error);
-  }
+    preferredFit: imageNode.props.objectFit ?? activeSlide.value?.background.image?.fit,
+  });
 };
 
 /** 右键菜单中删除当前选区。 */
@@ -964,15 +932,6 @@ const handleSideTabChange = (key: EditorSideTabValue) => {
   }
 };
 
-/** 打开当前页面的设置抽屉。 */
-const openSlideSettingsDrawer = () => {
-  isSlideSettingsDrawerVisible.value = true;
-};
-
-/** 关闭当前页面的设置抽屉。 */
-const closeSlideSettingsDrawer = () => {
-  isSlideSettingsDrawerVisible.value = false;
-};
 /** 切换左侧页面栏显隐。 */
 const toggleSlideRail = () => {
   isSlideRailCollapsed.value = !isSlideRailCollapsed.value;
@@ -1169,18 +1128,11 @@ defineExpose({
 
         <section ref="workspaceShellRef" class="workspace-shell panel-shell">
           <div class="stage-floating-tools">
-            <a-button
-              class="stage-floating-button"
-              aria-label="打开页面设置"
-              shape="circle"
-              size="small"
-              type="outline"
-              @click="openSlideSettingsDrawer"
-            >
-              <template #icon>
-                <icon-settings />
-              </template>
-            </a-button>
+            <SlideSettingsEntryButton
+              :slide-index="activeSlideIndex"
+              :slide-name="activeSlide?.name ?? null"
+              @open="openSlideSettingsDrawer"
+            />
             <FloatingLayerManager
               :nodes="activeSlide?.nodes ?? []"
               :node-timeline-summary-map="nodeTimelineSummaryMap"
@@ -1324,24 +1276,18 @@ defineExpose({
       </div>
     </main>
 
-    <a-drawer
-      :closable="true"
-      :footer="false"
-      :mask="false"
+    <SlideSettingsDrawer
+      :feedback-message="slideSettingsFeedbackMessage"
+      :feedback-tone="slideSettingsFeedbackTone"
+      :focus-token="slideSettingsFocusToken"
+      :preferred-section="slideSettingsPreferredSection"
+      :slide="activeSlide ?? null"
+      :slide-count="slideCount"
+      :slide-index="activeSlideIndex"
       :visible="isSlideSettingsDrawerVisible"
-      class="slide-settings-drawer"
-      placement="right"
-      title="页面设置"
-      width="360px"
-      @cancel="closeSlideSettingsDrawer"
-    >
-      <div class="slide-settings-drawer__body">
-        <SlideSettingsPanel
-          :slide="activeSlide ?? null"
-          @update-slide="handleSlideUpdate"
-        />
-      </div>
-    </a-drawer>
+      @close="closeSlideSettingsDrawer"
+      @update-slide="handleSlideUpdate"
+    />
   </section>
 </template>
 
