@@ -176,10 +176,13 @@
 - [x] VNext-31-C 接入命令执行、页面背景写入与时间轴关键变更日志
 - [x] VNext-31-D 接入自动保存、导入导出与图片资源处理日志
 - [x] VNext-31-E 补齐自动化验证与开发自测，覆盖日志查看入口、自动保存、背景写入与时间轴变更
+- [x] VNext-32-A 编辑器壳层与工作台职责拆分：已将 `apps/playground` 的工作台顶栏与项目持久化链路拆分为独立组件 / composable，并将 `packages/vue` 编辑器拆为舞台子组件、壳层动作 helper 与命令 API helper；当前人工完成主链路代码自查，但由于执行环境缺少 `node / pnpm`，本轮暂未实际跑 `typecheck` 与 `build`，等待用户 review 后再继续推进下一项治理
 
 ## 待完成
 
-- 当前无待完成执行任务。
+- [ ] VNext-32-B Fabric 适配层职责拆分：拆分 `packages/fabric/src/editor-adapter.ts` 与 `packages/fabric/src/player-adapter.ts`，把渲染同步、选中态恢复、文本编辑、播放调度与动画执行逻辑按职责下沉，持续保持 UI 层与 Fabric 事件解耦
+- [ ] VNext-32-C Schema 解析 / 校验 / 迁移层治理：拆分 `packages/core/src/document-io.ts`，形成 parser / validator / migrator 的清晰边界，并为后续 schema 版本兼容预留标准化迁移入口
+- [ ] VNext-32-D 图片资源存储模型升级：将图片资源持久化从“data URL + `localStorage`”的紧耦合模式升级为更可扩展的本地资产存储方案，同时保持导入、换图、设为背景、自动保存、刷新恢复与导入导出链路可用
 
 ## 进行中
 
@@ -187,9 +190,9 @@
 
 ## 当前下一步
 
-- `VNext-31` 已完成当前开发与自测，等待用户 review；若日志字段、展示方式或链路覆盖范围需要微调，再以本次实现为基础继续细化。
-- 若下一轮继续扩展日志能力，可优先评估是否补充日志筛选、日志导出或更多失败链路接入。
-- 若后续要继续扩展日志能力，请先从 `docs/REQUIREMENTS.md` 重新收集新诉求，再纳入新的版本规划。
+- `VNext-32-A` 已完成本轮壳层治理实现，当前按协作约定暂停，等待用户 review 本轮拆分结果与主链路体验。
+- 若用户确认继续推进下一项治理，建议从 `VNext-32-B` 开始拆分 Fabric 适配层，把编辑态 / 播放态中的渲染同步、选中态恢复、文本编辑、播放调度与动画执行职责继续下沉。
+- 当前环境缺少 `node / pnpm`，尚未实际执行 `typecheck` 与 `build`；若后续环境补齐，建议先补跑静态基线，再进入 `VNext-32-B` 开发。
 
 ## 相关文档
 

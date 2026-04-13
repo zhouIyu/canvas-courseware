@@ -1,8 +1,6 @@
 import {
   COMMAND_TYPES,
   createCoursewareDocument,
-  createRectNode,
-  createTextNode,
   describeEditorCommand,
   type DiagnosticLogContext,
   type DiagnosticLogLevel,
@@ -10,11 +8,6 @@ import {
   EditorController,
   type CoursewareDocument,
   type EditorSnapshot,
-  type NodeAnimation,
-  type NodePatch,
-  type ReorderPosition,
-  type Slide,
-  type TimelineStep,
 } from "@canvas-courseware/core";
 import {
   FabricEditorAdapter,
@@ -30,9 +23,9 @@ import {
   onBeforeUnmount,
   onMounted,
   shallowRef,
-  useTemplateRef,
   watch,
 } from "vue";
+import { useCoursewareEditorCommandApi } from "./useCoursewareEditorCommandApi";
 
 /** slide 缩略图导出时使用的缩放倍率，控制 data URL 体积。 */
 const THUMBNAIL_CAPTURE_SCALE = 0.24;
@@ -59,7 +52,7 @@ export interface UseCoursewareEditorOptions {
  */
 export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
   /** 编辑器 canvas 的模板引用。 */
-  const editorCanvasRef = useTemplateRef<HTMLCanvasElement>("editorCanvasRef");
+  const editorCanvasRef = shallowRef<HTMLCanvasElement | null>(null);
 
   /** 编辑器控制器，统一收口所有标准命令。 */
   const controller = new EditorController();
@@ -210,6 +203,32 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
 
   /** 当前是否允许执行重做。 */
   const canRedo = computed(() => historyState.value.canRedo);
+
+  /** 组合标准命令派发能力，避免壳层文件继续堆积细碎的命令封装。 */
+  const {
+    activateSlide,
+    addRect,
+    addText,
+    clearSelection,
+    redo,
+    removeSelected,
+    removeTimelineAnimation,
+    removeTimelineStep,
+    reorderNode,
+    reorderTimelineStep,
+    replaceDocument,
+    selectNodes,
+    undo,
+    updateNode,
+    updateSlide,
+    upsertTimelineAnimation,
+    upsertTimelineStep,
+  } = useCoursewareEditorCommandApi({
+    controller,
+    snapshot,
+    activeSlide,
+    applyingExternalDocument,
+  });
 
   /** 组合复制粘贴、重复、方向键微调与快捷键处理能力。 */
   const {
@@ -387,209 +406,6 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     activeSlide,
     diagnosticLogger: options.diagnosticLogger,
   });
-
-  /** 在当前 slide 中新增文本节点。 */
-  const addText = () => {
-    const slideId = snapshot.value.activeSlideId;
-    if (!slideId) {
-      return;
-    }
-
-    const node = createTextNode({
-      x: 110,
-      y: 110,
-      width: 420,
-      text: "新建文本",
-    });
-
-    controller.execute({
-      type: COMMAND_TYPES.NODE_CREATE,
-      slideId,
-      node,
-      index: activeSlide.value?.nodes.length,
-    });
-    controller.execute({
-      type: COMMAND_TYPES.SELECTION_SET,
-      slideId,
-      nodeIds: [node.id],
-    });
-  };
-
-  /** 在当前 slide 中新增矩形节点。 */
-  const addRect = () => {
-    const slideId = snapshot.value.activeSlideId;
-    if (!slideId) {
-      return;
-    }
-
-    const node = createRectNode({
-      x: 160,
-      y: 180,
-      width: 280,
-      height: 180,
-      fill: "#99F6E4",
-    });
-
-    controller.execute({
-      type: COMMAND_TYPES.NODE_CREATE,
-      slideId,
-      node,
-      index: activeSlide.value?.nodes.length,
-    });
-    controller.execute({
-      type: COMMAND_TYPES.SELECTION_SET,
-      slideId,
-      nodeIds: [node.id],
-    });
-  };
-
-  /** 删除当前选中的所有节点。 */
-  const removeSelected = () => {
-    const slideId = snapshot.value.selection.slideId ?? snapshot.value.activeSlideId;
-    if (!slideId || snapshot.value.selection.nodeIds.length === 0) {
-      return;
-    }
-
-    controller.execute({
-      type: COMMAND_TYPES.NODE_BATCH_DELETE,
-      slideId,
-      nodeIds: snapshot.value.selection.nodeIds,
-    });
-  };
-
-  /** 切换当前激活的 slide。 */
-  const activateSlide = (slideId: string) => {
-    controller.execute({
-      type: COMMAND_TYPES.SLIDE_ACTIVATE,
-      slideId,
-    });
-  };
-
-  /** 通过标准命令显式设置当前选中节点。 */
-  const selectNodes = (slideId: string, nodeIds: string[]) => {
-    controller.execute({
-      type: COMMAND_TYPES.SELECTION_SET,
-      slideId,
-      nodeIds,
-    });
-  };
-
-  /** 清空当前页面的选中状态。 */
-  const clearSelection = () => {
-    controller.execute({
-      type: COMMAND_TYPES.SELECTION_CLEAR,
-      slideId: snapshot.value.activeSlideId ?? undefined,
-    });
-  };
-
-  /** 执行一次撤销。 */
-  const undo = () => {
-    controller.undo();
-  };
-
-  /** 执行一次重做。 */
-  const redo = () => {
-    controller.redo();
-  };
-
-  /** 更新当前页面元信息，例如名称、尺寸和完整背景配置。 */
-  const updateSlide = (
-    slideId: string,
-    patch: Partial<Pick<Slide, "name" | "size" | "background">>,
-  ) => {
-    controller.execute({
-      type: COMMAND_TYPES.SLIDE_UPDATE,
-      slideId,
-      patch,
-    });
-  };
-
-  /** 更新某个节点的标准属性。 */
-  const updateNode = (slideId: string, nodeId: string, patch: NodePatch) => {
-    controller.execute({
-      type: COMMAND_TYPES.NODE_UPDATE,
-      slideId,
-      nodeId,
-      patch,
-    });
-  };
-
-  /** 调整节点层级顺序，图层面板只需要传入位置语义。 */
-  const reorderNode = (
-    slideId: string,
-    nodeId: string,
-    position: ReorderPosition,
-    index?: number,
-    targetNodeId?: string,
-  ) => {
-    controller.execute({
-      type: COMMAND_TYPES.NODE_REORDER,
-      slideId,
-      nodeId,
-      position,
-      index,
-      targetNodeId,
-    });
-  };
-
-  /** 新增或更新某个时间轴步骤。 */
-  const upsertTimelineStep = (slideId: string, step: TimelineStep, index?: number) => {
-    controller.execute({
-      type: COMMAND_TYPES.TIMELINE_STEP_UPSERT,
-      slideId,
-      step,
-      index,
-    });
-  };
-
-  /** 删除某个时间轴步骤。 */
-  const removeTimelineStep = (slideId: string, stepId: string) => {
-    controller.execute({
-      type: COMMAND_TYPES.TIMELINE_STEP_REMOVE,
-      slideId,
-      stepId,
-    });
-  };
-
-  /** 调整某个时间轴步骤在当前页面中的顺序。 */
-  const reorderTimelineStep = (slideId: string, stepId: string, index: number) => {
-    controller.execute({
-      type: COMMAND_TYPES.TIMELINE_STEP_REORDER,
-      slideId,
-      stepId,
-      index,
-    });
-  };
-
-  /** 新增或更新某个动画资源。 */
-  const upsertTimelineAnimation = (slideId: string, animation: NodeAnimation) => {
-    controller.execute({
-      type: COMMAND_TYPES.TIMELINE_ANIMATION_UPSERT,
-      slideId,
-      animation,
-    });
-  };
-
-  /** 删除某个动画资源。 */
-  const removeTimelineAnimation = (slideId: string, animationId: string) => {
-    controller.execute({
-      type: COMMAND_TYPES.TIMELINE_ANIMATION_REMOVE,
-      slideId,
-      animationId,
-    });
-  };
-
-  /**
-   * 用一份新的文档替换当前编辑状态。
-   * 这个方法主要给外层 `v-model` 或导入流程使用。
-   */
-  const replaceDocument = (document: CoursewareDocument) => {
-    applyingExternalDocument.value = true;
-    controller.replaceDocument(document);
-    queueMicrotask(() => {
-      applyingExternalDocument.value = false;
-    });
-  };
 
   return {
     activeSlide,

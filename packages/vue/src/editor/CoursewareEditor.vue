@@ -4,36 +4,31 @@ import type {
   DiagnosticLogger,
   EditorSnapshot,
   NodeAnimation,
-  NodePatch,
   NodeTimelineSummary,
-  ReorderPosition,
-  Slide,
+  ObjectFit,
   TextNode,
-  TimelineStep,
 } from "@canvas-courseware/core";
-import {
-  cloneTimelineStep,
-  createSlideNodeTimelineSummaryMap,
-} from "@canvas-courseware/core";
+import { createSlideNodeTimelineSummaryMap } from "@canvas-courseware/core";
 import type { FabricEditorContextMenuRequest } from "@canvas-courseware/fabric";
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import {
+  computed,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch,
+  type ComponentPublicInstance,
+} from "vue";
 import { DEFAULT_EDITOR_HEIGHT } from "../shared";
 import BackgroundImageFitModal from "./BackgroundImageFitModal.vue";
+import EditorCanvasWorkspace from "./EditorCanvasWorkspace.vue";
 import EditorToolbar from "./EditorToolbar.vue";
-import FloatingLayerManager from "./FloatingLayerManager.vue";
 import InspectorPanel from "./InspectorPanel.vue";
-import LocalImageFileTrigger from "./LocalImageFileTrigger.vue";
 import SlideRailPanel from "./SlideRailPanel.vue";
 import SlideSettingsDrawer from "./SlideSettingsDrawer.vue";
-import SlideSettingsEntryButton from "./SlideSettingsEntryButton.vue";
-import TextTool from "./TextTool.vue";
 import TimelinePanel from "./TimelinePanel.vue";
-import type {
-  LayerAlignMode,
-  LayerDistributeMode,
-} from "./useEditorBatchLayout";
 import { provideCoursewareDiagnosticLogger } from "./diagnostics";
 import { useCoursewareEditor } from "./useCoursewareEditor";
+import { useCoursewareEditorShellActions } from "./useCoursewareEditorShellActions";
 import { useSlideSettingsDrawer } from "./useSlideSettingsDrawer";
 /** 编辑器右侧管理区的标签名。 */
 type EditorSideTab = "node" | "timeline";
@@ -41,55 +36,12 @@ type EditorSideTab = "node" | "timeline";
 /** 标签切换控件传回值的兼容类型。 */
 type EditorSideTabValue = string | number;
 
-/** 编辑区右键菜单的上下文类型。 */
-type EditorContextMenuMode = "blank" | "single" | "multiple";
-
-/** 页面栏重命名事件的载荷。 */
-interface SlideRailRenamePayload {
-  /** 被重命名的 slide id。 */
-  slideId: string;
-  /** 更新后的页面名称。 */
-  name: string;
-}
-
-/** 页面栏拖拽排序事件的载荷。 */
-interface SlideRailReorderPayload {
-  /** 被拖拽的 slide id。 */
-  slideId: string;
-  /** 放下后的最终索引。 */
-  index: number;
-}
-
-/** 时间轴步骤排序事件的载荷。 */
-interface TimelineStepReorderPayload {
-  /** 需要移动的步骤 id。 */
-  stepId: string;
-  /** 排序后的目标索引。 */
-  index: number;
-}
-
-/** 时间轴步骤复制事件的载荷。 */
-interface TimelineStepDuplicatePayload {
-  /** 需要复制的源步骤。 */
-  step: TimelineStep;
-  /** 源步骤当前所处的索引。 */
-  index: number;
-}
-
 /** 时间轴发起预览请求时抛给 app 层的载荷。 */
 interface TimelinePreviewRequestPayload {
   /** 需要对齐到的 slide id。 */
   slideId: string;
   /** 需要作为下一步焦点的步骤索引。 */
   stepIndex: number;
-}
-
-/** 浮层图层拖拽排序事件的载荷。 */
-interface LayerReorderToIndexPayload {
-  /** 被拖拽的节点 id。 */
-  nodeId: string;
-  /** 放下后的目标索引。 */
-  index: number;
 }
 
 /** 编辑器向应用层抛出的 slide 缩略图截图结果。 */
@@ -100,28 +52,11 @@ interface SlideThumbnailCapturedPayload {
   thumbnail: string;
 }
 
-/** 编辑区右键菜单在组件内维护的定位状态。 */
-interface EditorContextMenuState {
-  /** 菜单相对工作区的 X 坐标。 */
-  x: number;
-  /** 菜单相对工作区的 Y 坐标。 */
-  y: number;
-  /** 触发时命中的 slide id。 */
-  slideId: string | null;
-  /** 触发时命中的节点 id。 */
-  nodeId: string | null;
-  /** 触发当前菜单时的标准选中节点集合。 */
-  selectionNodeIds: string[];
+/** 中央舞台壳层暴露给父层的最小能力。 */
+interface EditorCanvasWorkspaceExposed {
+  /** 供适配层把右键菜单请求转交给舞台壳层。 */
+  openContextMenu: (payload: FabricEditorContextMenuRequest) => void;
 }
-
-/** 右键菜单预估宽度，用于避免贴边溢出。 */
-const CONTEXT_MENU_WIDTH = 188;
-
-/** 右键菜单与边缘之间的安全距离。 */
-const CONTEXT_MENU_SAFE_MARGIN = 12;
-
-/** 右键菜单预估高度，用于首版定位。 */
-const CONTEXT_MENU_ESTIMATED_HEIGHT = 312;
 
 /** 编辑器组件的显示参数。 */
 const props = withDefaults(
@@ -165,60 +100,12 @@ const documentModel = defineModel<CoursewareDocument | undefined>();
 /** 标记当前是否正在把内部快照回写给外层 v-model，避免误判成外部导入。 */
 const isSyncingDocumentModel = ref(false);
 
-/** 工作区容器引用，用于挂载右键菜单。 */
-const workspaceShellRef = ref<HTMLElement | null>(null);
-
-/** 当前编辑区右键菜单状态。 */
-const contextMenuState = ref<EditorContextMenuState | null>(null);
-
-/** 把数值约束到指定区间内，避免菜单超出容器。 */
-const clamp = (value: number, minimum: number, maximum: number): number =>
-  Math.min(Math.max(value, minimum), maximum);
-
-/** 关闭当前右键菜单。 */
-const closeContextMenu = () => {
-  contextMenuState.value = null;
-};
-
-/** 按工作区可用空间规整右键菜单坐标。 */
-const normalizeContextMenuPosition = (clientX: number, clientY: number) => {
-  const hostRect = workspaceShellRef.value?.getBoundingClientRect();
-  if (!hostRect) {
-    return null;
-  }
-
-  return {
-    x: clamp(
-      clientX - hostRect.left,
-      CONTEXT_MENU_SAFE_MARGIN,
-      Math.max(hostRect.width - CONTEXT_MENU_WIDTH - CONTEXT_MENU_SAFE_MARGIN, CONTEXT_MENU_SAFE_MARGIN),
-    ),
-    y: clamp(
-      clientY - hostRect.top,
-      CONTEXT_MENU_SAFE_MARGIN,
-      Math.max(hostRect.height - CONTEXT_MENU_ESTIMATED_HEIGHT, CONTEXT_MENU_SAFE_MARGIN),
-    ),
-  };
-};
-
-/** 打开编辑区右键菜单。 */
-const openContextMenu = (payload: FabricEditorContextMenuRequest) => {
-  const normalizedPosition = normalizeContextMenuPosition(payload.clientX, payload.clientY);
-  if (!normalizedPosition) {
-    return;
-  }
-
-  contextMenuState.value = {
-    ...normalizedPosition,
-    slideId: payload.slideId,
-    nodeId: payload.nodeId,
-    selectionNodeIds: [...payload.selectionNodeIds],
-  };
-};
+/** 中央舞台壳层引用，供 Fabric 适配器转发右键菜单请求。 */
+const editorCanvasWorkspaceRef = ref<(ComponentPublicInstance & EditorCanvasWorkspaceExposed) | null>(null);
 
 /** 接收适配层发起的右键菜单请求。 */
 const handleCanvasContextMenuRequest = (payload: FabricEditorContextMenuRequest) => {
-  openContextMenu(payload);
+  editorCanvasWorkspaceRef.value?.openContextMenu(payload);
 };
 
 /** 右侧标签列表，用于渲染管理区切换按钮。 */
@@ -247,15 +134,6 @@ const retainedInspectorNodeId = ref<string | null>(null);
 
 /** 工具条容器引用，用来计算剩余可用高度。 */
 const toolbarShellRef = ref<HTMLElement | null>(null);
-
-/** 中间编辑区滚动容器的 DOM 引用。 */
-const stageViewportRef = ref<HTMLDivElement | null>(null);
-
-/** 中间编辑区当前可用尺寸。 */
-const stageViewportSize = ref({
-  width: 0,
-  height: 0,
-});
 
 /** 当前工具条实际高度。 */
 const toolbarHeight = ref(0);
@@ -429,15 +307,9 @@ watch(
 watch(
   () => snapshot.value.activeSlideId,
   () => {
-    closeContextMenu();
     resetSlideSettingsContext();
   },
 );
-
-/** 外层工作区的高度样式。 */
-const stageStyle = computed(() => ({
-  minHeight: `${paneHeight.value}px`,
-}));
 
 /** 三栏区复用同一份参考高度，让左右侧栏保持固定高度。 */
 const editorLayoutStyle = computed(() => ({
@@ -462,63 +334,6 @@ const selectedNodeAnimations = computed<NodeAnimation[]>(() => {
   return activeSlide.value.timeline.animations.filter(
     (animation) => animation.targetId === inspectorNode.value?.id,
   );
-});
-
-/** 真正传给 canvas 容器的尺寸样式。 */
-const canvasStyle = computed(() => {
-  if (!activeSlide.value) {
-    return {};
-  }
-
-  return {
-    width: `${activeSlide.value.size.width}px`,
-    height: `${activeSlide.value.size.height}px`,
-  };
-});
-
-/** 根据中间区域宽高等比缩放画布，保证始终完整显示且不放大。 */
-const canvasScale = computed(() => {
-  if (
-    !activeSlide.value ||
-    stageViewportSize.value.width <= 0 ||
-    stageViewportSize.value.height <= 0
-  ) {
-    return 1;
-  }
-
-  /** 预留滚动容器与画布包裹层的水平留白，保证边缘不贴死。 */
-  const availableWidth = Math.max(stageViewportSize.value.width - 88, 180);
-  /** 预留上下留白，保证缩放后画布仍完整可见。 */
-  const availableHeight = Math.max(stageViewportSize.value.height - 80, 160);
-  const widthScale = availableWidth / activeSlide.value.size.width;
-  const heightScale = availableHeight / activeSlide.value.size.height;
-
-  return Math.min(1, widthScale, heightScale);
-});
-
-/** 缩放后的画布外框尺寸，保证布局高度与展示尺寸一致。 */
-const canvasFrameStyle = computed(() => {
-  if (!activeSlide.value) {
-    return {};
-  }
-
-  return {
-    width: `${activeSlide.value.size.width * canvasScale.value}px`,
-    height: `${activeSlide.value.size.height * canvasScale.value}px`,
-  };
-});
-
-/** 实际渲染画布仍保持原始尺寸，只通过 transform 缩放。 */
-const canvasSurfaceStyle = computed(() => {
-  if (!activeSlide.value) {
-    return {};
-  }
-
-  return {
-    ...canvasStyle.value,
-    transform: `scale(${canvasScale.value})`,
-    transformOrigin: "top left",
-  };
 });
 
 /** 三栏区真正可用的高度，扣掉工具条后再分给左右侧栏和中间区。 */
@@ -584,289 +399,60 @@ const editingTextToolNode = computed<TextNode | null>(() => {
   return node?.type === "text" ? node : null;
 });
 
-/** 把视口坐标换算成工作区内的绝对定位，供文本浮层直接挂载。 */
-const textToolStyle = computed<Record<string, string>>(() => {
-  const hostRect = workspaceShellRef.value?.getBoundingClientRect();
-  const layout = inlineTextEditingLayout.value;
-  if (!hostRect || !layout) {
-    return {} as Record<string, string>;
-  }
-
-  return {
-    left: `${layout.clientRect.left + layout.clientRect.width / 2 - hostRect.left}px`,
-    top: `${layout.clientRect.top - hostRect.top - 14}px`,
-  };
+/** 收敛编辑器父壳层中的页面、图层与时间轴动作。 */
+const {
+  activeSlideIndex,
+  captureActiveSlideThumbnail,
+  handleLayerAlign,
+  handleLayerDistribute,
+  handleLayerReorder,
+  handleLayerReorderToIndex,
+  handleLayerSelect,
+  handleNodeUpdate,
+  handleSlideActivate,
+  handleSlideCreate,
+  handleSlideCreateAfter,
+  handleSlideDuplicate,
+  handleSlideRemove,
+  handleSlideRename,
+  handleSlideReorder,
+  handleSlideUpdate,
+  handleTimelineAnimationRemove,
+  handleTimelineAnimationUpsert,
+  handleTimelinePreviewRequest,
+  handleTimelineStepDuplicate,
+  handleTimelineStepRemove,
+  handleTimelineStepReorder,
+  handleTimelineStepUpsert,
+  slideCount,
+} = useCoursewareEditorShellActions({
+  activeSlide,
+  snapshot,
+  captureActiveSlideThumbnailDataUrl,
+  emitSlideThumbnailCaptured: (payload) => {
+    emit("slide-thumbnail-captured", payload);
+  },
+  emitTimelinePreviewRequest: (payload) => {
+    emit("timeline-preview-request", payload);
+  },
+  updateSlide,
+  activateSlide,
+  addSlide,
+  addSlideAfter,
+  duplicateSlideById,
+  removeSlide,
+  reorderSlide,
+  updateNode,
+  selectNodes,
+  reorderNode,
+  alignSelectedNodes,
+  distributeSelectedNodes,
+  upsertTimelineStep,
+  removeTimelineStep,
+  reorderTimelineStep,
+  upsertTimelineAnimation,
+  removeTimelineAnimation,
 });
-
-/** 当前右键菜单的定位样式。 */
-const contextMenuStyle = computed(() =>
-  contextMenuState.value
-    ? {
-        left: `${contextMenuState.value.x}px`,
-        top: `${contextMenuState.value.y}px`,
-      }
-    : {},
-);
-
-/** 当前右键菜单对应的上下文模式。 */
-const contextMenuMode = computed<EditorContextMenuMode>(() => {
-  const selectionCount = contextMenuState.value?.selectionNodeIds.length ?? 0;
-  if (selectionCount === 0) {
-    return "blank";
-  }
-
-  return selectionCount === 1 ? "single" : "multiple";
-});
-
-/** 当前右键菜单是否为空白区上下文。 */
-const contextMenuIsBlank = computed(() => contextMenuMode.value === "blank");
-
-/** 当前右键菜单是否已命中对象级操作上下文。 */
-const contextMenuHasObjectSelection = computed(() => contextMenuMode.value !== "blank");
-
-/** 当前右键菜单唯一命中的节点 id。 */
-const contextMenuSingleNodeId = computed(() =>
-  contextMenuMode.value === "single" ? contextMenuState.value?.selectionNodeIds[0] ?? null : null,
-);
-
-/** 当前右键菜单命中的是否为一张已导入资源的图片节点。 */
-const contextMenuTargetImageNode = computed(() => {
-  if (!contextMenuSingleNodeId.value || !activeSlide.value) {
-    return null;
-  }
-
-  const node = activeSlide.value.nodes.find((candidate) => candidate.id === contextMenuSingleNodeId.value);
-  if (!node || node.type !== "image" || node.props.src.trim().length === 0) {
-    return null;
-  }
-
-  return node;
-});
-
-/** 当前右键菜单是否可以展示“设为背景”快捷入口。 */
-const contextMenuCanSetBackground = computed(() => Boolean(contextMenuTargetImageNode.value));
-
-/** 当前右键菜单是否可以展示“更换图片”快捷入口。 */
-const contextMenuCanReplaceImage = computed(() => Boolean(contextMenuTargetImageNode.value));
-
-/** 当前激活页在文档中的 1-based 页序。 */
-const activeSlideIndex = computed(() => {
-  if (!activeSlide.value) {
-    return null;
-  }
-
-  const slideIndex = snapshot.value.document.slides.findIndex(
-    (slide) => slide.id === activeSlide.value?.id,
-  );
-  return slideIndex >= 0 ? slideIndex + 1 : null;
-});
-
-/** 当前文档的页面总数，供页面设置摘要直接消费。 */
-const slideCount = computed(() => snapshot.value.document.slides.length);
-
-/** 当前 slide 的更新入口。 */
-const handleSlideUpdate = (patch: Partial<Pick<Slide, "name" | "size" | "background">>) => {
-  if (!activeSlide.value) {
-    return;
-  }
-
-  updateSlide(activeSlide.value.id, patch);
-};
-
-/** 导出当前激活页缩略图，并在成功后同步抛给应用层。 */
-const captureAndEmitActiveSlideThumbnail = async (): Promise<SlideThumbnailCapturedPayload | null> => {
-  if (!activeSlide.value) {
-    return null;
-  }
-
-  const thumbnail = await captureActiveSlideThumbnailDataUrl();
-  if (!thumbnail) {
-    return null;
-  }
-
-  const payload = {
-    slideId: activeSlide.value.id,
-    thumbnail,
-  };
-  emit("slide-thumbnail-captured", payload);
-  return payload;
-};
-
-/** 对外暴露当前激活页的截图接口，供工作台在保存前主动同步缩略图。 */
-const captureActiveSlideThumbnail = async (): Promise<SlideThumbnailCapturedPayload | null> => {
-  if (!activeSlide.value) {
-    return null;
-  }
-
-  const thumbnail = await captureActiveSlideThumbnailDataUrl();
-  if (!thumbnail) {
-    return null;
-  }
-
-  return {
-    slideId: activeSlide.value.id,
-    thumbnail,
-  };
-};
-
-/** 页面栏内快速重命名 slide。 */
-const handleSlideRename = (payload: SlideRailRenamePayload) => {
-  updateSlide(payload.slideId, {
-    name: payload.name,
-  });
-};
-
-/** 切页前先截取当前页封面，再切到目标页面。 */
-const handleSlideActivate = async (slideId: string) => {
-  if (slideId === activeSlide.value?.id) {
-    return;
-  }
-
-  await captureAndEmitActiveSlideThumbnail();
-  activateSlide(slideId);
-};
-
-/** 从左侧页面栏新增一页前，先同步当前页面封面。 */
-const handleSlideCreate = async () => {
-  await captureAndEmitActiveSlideThumbnail();
-  addSlide();
-};
-
-/** 从指定页面后快速新增下一页。 */
-const handleSlideCreateAfter = async (slideId: string) => {
-  await captureAndEmitActiveSlideThumbnail();
-  addSlideAfter(slideId);
-};
-
-/** 复制指定页面。 */
-const handleSlideDuplicate = async (slideId: string) => {
-  await captureAndEmitActiveSlideThumbnail();
-  duplicateSlideById(slideId);
-};
-
-/** 删除指定页面。 */
-const handleSlideRemove = (slideId: string) => {
-  removeSlide(slideId);
-};
-
-/** 更新页面列表中的拖拽排序结果。 */
-const handleSlideReorder = (payload: SlideRailReorderPayload) => {
-  reorderSlide(payload.slideId, payload.index);
-};
-
-/** 当前单选节点的更新入口。 */
-const handleNodeUpdate = (nodeId: string, patch: NodePatch) => {
-  const slideId = snapshot.value.selection.slideId ?? activeSlide.value?.id;
-  if (!slideId) {
-    return;
-  }
-
-  updateNode(slideId, nodeId, patch);
-};
-
-/** 图层面板选中节点时，把选择同步回标准 snapshot。 */
-const handleLayerSelect = (nodeId: string) => {
-  if (!activeSlide.value) {
-    return;
-  }
-
-  selectNodes(activeSlide.value.id, [nodeId]);
-};
-
-/** 图层面板层级按钮的派发入口。 */
-const handleLayerReorder = (nodeId: string, position: ReorderPosition) => {
-  if (!activeSlide.value) {
-    return;
-  }
-
-  reorderNode(activeSlide.value.id, nodeId, position);
-};
-
-/** 独立浮层拖拽排序后的统一写回入口。 */
-const handleLayerReorderToIndex = (payload: LayerReorderToIndexPayload) => {
-  if (!activeSlide.value) {
-    return;
-  }
-
-  reorderNode(activeSlide.value.id, payload.nodeId, "index", payload.index);
-};
-
-/** 图层面板批量对齐按钮的派发入口。 */
-const handleLayerAlign = (mode: LayerAlignMode) => {
-  alignSelectedNodes(mode);
-};
-
-/** 图层面板批量分布按钮的派发入口。 */
-const handleLayerDistribute = (mode: LayerDistributeMode) => {
-  distributeSelectedNodes(mode);
-};
-
-/** 时间轴步骤的新增与更新统一从这里进入标准命令层。 */
-const handleTimelineStepUpsert = (step: TimelineStep) => {
-  if (!activeSlide.value) {
-    return;
-  }
-
-  upsertTimelineStep(activeSlide.value.id, step);
-};
-
-/** 删除当前页面中的某个时间轴步骤。 */
-const handleTimelineStepRemove = (stepId: string) => {
-  if (!activeSlide.value) {
-    return;
-  }
-
-  removeTimelineStep(activeSlide.value.id, stepId);
-};
-
-/** 调整当前页面中某个时间轴步骤的顺序。 */
-const handleTimelineStepReorder = (payload: TimelineStepReorderPayload) => {
-  if (!activeSlide.value) {
-    return;
-  }
-
-  reorderTimelineStep(activeSlide.value.id, payload.stepId, payload.index);
-};
-
-/** 复制一个时间轴步骤，并把副本插入到原步骤后面。 */
-const handleTimelineStepDuplicate = (payload: TimelineStepDuplicatePayload) => {
-  if (!activeSlide.value) {
-    return;
-  }
-
-  const duplicatedStep = cloneTimelineStep(payload.step);
-  upsertTimelineStep(activeSlide.value.id, duplicatedStep, payload.index + 1);
-};
-
-/** 请求外层切换到预览模式，并从当前步骤开始播放。 */
-const handleTimelinePreviewRequest = (stepIndex: number) => {
-  if (!activeSlide.value) {
-    return;
-  }
-
-  emit("timeline-preview-request", {
-    slideId: activeSlide.value.id,
-    stepIndex,
-  });
-};
-
-/** 时间轴动画资源的新增与更新统一从这里进入标准命令层。 */
-const handleTimelineAnimationUpsert = (animation: NodeAnimation) => {
-  if (!activeSlide.value) {
-    return;
-  }
-
-  upsertTimelineAnimation(activeSlide.value.id, animation);
-};
-
-/** 删除当前页面中的某个动画资源。 */
-const handleTimelineAnimationRemove = (animationId: string) => {
-  if (!activeSlide.value) {
-    return;
-  }
-
-  removeTimelineAnimation(activeSlide.value.id, animationId);
-};
 
 /** 从工具条导入一张本地图片，并在失败时给出明确反馈。 */
 const handleLocalImageImport = async (file: File) => {
@@ -888,72 +474,25 @@ const handleImageReplace = async (nodeId: string, file: File) => {
   }
 };
 
-/** 右键菜单中从当前点击位置快速插入文本。 */
-const handleContextMenuAddText = () => {
-  closeContextMenu();
-  addText();
-};
-
-/** 右键菜单中快速插入矩形。 */
-const handleContextMenuAddRect = () => {
-  closeContextMenu();
-  addRect();
-};
-
-/** 右键菜单中直接从本地插入图片。 */
-const handleContextMenuImageImport = async (file: File) => {
-  closeContextMenu();
-  await handleLocalImageImport(file);
-};
-
-/** 右键菜单中直接替换当前图片节点资源。 */
-const handleContextMenuImageReplace = async (file: File) => {
-  const imageNodeId = contextMenuTargetImageNode.value?.id;
-  closeContextMenu();
-  if (!imageNodeId) {
-    return;
-  }
-
-  await handleImageReplace(imageNodeId, file);
-};
-
-/** 右键菜单中复制当前选区。 */
-const handleContextMenuCopy = () => {
-  closeContextMenu();
-  copySelected();
-};
-
-/** 右键菜单中快速重复当前选区。 */
-const handleContextMenuDuplicate = () => {
-  closeContextMenu();
-  duplicateSelected();
-};
-
-/** 右键菜单中把当前图片节点直接转换成页面背景。 */
-const handleContextMenuSetImageAsBackground = () => {
-  const imageNode = contextMenuTargetImageNode.value;
-  if (!imageNode) {
-    return;
-  }
-
-  closeContextMenu();
+/** 中央舞台请求把某张图片直接转换成页面背景。 */
+const handleStageSetImageAsBackground = (payload: {
+  nodeId: string;
+  sourceLabel: string;
+  preferredFit?: ObjectFit;
+}) => {
   openBackgroundImageFitModal({
-    nodeId: imageNode.id,
-    sourceLabel: `画布图片 · ${imageNode.name}`,
-    preferredFit: imageNode.props.objectFit ?? activeSlide.value?.background.image?.fit,
+    nodeId: payload.nodeId,
+    sourceLabel: payload.sourceLabel,
+    preferredFit: payload.preferredFit,
   });
 };
 
-/** 右键菜单中删除当前选区。 */
-const handleContextMenuDelete = () => {
-  closeContextMenu();
-  removeSelected();
-};
-
-/** 右键菜单中执行一次粘贴。 */
-const handleContextMenuPaste = () => {
-  closeContextMenu();
-  pasteClipboard();
+/** 中央舞台请求替换某张图片节点资源。 */
+const handleStageImageReplace = async (payload: {
+  nodeId: string;
+  file: File;
+}) => {
+  await handleImageReplace(payload.nodeId, payload.file);
 };
 
 /** 切换右侧管理区标签。 */
@@ -983,93 +522,16 @@ const toggleEditorSide = () => {
   isEditorSideCollapsed.value = !isEditorSideCollapsed.value;
 };
 
-/** 在非画布区域右键时，仍然展示空白态编辑区菜单。 */
-const handleStageViewportContextMenu = (event: MouseEvent) => {
-  const target = event.target;
-  if (target instanceof HTMLElement && target.closest("canvas")) {
-    return;
-  }
-
-  clearSelection();
-  openContextMenu({
-    clientX: event.clientX,
-    clientY: event.clientY,
-    slideId: activeSlide.value?.id ?? null,
-    nodeId: null,
-    selectionNodeIds: [],
-  });
-};
-
-/** 点击菜单外区域时关闭右键菜单。 */
-const handleGlobalPointerDown = (event: PointerEvent) => {
-  const target = event.target;
-  const clickedInsideEditorShell = target instanceof HTMLElement && target.closest(".editor-shell");
-  const clickedTextTool = target instanceof HTMLElement && target.closest(".text-tool");
-  const clickedCanvas = target instanceof HTMLElement && target.closest("canvas");
-  const clickedContextMenu = target instanceof HTMLElement && target.closest(".stage-context-menu");
-  const clickedBlankStage =
-    target instanceof HTMLElement &&
-    target.closest(".stage-scroll") &&
-    !clickedCanvas &&
-    !clickedTextTool &&
-    !clickedContextMenu;
-
-  if (clickedBlankStage || !clickedInsideEditorShell) {
-    requestInlineTextEditingExit();
-  }
-
-  if (!contextMenuState.value) {
-    return;
-  }
-
-  if (
-    target instanceof HTMLElement &&
-    (target.closest(".stage-context-menu") || target.closest(".text-tool"))
-  ) {
-    return;
-  }
-
-  closeContextMenu();
-};
-
-/** 支持通过 Escape 关闭右键菜单。 */
-const handleContextMenuKeydown = (event: KeyboardEvent) => {
-  if (event.key === "Escape") {
-    closeContextMenu();
-  }
-};
-
 /** 读取当前工具条的真实高度。 */
 const updateToolbarHeight = () => {
   toolbarHeight.value = toolbarShellRef.value?.offsetHeight ?? 0;
 };
 
-/** 读取中间编辑区当前可用尺寸，用于画布等比缩放。 */
-const updateStageViewportSize = () => {
-  const viewportRect = stageViewportRef.value?.getBoundingClientRect();
-  stageViewportSize.value = {
-    /**
-     * 这里改为读取 border-box 尺寸，而不是 `clientWidth / clientHeight`。
-     * 在部分浏览器里，选中 Fabric 对象后如果出现滚动条预留或临时布局抖动，
-     * `clientWidth` 会短暂变小，进而把整块画布误判为“可用区域缩小”并重新缩放。
-     */
-    width: viewportRect ? Math.round(viewportRect.width) : 0,
-    height: viewportRect ? Math.round(viewportRect.height) : 0,
-  };
-
-  if (inlineTextEditingLayout.value) {
-    refreshInlineTextEditingLayout();
-  }
-};
-/** 监听工具条和编辑区尺寸变化，让布局与画布缩放及时同步。 */
+/** 监听工具条尺寸变化，让三栏高度分配及时同步。 */
 let toolbarResizeObserver: ResizeObserver | null = null;
-let stageViewportResizeObserver: ResizeObserver | null = null;
 
 onMounted(() => {
   updateToolbarHeight();
-  updateStageViewportSize();
-  window.addEventListener("pointerdown", handleGlobalPointerDown, true);
-  window.addEventListener("keydown", handleContextMenuKeydown);
 
   if (toolbarShellRef.value) {
     toolbarResizeObserver = new ResizeObserver(() => {
@@ -1077,22 +539,11 @@ onMounted(() => {
     });
     toolbarResizeObserver.observe(toolbarShellRef.value);
   }
-
-  if (stageViewportRef.value) {
-    stageViewportResizeObserver = new ResizeObserver(() => {
-      updateStageViewportSize();
-    });
-    stageViewportResizeObserver.observe(stageViewportRef.value);
-  }
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener("pointerdown", handleGlobalPointerDown, true);
-  window.removeEventListener("keydown", handleContextMenuKeydown);
   toolbarResizeObserver?.disconnect();
   toolbarResizeObserver = null;
-  stageViewportResizeObserver?.disconnect();
-  stageViewportResizeObserver = null;
 });
 
 /** 暴露给应用壳层的组件方法。 */
@@ -1185,118 +636,38 @@ defineExpose({
           />
         </aside>
 
-        <section ref="workspaceShellRef" class="workspace-shell panel-shell">
-          <div class="stage-floating-tools">
-            <SlideSettingsEntryButton
-              :slide-index="activeSlideIndex"
-              @open="openSlideSettingsDrawer"
-            />
-            <FloatingLayerManager
-              :nodes="activeSlide?.nodes ?? []"
-              :node-timeline-summary-map="nodeTimelineSummaryMap"
-              :selected-node-ids="snapshot.selection.nodeIds"
-              @select="handleLayerSelect"
-              @update-node="handleNodeUpdate"
-              @reorder="handleLayerReorder"
-              @reorder-to-index="handleLayerReorderToIndex"
-              @align="handleLayerAlign"
-              @distribute="handleLayerDistribute"
-              @open-inspector="activateSideTab('node')"
-              @open-timeline="activateSideTab('timeline')"
-            />
-          </div>
-
-          <TextTool
-            :node="editingTextToolNode"
-            :overlay-style="textToolStyle"
-            @update-node="handleNodeUpdate"
-          />
-
-          <div
-            ref="stageViewportRef"
-            class="stage-scroll"
-            :style="stageStyle"
-            @contextmenu.prevent="handleStageViewportContextMenu"
-          >
-            <div class="stage-backdrop">
-              <div v-if="activeSlide" class="stage-scale-frame" :style="canvasFrameStyle">
-                <div class="stage-surface" :style="canvasSurfaceStyle">
-                  <canvas ref="editorCanvasRef" />
-                </div>
-              </div>
-              <div v-else class="empty-stage">
-                <strong>还没有可编辑的页面</strong>
-                <p>先新增一个 slide，再开始插入文本、矩形或图片。</p>
-              </div>
-            </div>
-          </div>
-
-          <div
-            v-if="contextMenuState"
-            class="stage-context-menu"
-            :style="contextMenuStyle"
-            @contextmenu.prevent
-          >
-            <template v-if="contextMenuIsBlank">
-              <div class="stage-context-menu__group">
-                <a-button class="stage-context-menu__item" type="text" @click="handleContextMenuAddText">
-                  插入文本
-                </a-button>
-                <a-button class="stage-context-menu__item" type="text" @click="handleContextMenuAddRect">
-                  插入矩形
-                </a-button>
-                <LocalImageFileTrigger
-                  aria-label="从右键菜单插入图片"
-                  label="插入图片"
-                  variant="menu"
-                  @select="handleContextMenuImageImport"
-                />
-              </div>
-              <div class="stage-context-menu__divider" />
-            </template>
-
-            <template v-else>
-              <template v-if="contextMenuCanReplaceImage">
-                <div class="stage-context-menu__group">
-                  <LocalImageFileTrigger
-                    aria-label="从右键菜单更换图片"
-                    label="更换图片"
-                    variant="menu"
-                    @select="handleContextMenuImageReplace"
-                  />
-                  <a-button
-                    v-if="contextMenuCanSetBackground"
-                    class="stage-context-menu__item"
-                    type="text"
-                    @click="handleContextMenuSetImageAsBackground"
-                  >
-                    设为背景
-                  </a-button>
-                </div>
-                <div class="stage-context-menu__divider" />
-              </template>
-
-              <div v-if="contextMenuHasObjectSelection" class="stage-context-menu__group">
-                <a-button class="stage-context-menu__item" type="text" @click="handleContextMenuCopy">
-                  复制所选
-                </a-button>
-                <a-button class="stage-context-menu__item" type="text" @click="handleContextMenuDuplicate">
-                  重复所选
-                </a-button>
-                <a-button class="stage-context-menu__item danger" type="text" @click="handleContextMenuDelete">
-                  删除所选
-                </a-button>
-              </div>
-              <div class="stage-context-menu__divider" />
-            </template>
-
-            <div class="stage-context-menu__group">
-              <a-button class="stage-context-menu__item" type="text" @click="handleContextMenuPaste">
-                粘贴
-              </a-button>
-            </div>
-          </div>
-        </section>
+        <EditorCanvasWorkspace
+          ref="editorCanvasWorkspaceRef"
+          :active-slide="activeSlide ?? null"
+          :canvas-ref="editorCanvasRef"
+          :editing-text-tool-node="editingTextToolNode"
+          :inline-text-editing-layout="inlineTextEditingLayout"
+          :node-timeline-summary-map="nodeTimelineSummaryMap"
+          :pane-height="paneHeight"
+          :selected-node-ids="snapshot.selection.nodeIds"
+          :slide-index="activeSlideIndex"
+          @add-rect="addRect"
+          @add-text="addText"
+          @align-layers="handleLayerAlign"
+          @clear-selection="clearSelection"
+          @copy-selection="copySelected"
+          @delete-selection="removeSelected"
+          @distribute-layers="handleLayerDistribute"
+          @duplicate-selection="duplicateSelected"
+          @import-image="handleLocalImageImport"
+          @open-inspector="activateSideTab('node')"
+          @open-slide-settings="openSlideSettingsDrawer"
+          @open-timeline="activateSideTab('timeline')"
+          @paste-selection="pasteClipboard"
+          @refresh-inline-text-layout="refreshInlineTextEditingLayout"
+          @replace-image="handleStageImageReplace"
+          @reorder-layer="handleLayerReorder"
+          @reorder-layer-to-index="handleLayerReorderToIndex"
+          @request-inline-text-editing-exit="requestInlineTextEditingExit"
+          @select-layer="handleLayerSelect"
+          @set-image-as-background="handleStageSetImageAsBackground"
+          @update-node="handleNodeUpdate"
+        />
 
         <aside v-show="!isEditorSideCollapsed" class="editor-side">
           <div class="side-tabs panel-shell">
