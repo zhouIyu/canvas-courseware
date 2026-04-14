@@ -90,6 +90,79 @@ export async function readStoredProjects(page, storageKey) {
 }
 
 /**
+ * 删除一个 IndexedDB 数据库，供图片资产等浏览器持久化测试做隔离。
+ *
+ * @param {import("playwright").Page} page
+ * @param {string} databaseName
+ * @returns {Promise<boolean>}
+ */
+export async function deleteIndexedDbDatabase(page, databaseName) {
+  return page.evaluate((name) => {
+    return new Promise((resolve, reject) => {
+      const request = window.indexedDB.deleteDatabase(name);
+
+      request.onsuccess = () => resolve(true);
+      request.onerror = () =>
+        reject(request.error ?? new Error(`删除 IndexedDB 数据库 ${name} 失败`));
+      request.onblocked = () => resolve(false);
+    });
+  }, databaseName);
+}
+
+/**
+ * 读取 IndexedDB 指定对象仓库中的全部记录，并规整成可跨进程传递的纯数据。
+ *
+ * @param {import("playwright").Page} page
+ * @param {string} databaseName
+ * @param {string} storeName
+ * @returns {Promise<any[]>}
+ */
+export async function readIndexedDbStoreRecords(page, databaseName, storeName) {
+  return page.evaluate(({ dbName, targetStoreName }) => {
+    return new Promise((resolve, reject) => {
+      const openRequest = window.indexedDB.open(dbName);
+
+      openRequest.onsuccess = () => {
+        const database = openRequest.result;
+        if (!database.objectStoreNames.contains(targetStoreName)) {
+          database.close();
+          resolve([]);
+          return;
+        }
+
+        const transaction = database.transaction(targetStoreName, "readonly");
+        const request = transaction.objectStore(targetStoreName).getAll();
+
+        request.onsuccess = () => {
+          database.close();
+          resolve(
+            (request.result ?? []).map((record) => ({
+              id: record.id ?? null,
+              projectId: record.projectId ?? null,
+              fileName: record.fileName ?? null,
+              mimeType: record.mimeType ?? null,
+              createdAt: record.createdAt ?? null,
+              blobSize: record.blob?.size ?? null,
+              blobType: record.blob?.type ?? null,
+            })),
+          );
+        };
+        request.onerror = () => {
+          database.close();
+          reject(request.error ?? new Error(`读取 IndexedDB 仓库 ${targetStoreName} 失败`));
+        };
+      };
+
+      openRequest.onerror = () =>
+        reject(openRequest.error ?? new Error(`打开 IndexedDB 数据库 ${dbName} 失败`));
+    });
+  }, {
+    dbName: databaseName,
+    targetStoreName: storeName,
+  });
+}
+
+/**
  * 根据项目 id 查找目标项目。
  *
  * @param {any[]} projects

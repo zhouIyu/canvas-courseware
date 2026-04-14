@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { NodePatch, TextNode } from "@canvas-courseware/core";
-import { computed } from "vue";
+import { computed, type CSSProperties } from "vue";
 
 /** 文本工具条预置色板。 */
 const DEFAULT_TEXT_TOOL_SWATCHES = [
@@ -17,7 +17,7 @@ const props = withDefaults(
     /** 当前正在编辑的文本节点。 */
     node?: TextNode | null;
     /** 当前浮层的绝对定位样式。 */
-    overlayStyle?: Record<string, string>;
+    overlayStyle?: CSSProperties;
   }>(),
   {
     node: null,

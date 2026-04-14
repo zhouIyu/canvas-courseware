@@ -4,6 +4,7 @@ export * from "./diagnostics";
 export * from "./document-io";
 export * from "./events";
 export * from "./factories";
+export * from "./local-asset";
 export * from "./reducer";
 export * from "./schema";
 export * from "./store";

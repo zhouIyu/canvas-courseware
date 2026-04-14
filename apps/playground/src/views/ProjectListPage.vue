@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import ProjectCreateModal from "../components/ProjectCreateModal.vue";
+import { collectProjectAssetIdsFromDocument, removeProjectAssets } from "../projects/project-assets";
 import {
   formatProjectCanvasSize,
   type ProjectCreateOptions,
@@ -120,9 +121,20 @@ const openProject = async (projectId: string) => {
 };
 
 /** 删除某个项目并刷新列表。 */
-const removeProject = (projectId: string) => {
+const removeProject = async (projectId: string) => {
+  const projectRecord = projectRepository.get(projectId);
+  const assetIds = projectRecord
+    ? collectProjectAssetIdsFromDocument(projectRecord.document)
+    : [];
+
   projectRepository.remove(projectId);
-  refreshProjectSummaries();
+  try {
+    await removeProjectAssets(assetIds);
+  } catch {
+    // 删除项目时优先保证列表与本地仓库状态一致，资产清理由后台存储兜底重试。
+  } finally {
+    refreshProjectSummaries();
+  }
 };
 
 /** 首屏进入时确保至少有一个示例项目。 */

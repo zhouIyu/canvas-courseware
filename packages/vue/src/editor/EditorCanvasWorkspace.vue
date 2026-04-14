@@ -17,6 +17,7 @@ import {
   onMounted,
   ref,
   watch,
+  type CSSProperties,
   type ComponentPublicInstance,
 } from "vue";
 import FloatingLayerManager from "./FloatingLayerManager.vue";
@@ -279,7 +280,7 @@ const canvasSurfaceStyle = computed(() => {
 });
 
 /** 把视口坐标换算成工作区内的绝对定位，供文本浮层直接挂载。 */
-const textToolStyle = computed<Record<string, string>>(() => {
+const textToolStyle = computed<CSSProperties>(() => {
   const hostRect = workspaceShellRef.value?.getBoundingClientRect();
   const layout = props.inlineTextEditingLayout;
   if (!hostRect || !layout) {

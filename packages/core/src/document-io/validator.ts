@@ -1,4 +1,5 @@
 import type { CoursewareDocument, Slide, TimelineStep } from "../schema";
+import { isCoursewareLocalAssetSource } from "../local-asset";
 
 /**
  * 对解析完成的课件文档执行运行时闭环校验。
@@ -6,10 +7,40 @@ import type { CoursewareDocument, Slide, TimelineStep } from "../schema";
  */
 export function validateCoursewareDocument(document: CoursewareDocument): CoursewareDocument {
   document.slides.forEach((slide, index) => {
+    validateSlideAssetSources(slide, `document.slides[${index}]`);
     validateSlideTimelineReferences(slide, `document.slides[${index}]`);
   });
 
   return document;
+}
+
+/**
+ * 校验对外导入的 JSON 中不出现仅限项目仓库内部使用的本地资产引用。
+ * 标准 JSON 只能携带远程地址或可自包含的 data URL，避免导入后依赖浏览器私有仓库。
+ */
+function validateSlideAssetSources(slide: Slide, path: string): void {
+  if (slide.background.image) {
+    validateExternalAssetSource(path, `背景图 ${slide.id}`, slide.background.image.src);
+  }
+
+  for (const node of slide.nodes) {
+    if (node.type !== "image") {
+      continue;
+    }
+
+    validateExternalAssetSource(path, `图片节点 ${node.id}`, node.props.src);
+  }
+}
+
+/**
+ * 校验单个图片来源是否错误地暴露了内部 `cw-asset://` 协议。
+ */
+function validateExternalAssetSource(path: string, label: string, source: string): void {
+  if (isCoursewareLocalAssetSource(source)) {
+    throw new Error(
+      `${path} 中的${label}使用了仅限本地项目存储的资源引用，请先导出为标准 JSON 后再导入。`,
+    );
+  }
 }
 
 /**

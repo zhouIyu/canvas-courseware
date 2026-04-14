@@ -181,10 +181,12 @@
 - [x] VNext-32-B Fabric 适配层职责拆分：已将 `packages/fabric/src/editor-adapter.ts` 与 `packages/fabric/src/player-adapter.ts` 收敛为轻量入口，并把渲染同步、选中态恢复、文本编辑、播放调度与动画执行逻辑按职责下沉到独立子模块；当前已完成代码级自查与 `git diff --check`，但由于执行环境缺少 `node / pnpm`，本轮暂未实际跑 `typecheck`、`build` 与自动化脚本，等待用户 review 后继续推进下一项治理
 - [x] VNext-32-C Schema 解析 / 校验 / 迁移层治理：已将 `packages/core/src/document-io.ts` 收敛为公共入口，并把 JSON 解析、当前 schema 结构恢复、引用闭环校验与版本迁移入口分别下沉到 `packages/core/src/document-io/parser.ts`、`validator.ts`、`migrator.ts` 与 `shared.ts`；当前已完成代码级自查与 `git diff --check`，并于 2026-04-14 完成 `pnpm test:vnext-32` 与 `node test/vnext-32/round-02.mjs` 自动化回归，覆盖工作台主链路、JSON 导出、合法导入、非法时间轴引用拦截与不受支持 schema 版本拦截；`pnpm typecheck` 与 `pnpm build` 仍待开发侧补齐
 - [x] `VNext-32-C` 产品 review 测试通过：JSON 导出、合法导入、本地持久化写回、非法时间轴引用拦截与旧 schema 版本拦截链路已验证通过，详见 `docs/test-reports/2026-04-14-vnext-32-round-03.md`
+- [x] VNext-32-D 图片资源存储模型升级：已引入 `cw-asset://` 本地资产引用协议与 IndexedDB `project-assets` 资产仓库，保存时把本地图片 `data URL` 改写为稳定资产引用，加载与导出时再按需恢复为标准 `data URL`；同时补齐换图后的旧资产清理、项目删除时的资产清理，以及 `apps/playground/src/projects/project-assets/*` 和 `apps/playground/src/workspace/project-workspace-persistence/*` 的职责拆分；已通过 `pnpm typecheck`、`pnpm build` 与 `pnpm test:vnext-32-d`
+- [x] `VNext-32-D` 产品 review 测试通过：图片导入、换图、刷新恢复、标准 JSON 导出与删除项目后的资产清理链路已验证通过，详见 `docs/test-reports/2026-04-14-vnext-32-round-04.md`
 
 ## 待完成
 
-- [ ] VNext-32-D 图片资源存储模型升级：将图片资源持久化从“data URL + `localStorage`”的紧耦合模式升级为更可扩展的本地资产存储方案，同时保持导入、换图、设为背景、自动保存、刷新恢复与导入导出链路可用
+- 当前无待完成任务。
 
 ## 进行中
 
@@ -192,9 +194,9 @@
 
 ## 当前下一步
 
-- `VNext-32-C` 的 Schema 解析 / 校验 / 迁移层治理已完成代码落地与产品测试，当前里程碑进入等待用户 review 的状态。
-- 本轮已在可用 Node / pnpm 环境中完成 `pnpm test:vnext-32` 与 `node test/vnext-32/round-02.mjs` 自动化回归；后续建议由开发侧补齐 `pnpm typecheck` 与 `pnpm build` 静态基线。
-- 当前下一步建议在 review 通过后切换到 `VNext-32-D` 的图片资源存储模型升级，并延续“保留公共入口、把底层职责拆到独立资产层”的治理策略。
+- `VNext-32-D` 的图片资源存储模型升级已完成代码落地、静态基线与自动化回归，当前里程碑进入等待用户 review 的状态。
+- 本轮已在可用 Node / pnpm 环境中完成 `pnpm typecheck`、`pnpm build` 与 `pnpm test:vnext-32-d`，并生成 `docs/test-reports/2026-04-14-vnext-32-round-04.md` 与对应证据文件。
+- 若 review 通过，下一步建议由产品 / 项目 Owner 决定是否对 `VNext-32` 做版本收口、归档与后续规划切换。
 
 ## 相关文档
 

@@ -2,10 +2,12 @@ import type { CoursewareDocument, DiagnosticLogContext, EditorSnapshot } from "@
 import type { RequestOption } from "@arco-design/web-vue";
 import { computed, onBeforeUnmount, ref, watch, type ComputedRef } from "vue";
 import { downloadCoursewareJson, formatCoursewareJsonError, readCoursewareJsonFile } from "../projects/courseware-json";
-import { resolveProjectPrimaryThumbnail, sanitizeProjectSlideThumbnails } from "../projects/project-thumbnails";
+import { clearProjectAssetSourceCache, normalizeProjectDocumentAssetSources } from "../projects/project-assets";
 import { projectRepository } from "../projects/project-repository";
 import { workspaceDiagnosticLogger } from "../diagnostics/workspace-diagnostics";
-import type { ProjectRecord, ProjectSlideThumbnailMap, ProjectWorkspaceMode } from "../projects/types";
+import type { ProjectSlideThumbnailMap, ProjectWorkspaceMode } from "../projects/types";
+import { cleanupRemovedWorkspaceAssets, hydrateWorkspaceProjectDocument, resolveRemovedWorkspaceAssetIds, resolveWorkspaceExportDocument } from "./project-workspace-persistence/asset-helpers";
+import { buildProjectWorkspaceRecord, mergeCapturedSlideThumbnail, type SlideThumbnailCapturedPayload } from "./project-workspace-persistence/record-helpers";
 import { type WorkspaceSaveStatus, useWorkspaceSaveStatus } from "./useWorkspaceSaveStatus";
 
 /** 自动保存延时，单位毫秒。 */
@@ -16,14 +18,6 @@ type IoFeedbackTone = "success" | "error";
 
 /** 当前保存动作的触发来源。 */
 type PersistTrigger = "manual" | "auto" | "import";
-
-/** 编辑器切页前抛给应用层的缩略图截图结果。 */
-interface SlideThumbnailCapturedPayload {
-  /** 已完成截图的 slide id。 */
-  slideId: string;
-  /** 当前 slide 对应的缩略图 data URL。 */
-  thumbnail: string;
-}
 
 /** 持久化层对外暴露的输入参数。 */
 export interface UseProjectWorkspacePersistenceOptions {
@@ -109,46 +103,17 @@ export function useProjectWorkspacePersistence(
   });
 
   /** 把当前页面状态拼成一条可保存的项目记录。 */
-  const buildProjectRecord = (): ProjectRecord | null => {
-    if (!documentModel.value || !options.projectId.value) {
-      return null;
-    }
-
-    const normalizedTitle = projectTitle.value.trim() || "未命名课件";
-    /** 保存前统一过滤掉已删除页面的截图缓存。 */
-    const normalizedSlideThumbnails = sanitizeProjectSlideThumbnails(
-      documentModel.value,
-      slideThumbnails.value,
-    );
-
-    return {
-      id: options.projectId.value,
-      title: normalizedTitle,
-      updatedAt: new Date().toISOString(),
-      thumbnail: resolveProjectPrimaryThumbnail(documentModel.value, normalizedSlideThumbnails),
-      slideThumbnails: normalizedSlideThumbnails,
-      document: {
-        ...documentModel.value,
-        meta: {
-          ...documentModel.value.meta,
-          id: options.projectId.value,
-          title: normalizedTitle,
-        },
-      },
-    };
-  };
+  const buildProjectRecord = () => buildProjectWorkspaceRecord({
+    projectId: options.projectId.value,
+    projectTitle: projectTitle.value,
+    documentModel: documentModel.value,
+    slideThumbnails: slideThumbnails.value,
+  });
 
   /** 保存前主动向编辑器拉取当前页截图，保证当前页封面与最新画布保持一致。 */
   const syncActiveSlideThumbnailBeforeSave = async () => {
     const captured = await options.captureActiveSlideThumbnail();
-    if (!captured || !documentModel.value) {
-      return;
-    }
-
-    slideThumbnails.value = {
-      ...slideThumbnails.value,
-      [captured.slideId]: captured.thumbnail,
-    };
+    slideThumbnails.value = mergeCapturedSlideThumbnail(slideThumbnails.value, captured);
   };
 
   /** 执行一次显式或自动保存。 */
@@ -179,10 +144,28 @@ export function useProjectWorkspacePersistence(
     });
 
     try {
-      const savedRecord = projectRepository.save(projectRecord);
+      const previousProjectRecord = projectRepository.get(projectRecord.id);
+      const normalizedAssets = await normalizeProjectDocumentAssetSources(
+        projectRecord.document,
+        projectRecord.id,
+      );
+      const savedRecord = projectRepository.save({
+        ...projectRecord,
+        document: normalizedAssets.document,
+      });
       projectTitle.value = savedRecord.title;
       lastSavedAt.value = savedRecord.updatedAt;
       saveStatus.value = "saved";
+      void cleanupRemovedWorkspaceAssets(
+        resolveRemovedWorkspaceAssetIds(
+          previousProjectRecord?.document,
+          normalizedAssets.assetIds,
+        ),
+        {
+          buildDiagnosticContext: buildWorkspaceDiagnosticContext,
+          diagnosticLogger: workspaceDiagnosticLogger,
+        },
+      );
 
       workspaceDiagnosticLogger.info({
         event: "project.save.completed",
@@ -190,6 +173,8 @@ export function useProjectWorkspacePersistence(
         context: buildWorkspaceDiagnosticContext({
           trigger,
           updatedAt: savedRecord.updatedAt,
+          assetCount: normalizedAssets.assetIds.length,
+          rewrittenAssetCount: normalizedAssets.rewrittenAssetCount,
           slideCount: savedRecord.document.slides.length,
         }),
       });
@@ -246,7 +231,7 @@ export function useProjectWorkspacePersistence(
   };
 
   /** 加载当前路由对应的项目。 */
-  const loadProject = () => {
+  const loadProject = async () => {
     projectRepository.ensureSeededProjects();
     isLoading.value = true;
     isProjectMissing.value = false;
@@ -268,8 +253,13 @@ export function useProjectWorkspacePersistence(
       return;
     }
 
+    const hydratedDocument = await hydrateWorkspaceProjectDocument(projectRecord, {
+      buildDiagnosticContext: buildWorkspaceDiagnosticContext,
+      diagnosticLogger: workspaceDiagnosticLogger,
+    });
+
     projectTitle.value = projectRecord.title;
-    documentModel.value = projectRecord.document;
+    documentModel.value = hydratedDocument;
     slideThumbnails.value = projectRecord.slideThumbnails;
     editorSnapshot.value = null;
     lastSavedAt.value = projectRecord.updatedAt;
@@ -298,7 +288,7 @@ export function useProjectWorkspacePersistence(
   };
 
   /** 导出当前项目的标准 JSON。 */
-  const handleJsonExportClick = () => {
+  const handleJsonExportClick = async () => {
     const projectRecord = buildProjectRecord();
     if (!projectRecord) {
       workspaceDiagnosticLogger.warn({
@@ -309,16 +299,27 @@ export function useProjectWorkspacePersistence(
       return;
     }
 
-    const exportedFileName = downloadCoursewareJson(projectRecord.document, projectRecord.title);
-    setIoFeedback("success", `已导出 ${exportedFileName}`);
-    workspaceDiagnosticLogger.info({
-      event: "project.export.completed",
-      message: "已导出课件 JSON",
-      context: buildWorkspaceDiagnosticContext({
-        fileName: exportedFileName,
-        slideCount: projectRecord.document.slides.length,
-      }),
-    });
+    try {
+      const exportDocument = await resolveWorkspaceExportDocument(projectRecord);
+      const exportedFileName = downloadCoursewareJson(exportDocument, projectRecord.title);
+      setIoFeedback("success", `已导出 ${exportedFileName}`);
+      workspaceDiagnosticLogger.info({
+        event: "project.export.completed",
+        message: "已导出课件 JSON",
+        context: buildWorkspaceDiagnosticContext({
+          fileName: exportedFileName,
+          slideCount: exportDocument.slides.length,
+        }),
+      });
+    } catch (error) {
+      setIoFeedback("error", formatCoursewareJsonError(error));
+      workspaceDiagnosticLogger.error({
+        event: "project.export.failed",
+        message: "课件 JSON 导出失败",
+        context: buildWorkspaceDiagnosticContext(),
+        error,
+      });
+    }
   };
 
   /** 把一份导入文档安全地应用到当前工作台并立即保存。 */
@@ -426,14 +427,12 @@ export function useProjectWorkspacePersistence(
 
   /** 接收编辑器切页前导出的缩略图，并按项目级缓存落盘。 */
   const handleSlideThumbnailCaptured = (payload: SlideThumbnailCapturedPayload) => {
-    if (slideThumbnails.value[payload.slideId] === payload.thumbnail) {
+    const nextSlideThumbnails = mergeCapturedSlideThumbnail(slideThumbnails.value, payload);
+    if (nextSlideThumbnails === slideThumbnails.value) {
       return;
     }
 
-    slideThumbnails.value = {
-      ...slideThumbnails.value,
-      [payload.slideId]: payload.thumbnail,
-    };
+    slideThumbnails.value = nextSlideThumbnails;
     scheduleAutoSave();
   };
 
@@ -457,8 +456,12 @@ export function useProjectWorkspacePersistence(
   /** 项目 id 变化时重新加载当前项目。 */
   watch(
     () => options.projectId.value,
-    () => {
-      loadProject();
+    (nextProjectId, previousProjectId) => {
+      if (previousProjectId && previousProjectId !== nextProjectId) {
+        clearProjectAssetSourceCache(previousProjectId);
+      }
+
+      void loadProject();
     },
     { immediate: true },
   );
@@ -466,6 +469,7 @@ export function useProjectWorkspacePersistence(
   /** 页面销毁时清理自动保存计时器。 */
   onBeforeUnmount(() => {
     clearSaveTimer();
+    clearProjectAssetSourceCache(options.projectId.value);
   });
 
   return {
