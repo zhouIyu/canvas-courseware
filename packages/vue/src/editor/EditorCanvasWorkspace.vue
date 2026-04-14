@@ -18,7 +18,6 @@ import {
   ref,
   watch,
   type ComponentPublicInstance,
-  type ShallowRef,
 } from "vue";
 import FloatingLayerManager from "./FloatingLayerManager.vue";
 import LocalImageFileTrigger from "./LocalImageFileTrigger.vue";
@@ -86,8 +85,8 @@ const props = withDefaults(
   defineProps<{
     /** 当前激活的 slide。 */
     activeSlide?: Slide | null;
-    /** 编辑器画布的模板 ref。 */
-    canvasRef: ShallowRef<HTMLCanvasElement | null>;
+    /** 把舞台内部创建出来的 canvas 节点回传给父层。 */
+    setCanvasElement?: (canvasElement: HTMLCanvasElement | null) => void;
     /** 当前文本内联编辑态的浮层定位信息。 */
     inlineTextEditingLayout?: FabricInlineTextEditingLayout | null;
     /** 当前文本工具条绑定的文本节点。 */
@@ -220,7 +219,12 @@ const openContextMenu = (payload: FabricEditorContextMenuRequest) => {
 
 /** 把 `<canvas>` 模板节点稳定写回父层传入的 ref。 */
 const assignCanvasRef = (value: Element | ComponentPublicInstance | null) => {
-  props.canvasRef.value = value instanceof HTMLCanvasElement ? value : null;
+  /**
+   * 这里不能直接把 `Ref` 当作 prop 往下传。
+   * Vue 模板会自动解包 `ref`，子组件最终拿到的会是当前值而不是 ref 本身，
+   * 一旦初始值刚好是 `null`，这里再写 `.value` 就会在首屏挂载时直接崩溃。
+   */
+  props.setCanvasElement?.(value instanceof HTMLCanvasElement ? value : null);
 };
 
 /** 当前舞台容器的高度样式。 */

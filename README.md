@@ -14,7 +14,7 @@ flowchart TB
   subgraph CORE["packages/core"]
     SCHEMA["schema.ts<br/>CoursewareDocument / Slide / Node / Timeline"]
     FACTORIES["factories.ts<br/>createDocument / createSlide / createNode / createStep"]
-    DOCIO["document-io.ts<br/>JSON 导入导出 + schema 校验"]
+    DOCIO["document-io.ts + document-io/*<br/>JSON 导入导出 + parser / validator / migrator"]
     COMMANDS["commands.ts<br/>标准命令协议"]
     EVENTS["events.ts<br/>AdapterEvent / EditorEvent"]
     CONTROLLER["controller.ts<br/>EditorController"]
@@ -119,7 +119,12 @@ packages/core/
 │  ├─ commands.ts                            # 标准命令协议；定义编辑、播放、历史、时间轴等命令结构
 │  ├─ events.ts                              # 标准事件协议；定义 AdapterEvent 与 EditorEvent 的边界
 │  ├─ factories.ts                           # 默认工厂；创建 document、slide、node、timeline step、animation 等初始对象
-│  ├─ document-io.ts                         # 文档导入导出；负责 JSON 序列化、解析、schema 校验与引用闭环校验
+│  ├─ document-io.ts                         # 文档导入导出聚合入口；统一暴露 serialize / parse / migrate 公共 API
+│  ├─ document-io/
+│  │  ├─ parser.ts                          # 文档解析层；负责 JSON 语法恢复、当前 schema 结构解析与节点/步骤静态字段校验
+│  │  ├─ validator.ts                       # 文档校验层；负责时间轴、动画、触发对象等跨引用闭环校验
+│  │  ├─ migrator.ts                        # 文档迁移层；统一收口 schema 版本判断与后续迁移链路扩展入口
+│  │  └─ shared.ts                          # 文档 IO 共享运行时工具；封装 record / enum / number 等基础读取器
 │  ├─ controller.ts                          # EditorController；对外收口 execute/undo/redo/adapter event 处理
 │  ├─ store.ts                               # EditorStore；维护 snapshot、history、mitt 订阅总线与 dispatch 流程
 │  ├─ reducer.ts                             # 根 reducer；按命令类型把状态更新路由到 slide/node/timeline/playback 分支

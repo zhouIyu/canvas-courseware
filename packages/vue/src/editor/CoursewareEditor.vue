@@ -103,6 +103,11 @@ const isSyncingDocumentModel = ref(false);
 /** 中央舞台壳层引用，供 Fabric 适配器转发右键菜单请求。 */
 const editorCanvasWorkspaceRef = ref<(ComponentPublicInstance & EditorCanvasWorkspaceExposed) | null>(null);
 
+/** 接收子组件回传的真实 canvas 节点，供 Fabric 适配器挂载。 */
+const handleEditorCanvasElementChange = (canvasElement: HTMLCanvasElement | null) => {
+  editorCanvasRef.value = canvasElement;
+};
+
 /** 接收适配层发起的右键菜单请求。 */
 const handleCanvasContextMenuRequest = (payload: FabricEditorContextMenuRequest) => {
   editorCanvasWorkspaceRef.value?.openContextMenu(payload);
@@ -639,12 +644,12 @@ defineExpose({
         <EditorCanvasWorkspace
           ref="editorCanvasWorkspaceRef"
           :active-slide="activeSlide ?? null"
-          :canvas-ref="editorCanvasRef"
           :editing-text-tool-node="editingTextToolNode"
           :inline-text-editing-layout="inlineTextEditingLayout"
           :node-timeline-summary-map="nodeTimelineSummaryMap"
           :pane-height="paneHeight"
           :selected-node-ids="snapshot.selection.nodeIds"
+          :set-canvas-element="handleEditorCanvasElementChange"
           :slide-index="activeSlideIndex"
           @add-rect="addRect"
           @add-text="addText"

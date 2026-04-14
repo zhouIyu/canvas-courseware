@@ -1,0 +1,43 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-04-14T06:09:55.367Z",
+  "browser": "Google Chrome Headless",
+  "chromeExecutablePath": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "export-json",
+      "fileName": "未命名课件-2026-04-14.json",
+      "version": "1.0.0",
+      "slideCount": 1
+    },
+    {
+      "id": "valid-import",
+      "feedback": "已导入 import-valid.json 并保存到本地项目",
+      "storedTitle": "VNext-32 导入校验课件",
+      "storedText": "这段文本来自 round-02 JSON 导入回归。",
+      "nodeCount": 1
+    },
+    {
+      "id": "invalid-reference-import",
+      "feedback": "document.slides[0].timeline.steps 中的动作 action-invalid-reference 指向了不存在的节点 missing-node-for-import。",
+      "storedTitle": "VNext-32 导入校验课件",
+      "storedText": "这段文本来自 round-02 JSON 导入回归。"
+    },
+    {
+      "id": "unsupported-version-import",
+      "feedback": "暂不支持 schema 版本 0.9.0，当前仅支持 1.0.0，且没有可用的迁移路径。",
+      "storedTitle": "VNext-32 导入校验课件",
+      "storedText": "这段文本来自 round-02 JSON 导入回归。"
+    }
+  ],
+  "consoleErrors": [
+    "[cw-diagnostics][error] project.import.failed {message: 课件 JSON 导入失败, context: Object, error: Object, timestamp: 2026-04-14T06:10:03.207Z}",
+    "[cw-diagnostics][error] project.import.failed {message: 课件 JSON 导入失败, context: Object, error: Object, timestamp: 2026-04-14T06:10:03.253Z}"
+  ],
+  "pageErrors": [],
+  "unexpectedConsoleErrors": []
+}

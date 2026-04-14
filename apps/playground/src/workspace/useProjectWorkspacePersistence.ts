@@ -1,6 +1,6 @@
 import type { CoursewareDocument, DiagnosticLogContext, EditorSnapshot } from "@canvas-courseware/core";
 import type { RequestOption } from "@arco-design/web-vue";
-import { onBeforeUnmount, ref, watch, type ComputedRef } from "vue";
+import { computed, onBeforeUnmount, ref, watch, type ComputedRef } from "vue";
 import { downloadCoursewareJson, formatCoursewareJsonError, readCoursewareJsonFile } from "../projects/courseware-json";
 import { resolveProjectPrimaryThumbnail, sanitizeProjectSlideThumbnails } from "../projects/project-thumbnails";
 import { projectRepository } from "../projects/project-repository";
@@ -31,8 +31,6 @@ export interface UseProjectWorkspacePersistenceOptions {
   projectId: ComputedRef<string>;
   /** 当前工作区模式。 */
   workspaceMode: ComputedRef<ProjectWorkspaceMode>;
-  /** 当前预览应对齐的 slide id。 */
-  activeSlideId: ComputedRef<string | null>;
   /** 保存前主动向编辑器拉取当前页缩略图。 */
   captureActiveSlideThumbnail: () => Promise<SlideThumbnailCapturedPayload | null>;
 }
@@ -49,6 +47,11 @@ export function useProjectWorkspacePersistence(
 
   /** 当前编辑器快照，用于同步预览页面的 slide 对齐。 */
   const editorSnapshot = ref<EditorSnapshot | null>(null);
+
+  /** 当前预览应跟随的 slide id。 */
+  const activeSlideId = computed(() =>
+    editorSnapshot.value?.activeSlideId ?? documentModel.value?.slides[0]?.id ?? null,
+  );
 
   /** 当前项目内各 slide 的缩略图缓存。 */
   const slideThumbnails = ref<ProjectSlideThumbnailMap>({});
@@ -100,7 +103,7 @@ export function useProjectWorkspacePersistence(
     context: DiagnosticLogContext = {},
   ): DiagnosticLogContext => ({
     projectId: options.projectId.value || null,
-    activeSlideId: options.activeSlideId.value ?? null,
+    activeSlideId: activeSlideId.value ?? null,
     workspaceMode: options.workspaceMode.value,
     ...context,
   });
@@ -466,6 +469,7 @@ export function useProjectWorkspacePersistence(
   });
 
   return {
+    activeSlideId,
     documentModel,
     editorSnapshot,
     handleJsonExportClick,

@@ -177,11 +177,13 @@
 - [x] VNext-31-D 接入自动保存、导入导出与图片资源处理日志
 - [x] VNext-31-E 补齐自动化验证与开发自测，覆盖日志查看入口、自动保存、背景写入与时间轴变更
 - [x] VNext-32-A 编辑器壳层与工作台职责拆分：已将 `apps/playground` 的工作台顶栏与项目持久化链路拆分为独立组件 / composable，并将 `packages/vue` 编辑器拆为舞台子组件、壳层动作 helper 与命令 API helper；当前人工完成主链路代码自查，但由于执行环境缺少 `node / pnpm`，本轮暂未实际跑 `typecheck` 与 `build`，等待用户 review 后再继续推进下一项治理
+- [x] BUG-2026-04-13 VNext-32-A 工作台创建后崩溃：已复用并更新 `test/vnext-32/round-01.mjs` 完成 Round 02 自动化复测，确认新建项目进入工作台后，顶部 `项目标题` 输入框、编辑器首屏、插入文本、保存、编辑 / 预览切换主链路均恢复可用，详见 `docs/test-reports/2026-04-13-vnext-32-round-02.md`
+- [x] VNext-32-B Fabric 适配层职责拆分：已将 `packages/fabric/src/editor-adapter.ts` 与 `packages/fabric/src/player-adapter.ts` 收敛为轻量入口，并把渲染同步、选中态恢复、文本编辑、播放调度与动画执行逻辑按职责下沉到独立子模块；当前已完成代码级自查与 `git diff --check`，但由于执行环境缺少 `node / pnpm`，本轮暂未实际跑 `typecheck`、`build` 与自动化脚本，等待用户 review 后继续推进下一项治理
+- [x] VNext-32-C Schema 解析 / 校验 / 迁移层治理：已将 `packages/core/src/document-io.ts` 收敛为公共入口，并把 JSON 解析、当前 schema 结构恢复、引用闭环校验与版本迁移入口分别下沉到 `packages/core/src/document-io/parser.ts`、`validator.ts`、`migrator.ts` 与 `shared.ts`；当前已完成代码级自查与 `git diff --check`，并于 2026-04-14 完成 `pnpm test:vnext-32` 与 `node test/vnext-32/round-02.mjs` 自动化回归，覆盖工作台主链路、JSON 导出、合法导入、非法时间轴引用拦截与不受支持 schema 版本拦截；`pnpm typecheck` 与 `pnpm build` 仍待开发侧补齐
+- [x] `VNext-32-C` 产品 review 测试通过：JSON 导出、合法导入、本地持久化写回、非法时间轴引用拦截与旧 schema 版本拦截链路已验证通过，详见 `docs/test-reports/2026-04-14-vnext-32-round-03.md`
 
 ## 待完成
 
-- [ ] VNext-32-B Fabric 适配层职责拆分：拆分 `packages/fabric/src/editor-adapter.ts` 与 `packages/fabric/src/player-adapter.ts`，把渲染同步、选中态恢复、文本编辑、播放调度与动画执行逻辑按职责下沉，持续保持 UI 层与 Fabric 事件解耦
-- [ ] VNext-32-C Schema 解析 / 校验 / 迁移层治理：拆分 `packages/core/src/document-io.ts`，形成 parser / validator / migrator 的清晰边界，并为后续 schema 版本兼容预留标准化迁移入口
 - [ ] VNext-32-D 图片资源存储模型升级：将图片资源持久化从“data URL + `localStorage`”的紧耦合模式升级为更可扩展的本地资产存储方案，同时保持导入、换图、设为背景、自动保存、刷新恢复与导入导出链路可用
 
 ## 进行中
@@ -190,9 +192,9 @@
 
 ## 当前下一步
 
-- `VNext-32-A` 已完成本轮壳层治理实现，当前按协作约定暂停，等待用户 review 本轮拆分结果与主链路体验。
-- 若用户确认继续推进下一项治理，建议从 `VNext-32-B` 开始拆分 Fabric 适配层，把编辑态 / 播放态中的渲染同步、选中态恢复、文本编辑、播放调度与动画执行职责继续下沉。
-- 当前环境缺少 `node / pnpm`，尚未实际执行 `typecheck` 与 `build`；若后续环境补齐，建议先补跑静态基线，再进入 `VNext-32-B` 开发。
+- `VNext-32-C` 的 Schema 解析 / 校验 / 迁移层治理已完成代码落地与产品测试，当前里程碑进入等待用户 review 的状态。
+- 本轮已在可用 Node / pnpm 环境中完成 `pnpm test:vnext-32` 与 `node test/vnext-32/round-02.mjs` 自动化回归；后续建议由开发侧补齐 `pnpm typecheck` 与 `pnpm build` 静态基线。
+- 当前下一步建议在 review 通过后切换到 `VNext-32-D` 的图片资源存储模型升级，并延续“保留公共入口、把底层职责拆到独立资产层”的治理策略。
 
 ## 相关文档
 

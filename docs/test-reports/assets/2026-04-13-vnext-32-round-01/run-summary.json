@@ -1,0 +1,28 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-04-13T10:09:04.854Z",
+  "browser": "Google Chrome Headless",
+  "chromeExecutablePath": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "workspace-entry",
+      "currentUrl": "http://127.0.0.1:32173/projects/document-81ee102c-24a8-42e1-addc-6a67f7ccc868?mode=edit",
+      "documentTitle": "Canvas Courseware Playground",
+      "bodyTextLength": 127,
+      "bodyHtmlLength": 24222,
+      "hasWorkspacePage": true,
+      "hasWorkspaceTopbar": true,
+      "hasProjectTitleInput": false,
+      "hasEditorShell": true
+    }
+  ],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "pageErrors": [],
+  "failure": "Error: 进入工作台后未渲染出“项目标题”输入框"
+}

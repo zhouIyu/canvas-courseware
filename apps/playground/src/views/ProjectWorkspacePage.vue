@@ -67,11 +67,6 @@ const workspaceMode = computed<ProjectWorkspaceMode>(() => {
   return rawMode === "preview" ? "preview" : "edit";
 });
 
-/** 当前预览应跟随的 slide。 */
-const activeSlideId = computed(() =>
-  editorSnapshot.value?.activeSlideId ?? documentModel.value?.slides[0]?.id ?? null,
-);
-
 /** 统一传给编辑器和预览器的工作区高度。 */
 const workspaceContentHeight = computed(() =>
   workspaceViewportHeight.value > 0 ? workspaceViewportHeight.value : undefined,
@@ -79,6 +74,7 @@ const workspaceContentHeight = computed(() =>
 
 /** 收敛项目加载、自动保存与导入导出链路。 */
 const {
+  activeSlideId,
   documentModel,
   editorSnapshot,
   handleJsonExportClick,
@@ -98,7 +94,6 @@ const {
 } = useProjectWorkspacePersistence({
   projectId,
   workspaceMode,
-  activeSlideId,
   captureActiveSlideThumbnail: async () =>
     (await workspaceEditorRef.value?.captureActiveSlideThumbnail?.()) ?? null,
 });

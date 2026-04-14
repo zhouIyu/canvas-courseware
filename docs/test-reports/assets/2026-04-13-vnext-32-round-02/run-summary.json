@@ -1,0 +1,74 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-04-14T06:06:20.722Z",
+  "browser": "Google Chrome Headless",
+  "chromeExecutablePath": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "workspace-entry",
+      "projectId": "document-2f5c173b-282c-43e2-abd9-e2bace792bd4",
+      "titleValue": "未命名课件",
+      "currentUrl": "http://127.0.0.1:32173/projects/document-2f5c173b-282c-43e2-abd9-e2bace792bd4?mode=edit",
+      "documentTitle": "Canvas Courseware Playground",
+      "bodyTextLength": 127,
+      "bodyHtmlLength": 24222,
+      "hasWorkspacePage": true,
+      "hasWorkspaceTopbar": true,
+      "hasProjectTitleInput": true,
+      "hasEditorShell": true,
+      "innerWidth": 1440,
+      "innerHeight": 900,
+      "bodyScrollWidth": 1440,
+      "docScrollWidth": 1440,
+      "bodyScrollHeight": 900,
+      "horizontalOverflow": false
+    },
+    {
+      "id": "insert-text",
+      "firstSlideNodeCount": 1,
+      "insertedTextNodeId": "node-1cb6aaf6-5253-437a-97e0-35ee90e65d9a",
+      "insertedTextContent": "新建文本"
+    },
+    {
+      "id": "manual-save",
+      "saveMetaText": "已保存\n最近保存：04/14 14:06"
+    },
+    {
+      "id": "preview-mode",
+      "currentUrl": "http://127.0.0.1:32173/projects/document-2f5c173b-282c-43e2-abd9-e2bace792bd4?mode=preview",
+      "hasPreviewShell": true,
+      "hasPreviewRail": true,
+      "hasPreviewStageSurface": true,
+      "hasPreviewTimeline": true,
+      "innerWidth": 1440,
+      "innerHeight": 900,
+      "bodyScrollWidth": 1440,
+      "docScrollWidth": 1440,
+      "bodyScrollHeight": 900,
+      "horizontalOverflow": false
+    },
+    {
+      "id": "return-to-edit",
+      "currentUrl": "http://127.0.0.1:32173/projects/document-2f5c173b-282c-43e2-abd9-e2bace792bd4?mode=edit",
+      "documentTitle": "Canvas Courseware Playground",
+      "bodyTextLength": 127,
+      "bodyHtmlLength": 41548,
+      "hasWorkspacePage": true,
+      "hasWorkspaceTopbar": true,
+      "hasProjectTitleInput": true,
+      "hasEditorShell": true,
+      "innerWidth": 1440,
+      "innerHeight": 900,
+      "bodyScrollWidth": 1440,
+      "docScrollWidth": 1440,
+      "bodyScrollHeight": 900,
+      "horizontalOverflow": false
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}
