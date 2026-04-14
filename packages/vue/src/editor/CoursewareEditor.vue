@@ -164,6 +164,7 @@ const {
   editorCanvasRef,
   duplicateSlideById,
   inlineTextEditingLayout,
+  isInlineTextEditingActive,
   removeTimelineAnimation,
   removeTimelineStep,
   removeSlide,
@@ -554,6 +555,7 @@ onBeforeUnmount(() => {
 /** 暴露给应用壳层的组件方法。 */
 defineExpose({
   captureActiveSlideThumbnail,
+  isInlineTextEditingActive,
 });
 </script>
 

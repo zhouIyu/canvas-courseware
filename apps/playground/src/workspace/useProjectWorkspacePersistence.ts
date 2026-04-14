@@ -13,6 +13,9 @@ import { type WorkspaceSaveStatus, useWorkspaceSaveStatus } from "./useWorkspace
 /** 自动保存延时，单位毫秒。 */
 const AUTO_SAVE_DELAY_MS = 800;
 
+/** 自动保存被连续编辑暂缓后的重试延时，单位毫秒。 */
+const AUTO_SAVE_BLOCKED_RETRY_MS = 250;
+
 /** 导入导出反馈语义。 */
 type IoFeedbackTone = "success" | "error";
 
@@ -27,6 +30,8 @@ export interface UseProjectWorkspacePersistenceOptions {
   workspaceMode: ComputedRef<ProjectWorkspaceMode>;
   /** 保存前主动向编辑器拉取当前页缩略图。 */
   captureActiveSlideThumbnail: () => Promise<SlideThumbnailCapturedPayload | null>;
+  /** 判断当前自动保存是否应被暂缓，例如仍处于文本内联编辑态。 */
+  isAutoSaveBlocked?: () => boolean;
 }
 
 /** 收敛项目加载、保存、自动保存与导入导出职责。 */
@@ -76,6 +81,9 @@ export function useProjectWorkspacePersistence(
   /** 自动保存计时器。 */
   let saveTimer: ReturnType<typeof setTimeout> | null = null;
 
+  /** 当前这一轮自动保存是否已经记录过“因连续编辑而暂缓”的日志。 */
+  let hasLoggedAutoSaveBlock = false;
+
   /** 组合顶部保存状态文案与颜色。 */
   const { saveStatusHint, saveStatusLabel, saveStatusTagColor } = useWorkspaceSaveStatus(
     saveStatus,
@@ -90,6 +98,35 @@ export function useProjectWorkspacePersistence(
 
     clearTimeout(saveTimer);
     saveTimer = null;
+  };
+
+  /** 判断当前自动保存是否需要暂缓，避免连续编辑被保存链路抢占。 */
+  const isAutoSaveBlocked = () => Boolean(options.isAutoSaveBlocked?.());
+
+  /** 安排下一次自动保存执行时机，供首次调度和短间隔重试复用。 */
+  const queueAutoSave = (delayMs: number) => {
+    clearSaveTimer();
+    saveTimer = setTimeout(() => {
+      void flushAutoSave();
+    }, delayMs);
+  };
+
+  /** 当前仍处于连续编辑态时，先保留脏状态并在短间隔后重试自动保存。 */
+  const deferAutoSave = () => {
+    saveStatus.value = "dirty";
+    if (!hasLoggedAutoSaveBlock) {
+      workspaceDiagnosticLogger.debug({
+        event: "project.autosave.deferred",
+        message: "当前仍在连续编辑，自动保存已暂缓",
+        context: buildWorkspaceDiagnosticContext({
+          reason: "inline-text-editing",
+          retryDelayMs: AUTO_SAVE_BLOCKED_RETRY_MS,
+        }),
+      });
+      hasLoggedAutoSaveBlock = true;
+    }
+
+    queueAutoSave(AUTO_SAVE_BLOCKED_RETRY_MS);
   };
 
   /** 统一拼装工作台日志所需的最小上下文，避免保存链路各处重复手写。 */
@@ -116,6 +153,20 @@ export function useProjectWorkspacePersistence(
     slideThumbnails.value = mergeCapturedSlideThumbnail(slideThumbnails.value, captured);
   };
 
+  /** 真正执行一次自动保存；若仍被连续编辑阻塞，则延后重试。 */
+  const flushAutoSave = async () => {
+    if (isHydrating.value || !documentModel.value) {
+      return;
+    }
+
+    if (isAutoSaveBlocked()) {
+      deferAutoSave();
+      return;
+    }
+
+    await persistProject("auto");
+  };
+
   /** 执行一次显式或自动保存。 */
   const persistProject = async (trigger: PersistTrigger = "manual"): Promise<boolean> => {
     await syncActiveSlideThumbnailBeforeSave();
@@ -131,6 +182,7 @@ export function useProjectWorkspacePersistence(
       return false;
     }
 
+    hasLoggedAutoSaveBlock = false;
     clearSaveTimer();
     saveStatus.value = "saving";
 
@@ -200,8 +252,8 @@ export function useProjectWorkspacePersistence(
       return;
     }
 
+    hasLoggedAutoSaveBlock = false;
     saveStatus.value = "dirty";
-    clearSaveTimer();
     workspaceDiagnosticLogger.debug({
       event: "project.autosave.scheduled",
       message: "已重新安排自动保存",
@@ -209,9 +261,7 @@ export function useProjectWorkspacePersistence(
         delayMs: AUTO_SAVE_DELAY_MS,
       }),
     });
-    saveTimer = setTimeout(() => {
-      void persistProject("auto");
-    }, AUTO_SAVE_DELAY_MS);
+    queueAutoSave(AUTO_SAVE_DELAY_MS);
   };
 
   /** 将顶部项目标题同步进文档元信息。 */

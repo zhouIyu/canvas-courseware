@@ -29,7 +29,7 @@ interface PreviewPlaybackRequest {
   stepIndex: number;
 }
 
-/** 编辑器对应用层暴露的截图方法。 */
+/** 编辑器对应用层暴露的应用协作能力。 */
 interface CoursewareEditorExposed {
   /** 导出当前激活页的缩略图截图结果。 */
   captureActiveSlideThumbnail: () => Promise<{
@@ -38,6 +38,8 @@ interface CoursewareEditorExposed {
     /** 当前 slide 对应的缩略图 data URL。 */
     thumbnail: string;
   } | null>;
+  /** 判断当前是否仍处于文本内联编辑态。 */
+  isInlineTextEditingActive: () => boolean;
 }
 
 /** 当前路由实例。 */
@@ -96,6 +98,7 @@ const {
   workspaceMode,
   captureActiveSlideThumbnail: async () =>
     (await workspaceEditorRef.value?.captureActiveSlideThumbnail?.()) ?? null,
+  isAutoSaveBlocked: () => workspaceEditorRef.value?.isInlineTextEditingActive?.() ?? false,
 });
 
 /** 把路由 query 规范成受支持的编辑模式。 */

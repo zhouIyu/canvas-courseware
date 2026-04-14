@@ -301,6 +301,9 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     });
   };
 
+  /** 判断当前是否仍处于文本内联编辑态，供外层暂缓自动保存时复用。 */
+  const isInlineTextEditingActive = (): boolean => adapter.getInlineTextEditingLayout() !== null;
+
   /** 订阅 controller 快照变化，让 Vue 层保持响应式同步。 */
   const unsubscribe = controller.subscribe((nextSnapshot, envelope) => {
     snapshot.value = nextSnapshot;
@@ -433,6 +436,7 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     pasteClipboard,
     redo,
     refreshInlineTextEditingLayout,
+    isInlineTextEditingActive,
     removeSlide,
     reorderNode,
     reorderSlide,
