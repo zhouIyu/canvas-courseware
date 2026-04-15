@@ -38,6 +38,10 @@
 - `pnpm test:vnext-30`
 - `pnpm test:vnext-31`
 - `pnpm test:vnext-32`
+- `pnpm test:vnext-33`
+- `pnpm test:vnext-33-b`
+- `pnpm test:vnext-33-c`
+- `pnpm test:vnext-33-d`
 
 ## 运行前提
 

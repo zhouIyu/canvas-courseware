@@ -34,6 +34,10 @@ interface UseEditorClipboardKeyboardOptions {
   activeSlide: ComputedRef<Slide | undefined>;
   /** 命令控制器，用于派发标准命令。 */
   controller: EditorController;
+  /** 当前是否处于画布内联文本编辑态。 */
+  isInlineTextEditingActive: () => boolean;
+  /** 请求退出画布内联文本编辑态。 */
+  requestInlineTextEditingExit: () => void;
 }
 
 /** 组合编辑器复制粘贴、重复、方向键微调与快捷键处理能力。 */
@@ -241,6 +245,21 @@ export function useEditorClipboardKeyboard(options: UseEditorClipboardKeyboardOp
     return true;
   };
 
+  /** 处理 Escape，优先退出高频临时态。 */
+  const handleEscapeShortcut = (event: KeyboardEvent): boolean => {
+    if (event.key !== "Escape") {
+      return false;
+    }
+
+    if (!options.isInlineTextEditingActive()) {
+      return false;
+    }
+
+    event.preventDefault();
+    options.requestInlineTextEditingExit();
+    return true;
+  };
+
   /** 处理方向键微调快捷键。 */
   const handleNudgeShortcut = (event: KeyboardEvent): boolean => {
     const moveDistance = event.shiftKey
@@ -271,7 +290,26 @@ export function useEditorClipboardKeyboard(options: UseEditorClipboardKeyboardOp
 
   /** 统一处理编辑器快捷键。 */
   const handleEditorKeydown = (event: KeyboardEvent) => {
-    if (isEditableTarget(event.target)) {
+    const isEscapePressed = event.key === "Escape";
+    const allowInlineTextEscapeFromEditableTarget =
+      isEscapePressed && options.isInlineTextEditingActive();
+
+    if (
+      isEditableTarget(event.target) &&
+      !allowInlineTextEscapeFromEditableTarget
+    ) {
+      return;
+    }
+
+    /**
+     * Fabric 内联文本编辑态下，除了 Escape 退出外都不应触发画布级快捷键，
+     * 避免文本输入过程中误删对象或误触发方向键微调。
+     */
+    if (!isEscapePressed && options.isInlineTextEditingActive()) {
+      return;
+    }
+
+    if (handleEscapeShortcut(event)) {
       return;
     }
 

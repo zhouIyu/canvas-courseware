@@ -231,6 +231,14 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     applyingExternalDocument,
   });
 
+  /** 判断当前是否仍处于文本内联编辑态，供快捷键和自动保存门控统一复用。 */
+  const isInlineTextEditingActive = (): boolean => adapter.getInlineTextEditingLayout() !== null;
+
+  /** 请求适配层结束当前画布内的文本编辑态，供外层点击非画布区域时复用。 */
+  const requestInlineTextEditingExit = () => {
+    adapter.exitActiveTextEditing();
+  };
+
   /** 组合复制粘贴、重复、方向键微调与快捷键处理能力。 */
   const {
     copySelected,
@@ -242,6 +250,8 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     snapshot,
     activeSlide,
     controller,
+    isInlineTextEditingActive,
+    requestInlineTextEditingExit,
   });
 
   /** 组合多选后的批量排版能力。 */
@@ -267,11 +277,6 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
       canvasElement: editorCanvasRef.value,
       slideId: snapshot.value.activeSlideId ?? undefined,
     });
-  };
-
-  /** 请求适配层结束当前画布内的文本编辑态，供外层点击非画布区域时复用。 */
-  const requestInlineTextEditingExit = () => {
-    adapter.exitActiveTextEditing();
   };
 
   /** 重新读取当前文本内联工具条的定位信息，供布局变化后复用。 */
@@ -301,9 +306,6 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
       multiplier: THUMBNAIL_CAPTURE_SCALE,
     });
   };
-
-  /** 判断当前是否仍处于文本内联编辑态，供外层暂缓自动保存时复用。 */
-  const isInlineTextEditingActive = (): boolean => adapter.getInlineTextEditingLayout() !== null;
 
   /** 读取当前仍需暂缓自动保存的编辑态原因，供应用层统一调度保存时机。 */
   const getAutoSaveBlockReason = (): FabricAutoSaveBlockReason | null =>

@@ -1,0 +1,48 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-04-15T10:46:33.113Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "keyboard-nudge",
+      "nodeId": "node-4af15204-f8a7-412a-a9f1-b680cac4e472",
+      "nudgeDeltaX": 1,
+      "nudgeDeltaY": 10
+    },
+    {
+      "id": "input-isolation",
+      "selectionNodeIdsBeforeInputShortcut": [
+        "node-4af15204-f8a7-412a-a9f1-b680cac4e472"
+      ],
+      "textNodeStillExists": true,
+      "geometryStable": true
+    },
+    {
+      "id": "backspace-delete",
+      "removedNodeId": "node-4af15204-f8a7-412a-a9f1-b680cac4e472",
+      "remainingTextCount": 0
+    },
+    {
+      "id": "delete-shortcut",
+      "removedNodeId": "node-9e440d75-be12-4038-aa80-714631735473",
+      "remainingRectCount": 0
+    },
+    {
+      "id": "escape-exit-inline-editing",
+      "nodeId": "node-1771a089-8d90-4c97-a48b-3eae85caf653",
+      "textareaFocusedBeforeEscape": true,
+      "textareaFocusedAfterEscape": false,
+      "persistedTextIncludesSuffix": true
+    },
+    {
+      "id": "reload-persistence",
+      "nodeId": "node-1771a089-8d90-4c97-a48b-3eae85caf653",
+      "textIncludesSuffixAfterReload": true
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}
