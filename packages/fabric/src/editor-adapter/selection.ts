@@ -7,6 +7,7 @@ import {
   resolveCanvasSelectionNodeIds,
   type FabricNodeObject,
 } from "../editor-adapter-support";
+import type { FabricAutoSaveBlockReason } from "../editor-adapter-types";
 import type { FabricEditorAdapterContext } from "./context";
 
 /**
@@ -14,6 +15,12 @@ import type { FabricEditorAdapterContext } from "./context";
  * 这里保留一个很短的兜底窗口，避免编辑侧面板被误清空。
  */
 const SELECTION_RETENTION_WINDOW_MS = 180;
+
+/**
+ * 拖拽、缩放、旋转完成后的短稳定窗口。
+ * 让自动保存等待画布与侧栏状态彻底稳定后再执行，避免交互刚结束就触发闪动。
+ */
+const TRANSFORM_AUTOSAVE_SETTLE_MS = 1000;
 
 /** 把当前 Fabric 选中态同步回标准控制器。 */
 export function emitEditorSelectionChange(context: FabricEditorAdapterContext): void {
@@ -95,12 +102,44 @@ export function captureSelectionTarget(
   context: FabricEditorAdapterContext,
   target: FabricNodeObject | undefined,
 ): void {
+  markCanvasTransformAutoSaveBlock(context);
   const meta = target ? readNodeMeta(target) : null;
   if (!meta) {
     return;
   }
 
   retainSelection(context, meta.nodeId);
+}
+
+/** 标记最近发生过一次画布变换，让自动保存稍后再执行。 */
+export function markCanvasTransformAutoSaveBlock(
+  context: FabricEditorAdapterContext,
+): void {
+  context.autoSaveBlockReason = "canvas-transform";
+  context.autoSaveBlockExpiresAt = Date.now() + TRANSFORM_AUTOSAVE_SETTLE_MS;
+}
+
+/** 读取当前仍然有效的画布变换阻塞原因。 */
+export function readCanvasTransformAutoSaveBlockReason(
+  context: FabricEditorAdapterContext,
+): FabricAutoSaveBlockReason | null {
+  if (
+    context.autoSaveBlockReason !== "canvas-transform" ||
+    Date.now() > context.autoSaveBlockExpiresAt
+  ) {
+    clearCanvasTransformAutoSaveBlock(context);
+    return null;
+  }
+
+  return context.autoSaveBlockReason;
+}
+
+/** 清理已经失效的画布变换自动保存阻塞状态。 */
+export function clearCanvasTransformAutoSaveBlock(
+  context: FabricEditorAdapterContext,
+): void {
+  context.autoSaveBlockReason = null;
+  context.autoSaveBlockExpiresAt = 0;
 }
 
 /** 为单个节点开启一个很短的选中保留窗口。 */

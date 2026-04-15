@@ -2,6 +2,7 @@ import type { Canvas } from "fabric";
 import type { EditorController, EditorSnapshot } from "@canvas-courseware/core";
 import type { FabricNodeObject } from "../editor-adapter-support";
 import type {
+  FabricAutoSaveBlockReason,
   FabricEditorAdapterOptions,
   FabricEditorContextMenuRequest,
 } from "../editor-adapter-types";
@@ -32,6 +33,10 @@ export interface FabricEditorAdapterContext {
   retainedSelectionExpiresAt: number;
   /** 对象变换后的延迟重选计时器。 */
   selectionRestoreTimer: ReturnType<typeof setTimeout> | null;
+  /** 当前自动保存暂缓原因。 */
+  autoSaveBlockReason: FabricAutoSaveBlockReason | null;
+  /** 当前自动保存暂缓原因的失效时间戳。 */
+  autoSaveBlockExpiresAt: number;
   /** 适配层向 UI 层抛出的右键菜单回调。 */
   onContextMenuRequest?: (payload: FabricEditorContextMenuRequest) => void;
 }
@@ -53,6 +58,8 @@ export function createFabricEditorAdapterContext(
     retainedSelectionNodeId: null,
     retainedSelectionExpiresAt: 0,
     selectionRestoreTimer: null,
+    autoSaveBlockReason: null,
+    autoSaveBlockExpiresAt: 0,
     onContextMenuRequest: options.onContextMenuRequest,
   };
 }

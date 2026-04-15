@@ -1,0 +1,91 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "dragDelta": {
+    "x": 180,
+    "y": 110
+  },
+  "cooldownCheckMs": 900,
+  "executedAt": "2026-04-15T08:50:20.450Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "insert-rect",
+      "nodeId": "node-1343adbe-2c48-4769-ae8c-2ac2bf59ac97",
+      "geometry": {
+        "x": 160,
+        "y": 180,
+        "width": 280,
+        "height": 180
+      }
+    },
+    {
+      "id": "autosave-cooldown",
+      "saveStatusDuringCooldown": "未保存",
+      "geometryAfterDrag": {
+        "x": 339.497,
+        "y": 290.174,
+        "width": 280,
+        "height": 180
+      },
+      "persistedGeometryDuringCooldown": {
+        "x": 160,
+        "y": 180,
+        "width": 280,
+        "height": 180
+      },
+      "eventsDuringCooldown": [
+        {
+          "event": "project.autosave.scheduled",
+          "reason": null,
+          "trigger": null
+        },
+        {
+          "event": "project.autosave.deferred",
+          "reason": "canvas-transform",
+          "trigger": null
+        }
+      ]
+    },
+    {
+      "id": "autosave-completed",
+      "persistedGeometryAfterAutoSave": {
+        "x": 339.497,
+        "y": 290.174,
+        "width": 280,
+        "height": 180
+      },
+      "autosaveCompletedEntry": {
+        "id": "diag-1776243026562-9",
+        "scope": "workspace",
+        "event": "project.save.completed",
+        "message": "自动保存成功",
+        "level": "info",
+        "timestamp": "2026-04-15T08:50:26.562Z",
+        "context": {
+          "projectId": "document-8d80c440-6f74-4011-b947-550b0378338b",
+          "activeSlideId": "slide-52174cd4-842d-47ab-94b2-4bab42315f58",
+          "workspaceMode": "edit",
+          "trigger": "auto",
+          "updatedAt": "2026-04-15T08:50:26.562Z",
+          "assetCount": 0,
+          "rewrittenAssetCount": 0,
+          "slideCount": 1
+        }
+      }
+    },
+    {
+      "id": "reload-restore",
+      "reloadedGeometry": {
+        "x": 339.497,
+        "y": 290.174,
+        "width": 280,
+        "height": 180
+      }
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

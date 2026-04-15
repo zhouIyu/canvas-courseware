@@ -1,5 +1,8 @@
 import type { EditorController } from "@canvas-courseware/core";
 
+/** 编辑态自动保存需要暂缓时的原因枚举。 */
+export type FabricAutoSaveBlockReason = "inline-text-editing" | "canvas-transform";
+
 /** 编辑器右键菜单请求的标准化载荷。 */
 export interface FabricEditorContextMenuRequest {
   /** 右键时的视口 X 坐标。 */

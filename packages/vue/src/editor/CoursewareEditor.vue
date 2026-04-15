@@ -58,6 +58,9 @@ interface EditorCanvasWorkspaceExposed {
   openContextMenu: (payload: FabricEditorContextMenuRequest) => void;
 }
 
+/** 编辑器向应用壳层暴露的自动保存阻塞原因。 */
+type EditorAutoSaveBlockReason = "inline-text-editing" | "canvas-transform";
+
 /** 编辑器组件的显示参数。 */
 const props = withDefaults(
   defineProps<{
@@ -165,6 +168,7 @@ const {
   duplicateSlideById,
   inlineTextEditingLayout,
   isInlineTextEditingActive,
+  getAutoSaveBlockReason,
   removeTimelineAnimation,
   removeTimelineStep,
   removeSlide,
@@ -555,6 +559,7 @@ onBeforeUnmount(() => {
 /** 暴露给应用壳层的组件方法。 */
 defineExpose({
   captureActiveSlideThumbnail,
+  getAutoSaveBlockReason: (): EditorAutoSaveBlockReason | null => getAutoSaveBlockReason(),
   isInlineTextEditingActive,
 });
 </script>

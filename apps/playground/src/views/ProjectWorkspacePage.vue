@@ -40,6 +40,8 @@ interface CoursewareEditorExposed {
   } | null>;
   /** 判断当前是否仍处于文本内联编辑态。 */
   isInlineTextEditingActive: () => boolean;
+  /** 读取当前自动保存需要暂缓的原因。 */
+  getAutoSaveBlockReason: () => "inline-text-editing" | "canvas-transform" | null;
 }
 
 /** 当前路由实例。 */
@@ -98,7 +100,8 @@ const {
   workspaceMode,
   captureActiveSlideThumbnail: async () =>
     (await workspaceEditorRef.value?.captureActiveSlideThumbnail?.()) ?? null,
-  isAutoSaveBlocked: () => workspaceEditorRef.value?.isInlineTextEditingActive?.() ?? false,
+  resolveAutoSaveBlockReason: () =>
+    workspaceEditorRef.value?.getAutoSaveBlockReason?.() ?? null,
 });
 
 /** 把路由 query 规范成受支持的编辑模式。 */

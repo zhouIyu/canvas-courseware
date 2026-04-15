@@ -16,6 +16,9 @@ const AUTO_SAVE_DELAY_MS = 800;
 /** 自动保存被连续编辑暂缓后的重试延时，单位毫秒。 */
 const AUTO_SAVE_BLOCKED_RETRY_MS = 250;
 
+/** 自动保存当前被暂缓时的原因枚举。 */
+type AutoSaveBlockReason = "inline-text-editing" | "canvas-transform";
+
 /** 导入导出反馈语义。 */
 type IoFeedbackTone = "success" | "error";
 
@@ -30,8 +33,8 @@ export interface UseProjectWorkspacePersistenceOptions {
   workspaceMode: ComputedRef<ProjectWorkspaceMode>;
   /** 保存前主动向编辑器拉取当前页缩略图。 */
   captureActiveSlideThumbnail: () => Promise<SlideThumbnailCapturedPayload | null>;
-  /** 判断当前自动保存是否应被暂缓，例如仍处于文本内联编辑态。 */
-  isAutoSaveBlocked?: () => boolean;
+  /** 读取当前自动保存是否需要暂缓，以及暂缓原因。 */
+  resolveAutoSaveBlockReason?: () => AutoSaveBlockReason | null;
 }
 
 /** 收敛项目加载、保存、自动保存与导入导出职责。 */
@@ -100,8 +103,8 @@ export function useProjectWorkspacePersistence(
     saveTimer = null;
   };
 
-  /** 判断当前自动保存是否需要暂缓，避免连续编辑被保存链路抢占。 */
-  const isAutoSaveBlocked = () => Boolean(options.isAutoSaveBlocked?.());
+  /** 读取当前自动保存是否需要暂缓，以及暂缓原因。 */
+  const resolveAutoSaveBlockReason = () => options.resolveAutoSaveBlockReason?.() ?? null;
 
   /** 安排下一次自动保存执行时机，供首次调度和短间隔重试复用。 */
   const queueAutoSave = (delayMs: number) => {
@@ -112,14 +115,14 @@ export function useProjectWorkspacePersistence(
   };
 
   /** 当前仍处于连续编辑态时，先保留脏状态并在短间隔后重试自动保存。 */
-  const deferAutoSave = () => {
+  const deferAutoSave = (blockReason: AutoSaveBlockReason) => {
     saveStatus.value = "dirty";
     if (!hasLoggedAutoSaveBlock) {
       workspaceDiagnosticLogger.debug({
         event: "project.autosave.deferred",
         message: "当前仍在连续编辑，自动保存已暂缓",
         context: buildWorkspaceDiagnosticContext({
-          reason: "inline-text-editing",
+          reason: blockReason,
           retryDelayMs: AUTO_SAVE_BLOCKED_RETRY_MS,
         }),
       });
@@ -159,8 +162,9 @@ export function useProjectWorkspacePersistence(
       return;
     }
 
-    if (isAutoSaveBlocked()) {
-      deferAutoSave();
+    const autoSaveBlockReason = resolveAutoSaveBlockReason();
+    if (autoSaveBlockReason) {
+      deferAutoSave(autoSaveBlockReason);
       return;
     }
 

@@ -8,6 +8,7 @@ import {
 import { disposeEditorCanvas, syncEditorSnapshot } from "./editor-adapter/rendering";
 import {
   captureSelectionTarget,
+  readCanvasTransformAutoSaveBlockReason,
   emitEditorSelectionChange,
   handleEditorContextMenu,
   handleEditorObjectModified,
@@ -21,12 +22,14 @@ import {
   handleEditorTextEditingExited,
 } from "./editor-adapter/text-editing";
 import type {
+  FabricAutoSaveBlockReason,
   FabricEditorAdapterMountOptions,
   FabricEditorAdapterOptions,
   FabricInlineTextEditingLayout,
 } from "./editor-adapter-types";
 
 export type {
+  FabricAutoSaveBlockReason,
   FabricEditorAdapterMountOptions,
   FabricEditorAdapterOptions,
   FabricEditorContextMenuRequest,
@@ -83,6 +86,15 @@ export class FabricEditorAdapter {
   /** 读取当前内联文本编辑态的浮层定位信息。 */
   getInlineTextEditingLayout(): FabricInlineTextEditingLayout | null {
     return getInlineTextEditingLayout(this.context);
+  }
+
+  /** 读取当前是否仍存在需要暂缓自动保存的编辑态原因。 */
+  getAutoSaveBlockReason(): FabricAutoSaveBlockReason | null {
+    if (this.getInlineTextEditingLayout()) {
+      return "inline-text-editing";
+    }
+
+    return readCanvasTransformAutoSaveBlockReason(this.context);
   }
 
   /** 挂载 Fabric 画布并注册编辑态事件。 */
