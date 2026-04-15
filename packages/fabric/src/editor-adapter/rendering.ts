@@ -13,6 +13,7 @@ import {
 } from "../editor-adapter-support";
 import type { FabricEditorAdapterContext } from "./context";
 import { clearSelectionRestoreTimer } from "./selection";
+import { clearEditorAlignmentGuides } from "./alignment";
 import { syncInlineTextEditingFromSnapshot } from "./text-editing";
 
 /** 释放当前编辑画布并重置所有与渲染生命周期有关的状态。 */
@@ -24,6 +25,9 @@ export async function disposeEditorCanvas(
   context.lastDocumentRef = null;
   context.lastRenderedSlideId = null;
   clearSelectionRestoreTimer(context);
+  clearEditorAlignmentGuides(context, {
+    skipRender: true,
+  });
 
   if (!context.canvas) {
     return;
@@ -94,6 +98,9 @@ async function renderEditorSlide(
   context.isSyncing = true;
 
   try {
+    clearEditorAlignmentGuides(context, {
+      skipRender: true,
+    });
     context.objectMap.clear();
     canvas.clear();
     syncCanvasFrame(canvas, slide);
@@ -132,6 +139,9 @@ function syncEmptyEditorSnapshot(
   context.lastRenderedSlideId = null;
   context.isSyncing = true;
   try {
+    clearEditorAlignmentGuides(context, {
+      skipRender: true,
+    });
     renderEmptyCanvas(canvas, context.objectMap);
   } finally {
     context.isSyncing = false;

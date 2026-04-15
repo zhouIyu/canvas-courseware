@@ -14,6 +14,10 @@ import {
   handleEditorObjectModified,
 } from "./editor-adapter/selection";
 import {
+  clearEditorAlignmentGuides,
+  handleEditorObjectMoving,
+} from "./editor-adapter/alignment";
+import {
   exitActiveTextEditing,
   getInlineTextEditingLayout,
   handleEditorTextChanged,
@@ -119,7 +123,9 @@ export class FabricEditorAdapter {
     registerEditorCanvasEvents(this.context.canvas, {
       emitSelectionChange: () => emitEditorSelectionChange(this.context),
       captureSelectionTarget: (target) => captureSelectionTarget(this.context, target),
+      handleObjectMoving: (target) => handleEditorObjectMoving(this.context, target),
       handleObjectModified: (event) => handleEditorObjectModified(this.context, event),
+      clearAlignmentGuides: () => clearEditorAlignmentGuides(this.context),
       handleTextChanged: (target) => handleEditorTextChanged(this.context, target),
       handleTextDoubleClick: (target, nativeEvent) =>
         handleEditorTextDoubleClick(this.context, target, nativeEvent),

@@ -1,0 +1,34 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-04-15T11:04:22.994Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "canvas-center-snap",
+      "snappedCenterX": 639.5,
+      "snappedCenterY": 359.5,
+      "guideCountDuringDrag": 2
+    },
+    {
+      "id": "canvas-edge-snap",
+      "snappedLeft": 0,
+      "guideCountDuringDrag": 2
+    },
+    {
+      "id": "neighbor-snap",
+      "referenceRight": 360,
+      "snappedLeft": 361,
+      "guideCountDuringDrag": 2
+    },
+    {
+      "id": "guide-cleanup",
+      "guideCountAfterDrag": 0
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "status": "passed"
+}

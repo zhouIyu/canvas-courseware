@@ -7,8 +7,12 @@ interface RegisterEditorCanvasEventsHandlers {
   emitSelectionChange: () => void;
   /** 在拖拽或缩放过程中记录当前目标节点。 */
   captureSelectionTarget: (target: FabricNodeObject | undefined) => void;
+  /** 在拖拽过程中执行吸附与参考线反馈。 */
+  handleObjectMoving: (target: FabricNodeObject | ActiveSelection | undefined) => void;
   /** 在对象变换完成后回写标准文档。 */
   handleObjectModified: (event: ModifiedEvent) => void;
+  /** 清理拖拽过程中残留的对齐参考线。 */
+  clearAlignmentGuides: () => void;
   /** 在文本输入过程中处理临时变更。 */
   handleTextChanged: (target: FabricNodeObject | undefined) => void;
   /** 在双击文本对象时进入画布内编辑态。 */
@@ -30,14 +34,17 @@ export function registerEditorCanvasEvents(
   handlers: RegisterEditorCanvasEventsHandlers,
 ): void {
   canvas.on("selection:created", () => {
+    handlers.clearAlignmentGuides();
     handlers.emitSelectionChange();
   });
 
   canvas.on("selection:updated", () => {
+    handlers.clearAlignmentGuides();
     handlers.emitSelectionChange();
   });
 
   canvas.on("selection:cleared", () => {
+    handlers.clearAlignmentGuides();
     handlers.emitSelectionChange();
   });
 
@@ -47,18 +54,26 @@ export function registerEditorCanvasEvents(
    */
   canvas.on("object:moving", (event) => {
     handlers.captureSelectionTarget(event.target as FabricNodeObject | undefined);
+    handlers.handleObjectMoving(event.target as FabricNodeObject | ActiveSelection | undefined);
   });
 
   canvas.on("object:scaling", (event) => {
     handlers.captureSelectionTarget(event.target as FabricNodeObject | undefined);
+    handlers.clearAlignmentGuides();
   });
 
   canvas.on("object:rotating", (event) => {
     handlers.captureSelectionTarget(event.target as FabricNodeObject | undefined);
+    handlers.clearAlignmentGuides();
   });
 
   canvas.on("object:modified", (event) => {
+    handlers.clearAlignmentGuides();
     handlers.handleObjectModified(event);
+  });
+
+  canvas.on("mouse:up", () => {
+    handlers.clearAlignmentGuides();
   });
 
   canvas.on("mouse:dblclick", (event) => {
@@ -78,6 +93,7 @@ export function registerEditorCanvasEvents(
   });
 
   canvas.on("contextmenu", (event) => {
+    handlers.clearAlignmentGuides();
     handlers.handleContextMenu(
       event.target as FabricNodeObject | ActiveSelection | undefined,
       event.e,

@@ -5,7 +5,7 @@
     "y": 110
   },
   "cooldownCheckMs": 900,
-  "executedAt": "2026-04-15T08:50:20.450Z",
+  "executedAt": "2026-04-15T11:04:45.944Z",
   "desktopViewport": {
     "width": 1440,
     "height": 900
@@ -13,7 +13,7 @@
   "checks": [
     {
       "id": "insert-rect",
-      "nodeId": "node-1343adbe-2c48-4769-ae8c-2ac2bf59ac97",
+      "nodeId": "node-7ea93398-2a40-486f-b426-f01b29d4d34a",
       "geometry": {
         "x": 160,
         "y": 180,
@@ -58,18 +58,18 @@
         "height": 180
       },
       "autosaveCompletedEntry": {
-        "id": "diag-1776243026562-9",
+        "id": "diag-1776251092070-9",
         "scope": "workspace",
         "event": "project.save.completed",
         "message": "自动保存成功",
         "level": "info",
-        "timestamp": "2026-04-15T08:50:26.562Z",
+        "timestamp": "2026-04-15T11:04:52.070Z",
         "context": {
-          "projectId": "document-8d80c440-6f74-4011-b947-550b0378338b",
-          "activeSlideId": "slide-52174cd4-842d-47ab-94b2-4bab42315f58",
+          "projectId": "document-c1627653-9ba1-47f9-adf6-0c1b16158249",
+          "activeSlideId": "slide-406cb958-f9c2-4cc0-9650-3fb9af3120e9",
           "workspaceMode": "edit",
           "trigger": "auto",
-          "updatedAt": "2026-04-15T08:50:26.562Z",
+          "updatedAt": "2026-04-15T11:04:52.070Z",
           "assetCount": 0,
           "rewrittenAssetCount": 0,
           "slideCount": 1

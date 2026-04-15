@@ -1,4 +1,4 @@
-import type { Canvas } from "fabric";
+import type { Canvas, Line } from "fabric";
 import type { EditorController, EditorSnapshot } from "@canvas-courseware/core";
 import type { FabricNodeObject } from "../editor-adapter-support";
 import type {
@@ -6,6 +6,15 @@ import type {
   FabricEditorAdapterOptions,
   FabricEditorContextMenuRequest,
 } from "../editor-adapter-types";
+
+/** 编辑器对齐参考线的方向类型。 */
+export type FabricAlignmentGuideOrientation = "vertical" | "horizontal";
+
+/** 编辑器对齐参考线对象类型。 */
+export type FabricAlignmentGuideLine = Line & {
+  /** 对齐参考线方向元信息，仅用于调试与自动化断言。 */
+  __coursewareAlignmentGuide?: FabricAlignmentGuideOrientation;
+};
 
 /** 编辑器适配器内部统一维护的可变运行时上下文。 */
 export interface FabricEditorAdapterContext {
@@ -37,6 +46,10 @@ export interface FabricEditorAdapterContext {
   autoSaveBlockReason: FabricAutoSaveBlockReason | null;
   /** 当前自动保存暂缓原因的失效时间戳。 */
   autoSaveBlockExpiresAt: number;
+  /** 当前正在渲染的竖向对齐参考线。 */
+  alignmentVerticalGuide: FabricAlignmentGuideLine | null;
+  /** 当前正在渲染的横向对齐参考线。 */
+  alignmentHorizontalGuide: FabricAlignmentGuideLine | null;
   /** 适配层向 UI 层抛出的右键菜单回调。 */
   onContextMenuRequest?: (payload: FabricEditorContextMenuRequest) => void;
 }
@@ -60,6 +73,8 @@ export function createFabricEditorAdapterContext(
     selectionRestoreTimer: null,
     autoSaveBlockReason: null,
     autoSaveBlockExpiresAt: 0,
+    alignmentVerticalGuide: null,
+    alignmentHorizontalGuide: null,
     onContextMenuRequest: options.onContextMenuRequest,
   };
 }
