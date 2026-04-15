@@ -1,0 +1,57 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "imagePath": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-04-07-vnext-08-round-01/vnext08-sample.png",
+  "expectedOffset": 24,
+  "executedAt": "2026-04-15T09:23:23.336Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "label": "text-copy-paste",
+      "sourceId": "node-25eb04f9-6aff-42c4-8b05-c9b7351a0966",
+      "createdId": "node-fbfe67d6-e3c6-4f32-baf8-006145fcc745",
+      "offsetX": 24,
+      "offsetY": 24,
+      "widthEqual": true,
+      "heightEqual": true,
+      "propsEqual": true
+    },
+    {
+      "label": "rect-duplicate",
+      "sourceId": "node-9fe6f2b4-6bc7-4eb4-9d05-1763720d4391",
+      "createdId": "node-b4aacba0-de43-4920-abf3-0a40901ed74a",
+      "offsetX": 24,
+      "offsetY": 24,
+      "widthEqual": true,
+      "heightEqual": true,
+      "propsEqual": true
+    },
+    {
+      "label": "image-copy-paste",
+      "sourceId": "node-e724a120-1eeb-4418-a87d-7a27474b0d9a",
+      "createdId": "node-edb9fbaa-8ef7-4bfb-82cc-f18e425d0286",
+      "offsetX": 24,
+      "offsetY": 24,
+      "widthEqual": true,
+      "heightEqual": true,
+      "propsEqual": true
+    },
+    {
+      "id": "save-status-after-actions",
+      "saveStatusAfterActions": "已保存"
+    },
+    {
+      "id": "reload-persistence",
+      "textCount": 2,
+      "rectCount": 2,
+      "imageCount": 2,
+      "textCreatedPersisted": true,
+      "rectCreatedPersisted": true,
+      "imageCreatedPersisted": true
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

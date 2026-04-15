@@ -44,6 +44,9 @@ export function useEditorClipboardKeyboard(options: UseEditorClipboardKeyboardOp
   /** 当前粘贴次数，用于让每次粘贴都产生可见位移。 */
   const pasteCount = shallowRef(0);
 
+  /** 最近一次执行粘贴时所在页面 id，用于连续粘贴位移累计。 */
+  const lastPasteSlideId = shallowRef<string | null>(null);
+
   /** 读取当前选中节点所在页面。 */
   const resolveSelectionSlide = () => {
     const slideId = options.snapshot.value.selection.slideId ?? options.snapshot.value.activeSlideId;
@@ -73,7 +76,8 @@ export function useEditorClipboardKeyboard(options: UseEditorClipboardKeyboardOp
       .map((nodeId) =>
         selectionContext.slide.nodes.find((node) => node.id === nodeId),
       )
-      .filter((node): node is CoursewareNode => Boolean(node));
+      .filter((node): node is CoursewareNode => Boolean(node))
+      .filter((node): node is CoursewareNode => isClipboardSupportedNode(node));
   };
 
   /** 复制当前选中节点到编辑器内部缓冲区。 */
@@ -93,6 +97,7 @@ export function useEditorClipboardKeyboard(options: UseEditorClipboardKeyboardOp
       nodes: selectedNodes.map((node) => cloneNodeForClipboard(node)),
     };
     pasteCount.value = 0;
+    lastPasteSlideId.value = null;
   };
 
   /** 按当前页面上下文粘贴剪贴板节点。 */
@@ -103,8 +108,8 @@ export function useEditorClipboardKeyboard(options: UseEditorClipboardKeyboardOp
       return;
     }
 
-    const isSameSlidePaste = clipboard.sourceSlideId === activeSlideId;
-    const pasteIteration = isSameSlidePaste ? pasteCount.value + 1 : 1;
+    const pasteIteration =
+      lastPasteSlideId.value === activeSlideId ? pasteCount.value + 1 : 1;
     const nextOffset = KEYBOARD_PASTE_OFFSET * pasteIteration;
     const activeNodesLength = options.activeSlide.value?.nodes.length ?? 0;
     const createdNodeIds: string[] = [];
@@ -123,7 +128,8 @@ export function useEditorClipboardKeyboard(options: UseEditorClipboardKeyboardOp
       createdNodeIds.push(pastedNode.id);
     }
 
-    pasteCount.value = isSameSlidePaste ? pasteCount.value + 1 : 0;
+    pasteCount.value = pasteIteration;
+    lastPasteSlideId.value = activeSlideId;
     options.controller.execute({
       type: COMMAND_TYPES.SELECTION_SET,
       slideId: activeSlideId,
@@ -319,6 +325,11 @@ function cloneNodeForClipboard(node: CoursewareNode): CoursewareNode {
     default:
       return node;
   }
+}
+
+/** 判断节点类型是否在当前复制粘贴能力支持范围内。 */
+function isClipboardSupportedNode(node: CoursewareNode): boolean {
+  return node.type === "text" || node.type === "image" || node.type === "rect";
 }
 
 /** 基于复制节点创建新的粘贴节点，并补齐位移和新 id。 */
