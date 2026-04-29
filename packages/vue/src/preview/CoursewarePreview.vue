@@ -6,6 +6,7 @@ import {
   createSlideBackgroundStyle,
   formatPlaybackStatus,
   formatPlaybackSummary,
+  formatStepIndexLabel,
   formatTriggerLabel,
 } from "../shared";
 import { useCoursewarePreview } from "./useCoursewarePreview";
@@ -204,6 +205,10 @@ const stepPositionLabel = computed(() => {
     return "没有可播放的步骤";
   }
 
+  if (state.value.status === "completed" || state.value.stepIndex >= stepCount.value) {
+    return `当前页已完成 ${stepCount.value} 步`;
+  }
+
   const currentStep = Math.min(state.value.stepIndex + 1, stepCount.value);
   return `当前焦点：第 ${currentStep} / ${stepCount.value} 步`;
 });
@@ -222,6 +227,158 @@ const activeSlideIndex = computed(() => {
   const slides = state.value.document?.slides ?? [];
   return slides.findIndex((slide) => slide.id === state.value.slideId);
 });
+
+/** 当前预览文档中的总页数。 */
+const slideCount = computed(() => state.value.document?.slides.length ?? 0);
+
+/** 当前已经执行完成的步骤数量。 */
+const completedStepCount = computed(() =>
+  Math.min(state.value.stepIndex, stepCount.value),
+);
+
+/** 当前尚未执行的下一步。 */
+const nextStep = computed(() =>
+  activeSlide.value?.timeline.steps[state.value.stepIndex] ?? null,
+);
+
+/** 最近一次已经完成的步骤，用于完成态回显。 */
+const lastCompletedStep = computed(() => {
+  if (!activeSlide.value || completedStepCount.value === 0) {
+    return null;
+  }
+
+  return activeSlide.value.timeline.steps[completedStepCount.value - 1] ?? null;
+});
+
+/** 当前页码在整份文档中的位置摘要。 */
+const slidePositionLabel = computed(() => {
+  if (slideCount.value === 0 || activeSlideIndex.value < 0) {
+    return "未选择页面";
+  }
+
+  return `第 ${activeSlideIndex.value + 1} / ${slideCount.value} 页`;
+});
+
+/** 当前步骤完成进度摘要。 */
+const stepProgressLabel = computed(() => {
+  if (stepCount.value === 0) {
+    return "当前没有步骤";
+  }
+
+  return `已完成 ${completedStepCount.value} / ${stepCount.value} 步`;
+});
+
+/** 当前页步骤完成进度百分比，供进度条直接消费。 */
+const stepProgressPercent = computed(() => {
+  if (stepCount.value === 0) {
+    return 0;
+  }
+
+  return Math.round((completedStepCount.value / stepCount.value) * 100);
+});
+
+/** 当前页的重点播放提示标题。 */
+const playbackHintTitle = computed(() => {
+  if (!activeSlide.value) {
+    return "未加载预览页面";
+  }
+
+  if (stepCount.value === 0) {
+    return "当前页没有播放步骤";
+  }
+
+  if (
+    state.value.status === "completed" ||
+    completedStepCount.value >= stepCount.value ||
+    !nextStep.value
+  ) {
+    return "当前页已播放完成";
+  }
+
+  return `下一步：${formatStepIndexLabel(state.value.stepIndex)} · ${nextStep.value.name}`;
+});
+
+/** 当前页的重点播放提示补充说明。 */
+const playbackHintCopy = computed(() => {
+  if (!activeSlide.value) {
+    return "切换页面后，这里会自动同步同一份课件文档与预览状态。";
+  }
+
+  if (stepCount.value === 0) {
+    return "可以先回到编辑态补齐 timeline，再回来验证页面播放顺序。";
+  }
+
+  if (
+    state.value.status === "completed" ||
+    completedStepCount.value >= stepCount.value ||
+    !nextStep.value
+  ) {
+    return lastCompletedStep.value
+      ? `最后完成：${lastCompletedStep.value.name} · 共 ${stepCount.value} 步`
+      : `当前页共 ${stepCount.value} 步，现已全部播放完成`;
+  }
+
+  return `${stepProgressLabel.value} · ${formatTriggerLabel(nextStep.value.trigger.type)}`;
+});
+
+/** 当前是否还能切到上一页。 */
+const canActivatePreviousSlide = computed(() => activeSlideIndex.value > 0);
+
+/** 当前是否还能切到下一页。 */
+const canActivateNextSlide = computed(
+  () => activeSlideIndex.value >= 0 && activeSlideIndex.value < slideCount.value - 1,
+);
+
+/** 切换到相邻页面，供“上一页 / 下一页”复用。 */
+const activateRelativeSlide = async (offset: number) => {
+  const slides = state.value.document?.slides ?? [];
+  const targetSlide = slides[activeSlideIndex.value + offset];
+
+  if (!targetSlide) {
+    return;
+  }
+
+  await activateSlide(targetSlide.id);
+};
+
+/** 从当前页起点重新播放，统一用“重播当前页”语义暴露给 UI。 */
+const replayCurrentSlide = async () => {
+  await resetPreview();
+};
+
+/** 生成某一步当前对应的状态文案。 */
+const resolveStepStatusLabel = (stepIndex: number) => {
+  if (stepIndex < completedStepCount.value) {
+    return "已完成";
+  }
+
+  if (stepIndex === state.value.stepIndex && stepIndex < stepCount.value) {
+    if (state.value.status === "playing") {
+      return "播放中";
+    }
+
+    if (state.value.nextTrigger === "auto") {
+      return "自动触发";
+    }
+
+    return "待触发";
+  }
+
+  return "待执行";
+};
+
+/** 生成某一步状态标签使用的色值，保证当前焦点更容易识别。 */
+const resolveStepStatusColor = (stepIndex: number) => {
+  if (stepIndex < completedStepCount.value) {
+    return "#00b42a";
+  }
+
+  if (stepIndex === state.value.stepIndex && stepIndex < stepCount.value) {
+    return state.value.status === "paused" ? "#ff7d00" : "#165dff";
+  }
+
+  return "#86909c";
+};
 
 /** 生成预览侧栏缩略页背景样式，优先使用保存后的真实截图。 */
 const resolveSlideThumbnailStyle = (slide: CoursewareDocument["slides"][number]) => {
@@ -321,12 +478,38 @@ onBeforeUnmount(() => {
       </div>
       <div class="preview-topbar-actions">
         <div class="status-badges topbar-badges">
+          <a-tag bordered>{{ slidePositionLabel }}</a-tag>
           <a-tag bordered>{{ stepPositionLabel }}</a-tag>
           <a-tag bordered>{{ stageSizeLabel }}</a-tag>
         </div>
         <div class="preview-actions">
-          <a-button class="preview-text-button" type="text" @click="resetPreview">重置播放</a-button>
-          <a-button type="primary" @click="playNextStep">播放下一步</a-button>
+          <a-button
+            class="preview-text-button"
+            type="text"
+            :disabled="!canActivatePreviousSlide"
+            @click="activateRelativeSlide(-1)"
+          >
+            上一页
+          </a-button>
+          <a-button
+            class="preview-text-button"
+            type="text"
+            :disabled="!activeSlide"
+            @click="replayCurrentSlide"
+          >
+            重播当前页
+          </a-button>
+          <a-button
+            class="preview-text-button"
+            type="text"
+            :disabled="!canActivateNextSlide"
+            @click="activateRelativeSlide(1)"
+          >
+            下一页
+          </a-button>
+          <a-button type="primary" :disabled="!activeSlide" @click="playNextStep">
+            播放下一步
+          </a-button>
         </div>
       </div>
     </header>
@@ -396,21 +579,67 @@ onBeforeUnmount(() => {
           </div>
           <div class="stage-head-actions">
             <div v-if="showEmbeddedPlaybackActions" class="embedded-preview-actions">
-              <a-button
-                class="preview-text-button embedded-preview-button"
-                type="text"
-                :disabled="!activeSlide"
-                @click="resetPreview"
-              >
-                重置播放
-              </a-button>
+              <div class="preview-actions preview-actions-compact">
+                <a-button
+                  class="preview-text-button embedded-preview-button"
+                  type="text"
+                  :disabled="!canActivatePreviousSlide"
+                  @click="activateRelativeSlide(-1)"
+                >
+                  上一页
+                </a-button>
+                <a-button
+                  class="preview-text-button embedded-preview-button"
+                  type="text"
+                  :disabled="!activeSlide"
+                  @click="replayCurrentSlide"
+                >
+                  重播当前页
+                </a-button>
+                <a-button
+                  class="preview-text-button embedded-preview-button"
+                  type="text"
+                  :disabled="!canActivateNextSlide"
+                  @click="activateRelativeSlide(1)"
+                >
+                  下一页
+                </a-button>
+                <a-button type="primary" :disabled="!activeSlide" @click="playNextStep">
+                  播放下一步
+                </a-button>
+              </div>
             </div>
             <div class="status-badges">
               <a-tag :color="playbackStatusTagColor" bordered>{{ playbackStatusLabel }}</a-tag>
+              <a-tag bordered>{{ slidePositionLabel }}</a-tag>
               <a-tag bordered>{{ nextTriggerLabel }}</a-tag>
             </div>
           </div>
         </header>
+
+        <div class="playback-insight-strip">
+          <article class="playback-insight-card">
+            <span class="playback-insight-label">页面定位</span>
+            <strong class="preview-slide-position">{{ slidePositionLabel }}</strong>
+            <small>{{ activeSlide?.name ?? "未选择页面" }} · {{ stageSizeLabel }}</small>
+          </article>
+          <article class="playback-insight-card">
+            <span class="playback-insight-label">步骤进度</span>
+            <strong class="preview-step-progress">{{ stepProgressLabel }}</strong>
+            <small>{{ stepPositionLabel }}</small>
+            <div class="playback-progress-track" aria-hidden="true">
+              <span
+                class="playback-progress-fill"
+                :style="{ width: `${stepProgressPercent}%` }"
+              />
+            </div>
+          </article>
+          <article class="playback-insight-card is-emphasis">
+            <span class="playback-insight-label">当前提示</span>
+            <strong class="playback-hint-title">{{ playbackHintTitle }}</strong>
+            <small class="playback-hint-copy">{{ playbackHintCopy }}</small>
+          </article>
+        </div>
 
         <div ref="previewStageRef" class="preview-stage" :style="stageStyle">
           <div class="preview-stage-scroll">
@@ -453,9 +682,14 @@ onBeforeUnmount(() => {
             <div class="step-copy">
               <div class="step-row">
                 <strong>{{ step.name }}</strong>
-                <span class="step-trigger">{{ formatTriggerLabel(step.trigger.type) }}</span>
+                <a-tag class="preview-step-status" :color="resolveStepStatusColor(index)" bordered>
+                  {{ resolveStepStatusLabel(index) }}
+                </a-tag>
               </div>
-              <small>{{ step.actions.length }} 个动作</small>
+              <div class="step-row step-row-meta">
+                <span class="step-trigger">{{ formatTriggerLabel(step.trigger.type) }}</span>
+                <small>{{ step.actions.length }} 个动作</small>
+              </div>
             </div>
           </li>
         </ol>

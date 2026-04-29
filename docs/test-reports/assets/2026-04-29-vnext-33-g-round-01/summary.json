@@ -1,0 +1,43 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-04-29T03:35:23.064Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "initial-preview-status",
+      "slidePosition": "第 1 / 2 页",
+      "hintTitle": "下一步：第 1 步 · 展示诗句内容",
+      "hintCopy": "已完成 0 / 2 步 · 点击页面继续",
+      "previousDisabled": true,
+      "nextDisabled": false
+    },
+    {
+      "id": "first-slide-completed",
+      "stepProgress": "已完成 2 / 2 步",
+      "firstStepStatus": "已完成",
+      "secondStepStatus": "已完成"
+    },
+    {
+      "id": "second-slide-navigation",
+      "slidePosition": "第 2 / 2 页",
+      "hintTitle": "下一步：第 1 步 · 显示流程提示",
+      "previousDisabled": false,
+      "nextDisabled": true
+    },
+    {
+      "id": "replay-current-slide",
+      "stepProgress": "已完成 0 / 1 步",
+      "hintCopy": "已完成 0 / 1 步 · 点击页面继续",
+      "stepStatus": "待触发"
+    },
+    {
+      "id": "return-to-first-slide",
+      "slidePosition": "第 1 / 2 页"
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

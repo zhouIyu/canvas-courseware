@@ -132,6 +132,10 @@
   transform: translateY(-1px);
 }
 
+.preview-actions-compact {
+  justify-content: flex-end;
+}
+
 .step-row span,
 .step-copy small,
 .collapsed-side-shell small {
@@ -206,6 +210,73 @@
 
 .embedded-preview-button {
   padding-inline: 0;
+}
+
+.playback-insight-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding: 12px 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--cw-color-border) 92%, #ffffff);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.96));
+}
+
+.playback-insight-card {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.84);
+}
+
+.playback-insight-card.is-emphasis {
+  border-color: rgba(22, 93, 255, 0.18);
+  background:
+    linear-gradient(135deg, rgba(239, 246, 255, 0.98), rgba(255, 255, 255, 0.92)),
+    rgba(255, 255, 255, 0.88);
+  box-shadow: 0 10px 24px rgba(22, 93, 255, 0.08);
+}
+
+.playback-insight-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cw-color-muted);
+}
+
+.preview-slide-position,
+.preview-step-progress,
+.playback-hint-title {
+  font-size: 16px;
+  line-height: 1.2;
+  color: var(--cw-color-text);
+}
+
+.playback-insight-card small,
+.playback-hint-copy {
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--cw-color-muted);
+}
+
+.playback-progress-track {
+  position: relative;
+  height: 6px;
+  margin-top: 2px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.18);
+}
+
+.playback-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #165dff 0%, #3b82f6 100%);
+  transition: width var(--cw-duration-fast) var(--cw-ease-standard);
 }
 
 .status-badges {
@@ -339,6 +410,10 @@
   gap: var(--cw-space-3);
 }
 
+.step-row-meta {
+  align-items: center;
+}
+
 .step-trigger {
   display: inline-flex;
   align-items: center;
@@ -349,6 +424,10 @@
   color: var(--cw-color-muted);
   background: rgba(15, 23, 42, 0.05);
   white-space: nowrap;
+}
+
+.preview-step-status {
+  flex-shrink: 0;
 }
 
 .slide-card {
@@ -591,7 +670,7 @@
 @container (max-width: 920px) {
   .preview-topbar,
   .preview-layout,
-  .inline-status-strip {
+  .playback-insight-strip {
     grid-template-columns: 1fr;
   }
 
@@ -636,6 +715,12 @@
   .stage-head-actions,
   .status-badges {
     justify-items: start;
+    justify-content: flex-start;
+  }
+
+  .preview-actions-compact,
+  .embedded-preview-actions {
+    width: 100%;
     justify-content: flex-start;
   }
 }
