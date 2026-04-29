@@ -40,6 +40,12 @@ interface EditorObjectBounds {
   centerY: number;
 }
 
+/** 读取对象包围盒时的刷新策略。 */
+interface ResolveObjectBoundsOptions {
+  /** 是否先基于当前帧位置刷新一次 Fabric 坐标缓存。 */
+  refreshCoords?: boolean;
+}
+
 /** 单轴吸附命中结果。 */
 interface AxisSnapMatch {
   /** 最终吸附到的参考线坐标。 */
@@ -60,7 +66,9 @@ export function handleEditorObjectMoving(
     return;
   }
 
-  const movingBounds = resolveObjectBounds(target);
+  const movingBounds = resolveObjectBounds(target, {
+    refreshCoords: true,
+  });
   if (!movingBounds) {
     clearEditorAlignmentGuides(context);
     return;
@@ -111,7 +119,18 @@ export function clearEditorAlignmentGuides(
 /** 读取目标对象在当前画布坐标系中的包围盒。 */
 function resolveObjectBounds(
   target: FabricNodeObject | ActiveSelection,
+  options: ResolveObjectBoundsOptions = {},
 ): EditorObjectBounds | null {
+  /**
+   * Fabric 在 `object:moving` 事件刚触发时，`left / top` 已经是当前帧的新坐标，
+   * 但 `getBoundingRect()` 仍可能停留在上一帧缓存。
+   * 这里仅对“当前正在拖拽的目标对象”主动刷新一次坐标缓存，
+   * 避免吸附计算继续使用旧包围盒，导致命中晚一拍并在阈值边缘来回跳动。
+   */
+  if (options.refreshCoords) {
+    target.setCoords?.();
+  }
+
   const bounds = target.getBoundingRect?.();
   if (!bounds) {
     return null;
