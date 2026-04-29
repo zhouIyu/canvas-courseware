@@ -1,0 +1,105 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-04-29T10:03:11.111Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "name": "initial-slide-count",
+      "passed": true,
+      "detail": {
+        "activeSlideId": "slide-c9588c15-67a8-4701-91d2-11414ebe8cad",
+        "slides": [
+          {
+            "id": "slide-c9588c15-67a8-4701-91d2-11414ebe8cad",
+            "name": "第1页"
+          }
+        ]
+      }
+    },
+    {
+      "name": "context-menu-actions",
+      "passed": true,
+      "detail": [
+        "后插入",
+        "复制页面",
+        "删除页面"
+      ]
+    },
+    {
+      "name": "create-after",
+      "passed": true,
+      "detail": {
+        "activeSlideId": "slide-b9c32ee2-39aa-4bba-9b8a-c7142875bc3a",
+        "slides": [
+          {
+            "id": "slide-c9588c15-67a8-4701-91d2-11414ebe8cad",
+            "name": "第1页"
+          },
+          {
+            "id": "slide-b9c32ee2-39aa-4bba-9b8a-c7142875bc3a",
+            "name": "第2页"
+          }
+        ]
+      }
+    },
+    {
+      "name": "duplicate-slide",
+      "passed": true,
+      "detail": {
+        "activeSlideId": "slide-268e15b9-8cbc-4908-acf5-52475d1433a4",
+        "slides": [
+          {
+            "id": "slide-c9588c15-67a8-4701-91d2-11414ebe8cad",
+            "name": "第1页"
+          },
+          {
+            "id": "slide-268e15b9-8cbc-4908-acf5-52475d1433a4",
+            "name": "第1页 副本"
+          },
+          {
+            "id": "slide-b9c32ee2-39aa-4bba-9b8a-c7142875bc3a",
+            "name": "第2页"
+          }
+        ]
+      }
+    },
+    {
+      "name": "delete-slide-confirm",
+      "passed": true,
+      "detail": {
+        "activeSlideId": "slide-b9c32ee2-39aa-4bba-9b8a-c7142875bc3a",
+        "slides": [
+          {
+            "id": "slide-c9588c15-67a8-4701-91d2-11414ebe8cad",
+            "name": "第1页"
+          },
+          {
+            "id": "slide-b9c32ee2-39aa-4bba-9b8a-c7142875bc3a",
+            "name": "第2页"
+          }
+        ]
+      }
+    },
+    {
+      "name": "drag-reorder-after-context-menu",
+      "passed": true,
+      "detail": {
+        "before": [
+          "slide-c9588c15-67a8-4701-91d2-11414ebe8cad",
+          "slide-b9c32ee2-39aa-4bba-9b8a-c7142875bc3a"
+        ],
+        "after": [
+          "slide-b9c32ee2-39aa-4bba-9b8a-c7142875bc3a",
+          "slide-c9588c15-67a8-4701-91d2-11414ebe8cad"
+        ],
+        "activeSlideId": "slide-b9c32ee2-39aa-4bba-9b8a-c7142875bc3a"
+      }
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "result": "passed"
+}

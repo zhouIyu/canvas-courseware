@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Slide } from "@canvas-courseware/core";
-import { computed, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { createSlideBackgroundStyle } from "../shared";
 
 /** slide 重命名事件的载荷。 */
@@ -29,6 +29,25 @@ interface SlideDropState {
   /** 相对于命中 slide 的放置方向。 */
   placement: SlideDropPlacement;
 }
+
+/** slide 右键菜单的定位状态。 */
+interface SlideContextMenuState {
+  /** 当前右键命中的 slide id。 */
+  slideId: string;
+  /** 菜单相对于页面栏根容器的横向偏移。 */
+  x: number;
+  /** 菜单相对于页面栏根容器的纵向偏移。 */
+  y: number;
+}
+
+/** 右键菜单的预估宽度。 */
+const SLIDE_CONTEXT_MENU_WIDTH = 176;
+
+/** 右键菜单的预估高度。 */
+const SLIDE_CONTEXT_MENU_HEIGHT = 156;
+
+/** 右键菜单与边界之间的安全距离。 */
+const SLIDE_CONTEXT_MENU_MARGIN = 10;
 
 /** 页面栏组件输入参数。 */
 const props = withDefaults(
@@ -76,10 +95,48 @@ const draggedSlideId = ref<string | null>(null);
 /** 当前拖拽命中的落点信息。 */
 const dropState = ref<SlideDropState | null>(null);
 
+/** 页面栏根容器引用，供右键菜单定位与边界规整复用。 */
+const slideRailRef = ref<HTMLElement | null>(null);
+
+/** 页面卡片滚动容器引用，供右键菜单限制在列表区域内。 */
+const slideListRef = ref<HTMLElement | null>(null);
+
+/** 当前右键菜单的状态。 */
+const contextMenuState = ref<SlideContextMenuState | null>(null);
+
+/** 当前待确认删除的 slide id。 */
+const pendingDeleteSlideId = ref<string | null>(null);
+
 /** 页面数量摘要，供顶部说明复用。 */
 const slideSummary = computed(() =>
   props.slides.length > 0 ? `共 ${props.slides.length} 页，可拖拽排序` : "还没有页面，先新建一页",
 );
+
+/** 根据 slide id 读取当前页面对象。 */
+const resolveSlideById = (slideId: string) =>
+  props.slides.find((slide) => slide.id === slideId) ?? null;
+
+/** 当前右键菜单命中的 slide。 */
+const contextMenuSlide = computed(() =>
+  contextMenuState.value ? resolveSlideById(contextMenuState.value.slideId) : null,
+);
+
+/** 当前待确认删除的 slide。 */
+const pendingDeleteSlide = computed(() =>
+  pendingDeleteSlideId.value ? resolveSlideById(pendingDeleteSlideId.value) : null,
+);
+
+/** 当前右键菜单对应的定位样式。 */
+const slideContextMenuStyle = computed(() => {
+  if (!contextMenuState.value) {
+    return {};
+  }
+
+  return {
+    left: `${contextMenuState.value.x}px`,
+    top: `${contextMenuState.value.y}px`,
+  };
+});
 
 /** 生成 slide 缩略图背景样式，优先使用保存后的真实截图。 */
 const resolveSlideThumbnailStyle = (slide: Slide) => {
@@ -102,11 +159,18 @@ const hasSlideThumbnail = (slideId: string) => Boolean(props.slideThumbnailMap[s
 
 /** 激活指定页面。 */
 const activateSlide = (slideId: string) => {
+  closeContextMenu();
   emit("activate", slideId);
 };
 
 /** 用键盘触发页面卡片激活，补齐无鼠标场景。 */
 const handleCardKeydown = (event: KeyboardEvent, slideId: string) => {
+  if (event.key === "ContextMenu" || (event.shiftKey && event.key === "F10")) {
+    event.preventDefault();
+    openContextMenuFromKeyboard(slideId, event.currentTarget);
+    return;
+  }
+
   if (event.key !== "Enter" && event.key !== " ") {
     return;
   }
@@ -117,6 +181,7 @@ const handleCardKeydown = (event: KeyboardEvent, slideId: string) => {
 
 /** 进入页面名称编辑态。 */
 const startRename = (slide: Slide) => {
+  closeContextMenu();
   editingSlideId.value = slide.id;
   editingSlideName.value = slide.name;
 };
@@ -147,6 +212,117 @@ const commitRename = (slide: Slide) => {
   cancelRename();
 };
 
+/** 关闭当前右键菜单。 */
+const closeContextMenu = () => {
+  contextMenuState.value = null;
+};
+
+/** 关闭删除确认弹窗。 */
+const closeDeleteModal = () => {
+  pendingDeleteSlideId.value = null;
+};
+
+/** 读取右键菜单在当前页面栏中的安全坐标。 */
+const resolveContextMenuPosition = (clientX: number, clientY: number) => {
+  const railBounds = slideRailRef.value?.getBoundingClientRect();
+  if (!railBounds) {
+    return {
+      x: SLIDE_CONTEXT_MENU_MARGIN,
+      y: SLIDE_CONTEXT_MENU_MARGIN,
+    };
+  }
+
+  const listBounds = slideListRef.value?.getBoundingClientRect() ?? railBounds;
+  const minX = listBounds.left - railBounds.left + SLIDE_CONTEXT_MENU_MARGIN;
+  const maxX = listBounds.right - railBounds.left - SLIDE_CONTEXT_MENU_WIDTH - SLIDE_CONTEXT_MENU_MARGIN;
+  const minY = listBounds.top - railBounds.top + SLIDE_CONTEXT_MENU_MARGIN;
+  const maxY = listBounds.bottom - railBounds.top - SLIDE_CONTEXT_MENU_HEIGHT - SLIDE_CONTEXT_MENU_MARGIN;
+
+  return {
+    x: Math.min(Math.max(clientX - railBounds.left, minX), Math.max(minX, maxX)),
+    y: Math.min(Math.max(clientY - railBounds.top, minY), Math.max(minY, maxY)),
+  };
+};
+
+/** 打开指定页面对应的右键菜单。 */
+const openContextMenu = (slideId: string, clientX: number, clientY: number) => {
+  if (!resolveSlideById(slideId)) {
+    return;
+  }
+
+  contextMenuState.value = {
+    slideId,
+    ...resolveContextMenuPosition(clientX, clientY),
+  };
+};
+
+/** 判断当前右键目标是否应保留浏览器原生菜单。 */
+const shouldKeepNativeContextMenu = (target: EventTarget | null) =>
+  target instanceof HTMLElement &&
+  Boolean(target.closest("input, textarea, .arco-input-wrapper, .arco-textarea-wrapper"));
+
+/** 在页面卡片上打开右键菜单。 */
+const handleSlideCardContextMenu = (slideId: string, event: MouseEvent) => {
+  if (draggedSlideId.value || shouldKeepNativeContextMenu(event.target)) {
+    return;
+  }
+
+  event.preventDefault();
+  openContextMenu(slideId, event.clientX, event.clientY);
+};
+
+/** 通过键盘为当前聚焦页面卡片打开右键菜单。 */
+const openContextMenuFromKeyboard = (slideId: string, currentTarget: EventTarget | null) => {
+  if (!(currentTarget instanceof HTMLElement)) {
+    return;
+  }
+
+  const bounds = currentTarget.getBoundingClientRect();
+  openContextMenu(slideId, bounds.right - 12, bounds.top + Math.min(bounds.height / 2, 48));
+};
+
+/** 从右键菜单中在当前页后插入一页。 */
+const handleContextMenuCreateAfter = () => {
+  if (!contextMenuState.value) {
+    return;
+  }
+
+  const { slideId } = contextMenuState.value;
+  closeContextMenu();
+  emit("create-after", slideId);
+};
+
+/** 从右键菜单中复制当前页。 */
+const handleContextMenuDuplicate = () => {
+  if (!contextMenuState.value) {
+    return;
+  }
+
+  const { slideId } = contextMenuState.value;
+  closeContextMenu();
+  emit("duplicate", slideId);
+};
+
+/** 从右键菜单中打开删除确认弹窗。 */
+const handleContextMenuDelete = () => {
+  if (!contextMenuState.value) {
+    return;
+  }
+
+  pendingDeleteSlideId.value = contextMenuState.value.slideId;
+  closeContextMenu();
+};
+
+/** 确认删除当前弹窗中的目标页。 */
+const handleDeleteConfirm = () => {
+  if (!pendingDeleteSlide.value) {
+    return;
+  }
+
+  emit("remove", pendingDeleteSlide.value.id);
+  closeDeleteModal();
+};
+
 /** 处理名称编辑时的回车确认与 Escape 取消。 */
 const handleRenameKeydown = (event: KeyboardEvent, slide: Slide) => {
   if (event.key === "Enter") {
@@ -163,6 +339,7 @@ const handleRenameKeydown = (event: KeyboardEvent, slide: Slide) => {
 
 /** 开始拖拽一张页面卡片。 */
 const handleDragStart = (slideId: string, event: DragEvent) => {
+  closeContextMenu();
   draggedSlideId.value = slideId;
   dropState.value = null;
 
@@ -255,10 +432,55 @@ const resolveDropIndex = (
 
   return nextIndex === sourceIndex ? null : nextIndex;
 };
+
+/** 页面栏滚动时关闭旧菜单，避免悬浮在错误位置。 */
+const handleSlideListScroll = () => {
+  closeContextMenu();
+};
+
+/** 点击页面栏外部时关闭右键菜单。 */
+const handleDocumentPointerDown = (event: PointerEvent) => {
+  const target = event.target;
+
+  if (target instanceof HTMLElement && target.closest(".slide-context-menu")) {
+    return;
+  }
+
+  closeContextMenu();
+};
+
+/** 按下 Escape 时关闭右键菜单与删除确认弹窗。 */
+const handleWindowKeydown = (event: KeyboardEvent) => {
+  if (event.key !== "Escape") {
+    return;
+  }
+
+  closeContextMenu();
+  closeDeleteModal();
+};
+
+watch(
+  () => editingSlideId.value,
+  (slideId) => {
+    if (slideId) {
+      closeContextMenu();
+    }
+  },
+);
+
+onMounted(() => {
+  document.addEventListener("pointerdown", handleDocumentPointerDown);
+  window.addEventListener("keydown", handleWindowKeydown);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener("pointerdown", handleDocumentPointerDown);
+  window.removeEventListener("keydown", handleWindowKeydown);
+});
 </script>
 
 <template>
-  <section class="slide-rail">
+  <section ref="slideRailRef" class="slide-rail">
     <div class="rail-toolbar">
       <div class="rail-copy">
         <h3>页面</h3>
@@ -270,18 +492,25 @@ const resolveDropIndex = (
       </a-button>
     </div>
 
-    <div v-if="slides.length > 0" class="slide-list">
+    <div
+      v-if="slides.length > 0"
+      ref="slideListRef"
+      class="slide-list"
+      @scroll="handleSlideListScroll"
+    >
       <article
         v-for="(slide, index) in slides"
         :key="slide.id"
         class="slide-card-shell"
         :class="{
           'is-active': slide.id === activeSlideId,
+          'is-context-open': contextMenuState?.slideId === slide.id,
           'is-dragging': slide.id === draggedSlideId,
           'is-drop-before': dropState?.slideId === slide.id && dropState.placement === 'before',
           'is-drop-after': dropState?.slideId === slide.id && dropState.placement === 'after',
         }"
         draggable="true"
+        @contextmenu="handleSlideCardContextMenu(slide.id, $event)"
         @dragend="resetDragState"
         @dragover="handleDragOver(slide.id, $event)"
         @dragstart="handleDragStart(slide.id, $event)"
@@ -297,7 +526,12 @@ const resolveDropIndex = (
         >
           <div class="slide-card-top">
             <span class="slide-index">{{ String(index + 1).padStart(2, '0') }}</span>
-            <span class="slide-drag-caption">拖拽排序</span>
+            <div class="slide-card-flags">
+              <span class="slide-state-pill" :class="{ 'is-active': slide.id === activeSlideId }">
+                {{ slide.id === activeSlideId ? "当前页" : "右键管理" }}
+              </span>
+              <span class="slide-drag-caption">拖拽排序</span>
+            </div>
           </div>
 
           <div class="slide-thumbnail" :style="resolveSlideThumbnailStyle(slide)">
@@ -337,40 +571,63 @@ const resolveDropIndex = (
               <span>{{ slide.nodes.length }} 个对象</span>
               <span>{{ slide.timeline.steps.length }} 步</span>
             </div>
+
+            <div class="slide-card-hint">
+              <span>双击命名</span>
+              <span>右键更多</span>
+            </div>
           </div>
         </div>
-
-        <div class="slide-card-actions">
-          <a-button size="mini" type="text" @click.stop="emit('create-after', slide.id)">
-            后插入
-          </a-button>
-          <a-button size="mini" type="text" @click.stop="emit('duplicate', slide.id)">
-            复制
-          </a-button>
-          <a-button size="mini" type="text" @click.stop="startRename(slide)">
-            命名
-          </a-button>
-          <span @click.stop>
-            <a-popconfirm
-              :content="`确认删除页面「${slide.name}」吗？`"
-              position="top"
-              @ok="emit('remove', slide.id)"
-            >
-              <a-button size="mini" status="danger" type="text">删除</a-button>
-            </a-popconfirm>
-          </span>
-        </div>
       </article>
+    </div>
+
+    <div
+      v-if="contextMenuState && contextMenuSlide"
+      class="slide-context-menu"
+      :style="slideContextMenuStyle"
+      @contextmenu.prevent
+    >
+      <div class="slide-context-menu__group">
+        <a-button class="slide-context-menu__item" type="text" @click="handleContextMenuCreateAfter">
+          后插入
+        </a-button>
+        <a-button class="slide-context-menu__item" type="text" @click="handleContextMenuDuplicate">
+          复制页面
+        </a-button>
+        <a-button class="slide-context-menu__item danger" type="text" @click="handleContextMenuDelete">
+          删除页面
+        </a-button>
+      </div>
     </div>
 
     <a-empty v-else class="rail-empty" description="还没有页面">
       <a-button size="small" type="primary" @click="emit('create')">新建第一页</a-button>
     </a-empty>
+
+    <a-modal
+      :visible="Boolean(pendingDeleteSlide)"
+      :mask-closable="false"
+      cancel-text="取消"
+      ok-text="确认删除"
+      title="删除页面"
+      @cancel="closeDeleteModal"
+      @ok="handleDeleteConfirm"
+    >
+      <div class="slide-delete-modal">
+        <p class="slide-delete-modal__headline">
+          确认删除页面「{{ pendingDeleteSlide?.name ?? "" }}」吗？
+        </p>
+        <p class="slide-delete-modal__copy">
+          删除后会同时移除该页上的对象和播放步骤，不会影响其他页面内容。
+        </p>
+      </div>
+    </a-modal>
   </section>
 </template>
 
 <style scoped>
 .slide-rail {
+  position: relative;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   gap: 0;
@@ -470,8 +727,18 @@ const resolveDropIndex = (
   box-shadow: 0 10px 20px rgba(9, 30, 66, 0.08);
 }
 
+.slide-card-shell.is-context-open {
+  border-color: color-mix(in srgb, var(--cw-color-primary) 30%, var(--cw-color-border));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(242, 248, 255, 0.98));
+  box-shadow: 0 14px 28px rgba(9, 30, 66, 0.12);
+}
+
 .slide-card-shell.is-active::after {
   background: var(--cw-color-primary);
+}
+
+.slide-card-shell.is-context-open::after {
+  background: color-mix(in srgb, var(--cw-color-primary) 86%, #ffffff);
 }
 
 .slide-card-shell.is-dragging {
@@ -503,6 +770,14 @@ const resolveDropIndex = (
   gap: 8px;
 }
 
+.slide-card-flags {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 0;
+}
+
 .slide-index {
   margin: 0;
   font-size: 12px;
@@ -511,6 +786,29 @@ const resolveDropIndex = (
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--cw-color-primary);
+}
+
+.slide-state-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 8px;
+  border-radius: var(--cw-radius-pill);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--cw-color-muted);
+  background: rgba(226, 232, 240, 0.72);
+  transition:
+    color var(--cw-duration-fast) var(--cw-ease-standard),
+    background var(--cw-duration-fast) var(--cw-ease-standard);
+}
+
+.slide-state-pill.is-active,
+.slide-card-shell:hover .slide-state-pill,
+.slide-card-shell.is-context-open .slide-state-pill {
+  color: var(--cw-color-primary);
+  background: color-mix(in srgb, var(--cw-color-primary) 12%, #ffffff);
 }
 
 .slide-drag-caption {
@@ -594,20 +892,83 @@ const resolveDropIndex = (
   color: var(--cw-color-muted);
 }
 
-.slide-card-actions {
+.slide-card-hint {
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: color-mix(in srgb, var(--cw-color-muted) 78%, #ffffff);
+  transition: color var(--cw-duration-fast) var(--cw-ease-standard);
+}
+
+.slide-card-shell:hover .slide-card-hint,
+.slide-card-shell.is-active .slide-card-hint,
+.slide-card-shell.is-context-open .slide-card-hint {
+  color: var(--cw-color-primary);
+}
+
+.slide-context-menu {
+  position: absolute;
+  z-index: 16;
+  width: 176px;
+  padding: 8px;
+  border: 1px solid color-mix(in srgb, var(--cw-color-primary) 14%, var(--cw-color-border));
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow:
+    0 18px 40px rgba(15, 23, 42, 0.16),
+    0 1px 2px rgba(15, 23, 42, 0.06);
+  backdrop-filter: blur(14px);
+}
+
+.slide-context-menu__group {
+  display: grid;
   gap: 2px;
-  padding-top: 2px;
 }
 
-.slide-card-actions :deep(.arco-btn) {
-  min-height: 26px;
-  padding-inline: 6px;
+.slide-context-menu__item {
+  justify-content: flex-start;
+  min-height: 34px;
+  border-radius: 10px;
 }
 
-.slide-card-actions :deep(.arco-btn-status-danger.arco-btn-text) {
+.slide-context-menu__group :deep(.arco-btn) {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.slide-context-menu__group :deep(.arco-btn-content) {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.slide-context-menu__item.danger {
   color: var(--cw-color-danger);
+}
+
+.slide-delete-modal {
+  display: grid;
+  gap: 10px;
+}
+
+.slide-delete-modal__headline,
+.slide-delete-modal__copy {
+  margin: 0;
+}
+
+.slide-delete-modal__headline {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.6;
+  color: var(--cw-color-text);
+}
+
+.slide-delete-modal__copy {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--cw-color-muted);
 }
 
 .rail-empty {
