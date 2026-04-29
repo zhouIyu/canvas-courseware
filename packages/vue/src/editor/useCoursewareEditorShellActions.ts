@@ -80,16 +80,18 @@ export interface UseCoursewareEditorShellActionsOptions {
   ) => void;
   /** 激活某一页。 */
   activateSlide: (slideId: string) => void;
-  /** 在末尾新增页面。 */
-  addSlide: () => void;
+  /** 新建页面，并返回刚创建的 slide。 */
+  addSlide: () => Slide | null;
   /** 在指定页面后新增页面。 */
-  addSlideAfter: (slideId: string) => void;
+  addSlideAfter: (slideId: string) => Slide | null;
   /** 复制指定页面。 */
-  duplicateSlideById: (slideId: string) => void;
+  duplicateSlideById: (slideId: string) => Slide | null;
   /** 删除指定页面。 */
   removeSlide: (slideId: string) => void;
   /** 重排页面顺序。 */
   reorderSlide: (slideId: string, index: number) => void;
+  /** 读取某一页当前缓存的缩略图，供复制页即时回显复用。 */
+  resolveSlideThumbnailBySlideId: (slideId: string) => string | null;
   /** 更新节点。 */
   updateNode: (slideId: string, nodeId: string, patch: NodePatch) => void;
   /** 设置选中节点。 */
@@ -189,6 +191,18 @@ export function useCoursewareEditorShellActions(
     });
   };
 
+  /** 解析复制页应复用的缩略图来源，优先使用本轮刚捕获的最新截图。 */
+  const resolveDuplicateSlideThumbnail = (
+    sourceSlideId: string,
+    capturedPayload: SlideThumbnailCapturedPayload | null,
+  ) => {
+    if (capturedPayload?.slideId === sourceSlideId) {
+      return capturedPayload.thumbnail;
+    }
+
+    return options.resolveSlideThumbnailBySlideId(sourceSlideId);
+  };
+
   /** 切页前先截取当前页封面，再切到目标页面。 */
   const handleSlideActivate = async (slideId: string) => {
     if (slideId === options.activeSlide.value?.id) {
@@ -213,8 +227,21 @@ export function useCoursewareEditorShellActions(
 
   /** 复制指定页面。 */
   const handleSlideDuplicate = async (slideId: string) => {
-    await captureAndEmitActiveSlideThumbnail();
-    options.duplicateSlideById(slideId);
+    const capturedPayload = await captureAndEmitActiveSlideThumbnail();
+    const duplicatedSlide = options.duplicateSlideById(slideId);
+    if (!duplicatedSlide) {
+      return;
+    }
+
+    const duplicateThumbnail = resolveDuplicateSlideThumbnail(slideId, capturedPayload);
+    if (!duplicateThumbnail) {
+      return;
+    }
+
+    options.emitSlideThumbnailCaptured({
+      slideId: duplicatedSlide.id,
+      thumbnail: duplicateThumbnail,
+    });
   };
 
   /** 删除指定页面。 */

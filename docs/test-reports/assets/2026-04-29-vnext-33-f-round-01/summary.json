@@ -1,0 +1,55 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-04-29T02:49:27.752Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "quick-create-after-active-slide",
+      "sourceSlideId": "slide-125f7042-11bf-4b27-9042-dfb544f2023c",
+      "firstCreatedSlideId": "slide-be0edc17-bde3-4a3e-a18a-40349f5416e2",
+      "insertedSlideId": "slide-25d2da69-f8d4-4399-a8ab-aa001abbcfd0",
+      "slideOrder": [
+        "slide-125f7042-11bf-4b27-9042-dfb544f2023c",
+        "slide-25d2da69-f8d4-4399-a8ab-aa001abbcfd0",
+        "slide-be0edc17-bde3-4a3e-a18a-40349f5416e2"
+      ],
+      "inheritedBackgroundFit": "contain"
+    },
+    {
+      "id": "duplicate-slide-after-source",
+      "sourceSlideId": "slide-125f7042-11bf-4b27-9042-dfb544f2023c",
+      "duplicateSlideId": "slide-3c149079-2640-4031-82ab-e5d76f6617fa",
+      "nodeCount": 1,
+      "duplicateName": "第1页 副本"
+    },
+    {
+      "id": "drag-reorder-slide",
+      "finalOrder": [
+        "slide-125f7042-11bf-4b27-9042-dfb544f2023c",
+        "slide-25d2da69-f8d4-4399-a8ab-aa001abbcfd0",
+        "slide-be0edc17-bde3-4a3e-a18a-40349f5416e2",
+        "slide-3c149079-2640-4031-82ab-e5d76f6617fa"
+      ]
+    },
+    {
+      "id": "reload-persistence",
+      "reloadedOrder": [
+        "slide-125f7042-11bf-4b27-9042-dfb544f2023c",
+        "slide-25d2da69-f8d4-4399-a8ab-aa001abbcfd0",
+        "slide-be0edc17-bde3-4a3e-a18a-40349f5416e2",
+        "slide-3c149079-2640-4031-82ab-e5d76f6617fa"
+      ]
+    },
+    {
+      "id": "preview-slide-rail-sync",
+      "previewSlideCount": 4,
+      "activatedPreviewIndex": 3
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "completedAt": "2026-04-29T02:49:43.933Z"
+}

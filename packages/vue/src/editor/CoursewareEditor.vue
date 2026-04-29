@@ -452,6 +452,7 @@ const {
   duplicateSlideById,
   removeSlide,
   reorderSlide,
+  resolveSlideThumbnailBySlideId: (slideId) => props.slideThumbnailMap[slideId] ?? null,
   updateNode,
   selectNodes,
   reorderNode,

@@ -28,8 +28,8 @@ export function useEditorSlideManagement(options: UseEditorSlideManagementOption
 
   /**
    * 根据参考页生成一张新的空白 slide。
-   * 新建页只继承常用画布尺寸和基础背景色，不继承背景图资源，
-   * 这样可以保证“新建页面”和“复制页面”在背景初始化上的边界清晰。
+   * 新建页会继承当前工作流最常用的页面基础信息：
+   * 画布尺寸、背景色和背景图配置都会沿用，但不会复制对象与时间轴内容。
    */
   const createDraftSlide = (referenceSlide?: Slide) =>
     createSlide({
@@ -37,6 +37,8 @@ export function useEditorSlideManagement(options: UseEditorSlideManagementOption
       width: referenceSlide?.size.width,
       height: referenceSlide?.size.height,
       backgroundFill: referenceSlide?.background.fill ?? "#FFFFFF",
+      backgroundImageSrc: referenceSlide?.background.image?.src,
+      backgroundImageFit: referenceSlide?.background.image?.fit,
     });
 
   /** 统一派发 slide 创建并切到新页，避免各个入口重复写两条命令。 */
@@ -50,6 +52,8 @@ export function useEditorSlideManagement(options: UseEditorSlideManagementOption
       type: COMMAND_TYPES.SLIDE_ACTIVATE,
       slideId: slide.id,
     });
+
+    return slide;
   };
 
   /** 根据 slide id 解析当前页面及其所在索引。 */
@@ -65,29 +69,44 @@ export function useEditorSlideManagement(options: UseEditorSlideManagementOption
     };
   };
 
-  /** 新增 slide，并自动切换到新页。 */
+  /** 读取当前激活页及其索引，供“顺手新建下一页”复用。 */
+  const resolveActiveSlideContext = () => {
+    const activeSlideId = options.activeSlide.value?.id;
+    return activeSlideId ? resolveSlideContext(activeSlideId) : null;
+  };
+
+  /** 新增 slide，并默认插入到当前激活页之后。 */
   const addSlide = () => {
-    insertSlideAndActivate(createDraftSlide(options.activeSlide.value));
+    const activeSlideContext = resolveActiveSlideContext();
+    const referenceSlide = activeSlideContext?.slide ?? options.activeSlide.value;
+    const insertionIndex =
+      activeSlideContext ? activeSlideContext.index + 1 : undefined;
+
+    return insertSlideAndActivate(createDraftSlide(referenceSlide), insertionIndex);
   };
 
   /** 在指定页面后快速新增下一页，并自动切换过去。 */
   const addSlideAfter = (slideId: string) => {
     const slideContext = resolveSlideContext(slideId);
     if (!slideContext) {
-      return;
+      return null;
     }
 
-    insertSlideAndActivate(createDraftSlide(slideContext.slide), slideContext.index + 1);
+    return insertSlideAndActivate(
+      createDraftSlide(slideContext.slide),
+      slideContext.index + 1,
+    );
   };
 
   /** 复制一张现有页面，并把完整内容插到原页面之后。 */
   const duplicateSlideById = (slideId: string) => {
     const slideContext = resolveSlideContext(slideId);
     if (!slideContext) {
-      return;
+      return null;
     }
 
-    insertSlideAndActivate(cloneSlide(slideContext.slide), slideContext.index + 1);
+    const duplicatedSlide = cloneSlide(slideContext.slide);
+    return insertSlideAndActivate(duplicatedSlide, slideContext.index + 1);
   };
 
   /** 删除指定页面。 */
