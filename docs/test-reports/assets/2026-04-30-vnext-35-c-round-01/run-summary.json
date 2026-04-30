@@ -1,0 +1,39 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-04-30T05:56:39.786Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "summary-chips",
+      "stepNames": [
+        "标题入场",
+        "点击插图继续",
+        "自动收口"
+      ],
+      "summaryTexts": [
+        "页面点击显示对象 · 标题文案 · 淡入",
+        "对象点击触发 插图卡片显示对象 · 备注气泡 · 上滑出现",
+        "自动触发延迟 900ms隐藏对象 · 插图卡片播放动画 · 标题文案 · 淡入"
+      ]
+    },
+    {
+      "id": "collapse-expand",
+      "firstCollapsedSummary": "页面点击显示对象 · 标题文案 · 淡入"
+    },
+    {
+      "id": "quick-create-after",
+      "insertedStepName": "点击插图继续 后续",
+      "stepCount": 4
+    },
+    {
+      "id": "duplicate-step",
+      "duplicatedStepName": "标题入场 副本",
+      "finalStepCardCount": 5
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

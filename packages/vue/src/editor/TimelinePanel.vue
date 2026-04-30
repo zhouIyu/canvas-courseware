@@ -3,15 +3,12 @@ import {
   createTimelineAction,
   createTimelineStep,
   type Slide,
-  type TimelineAction,
   type TimelineStep,
 } from "@canvas-courseware/core";
-import { computed } from "vue";
-import {
-  formatAnimationKindLabel,
-  formatNodeTypeLabel,
-  formatTimelineActionLabel,
-} from "../shared";
+import { computed, ref, watch } from "vue";
+import { formatNodeTypeLabel } from "../shared";
+import TimelineStepActionsEditor from "./TimelineStepActionsEditor.vue";
+import { resolveTimelineStepSummaryChips } from "./timeline-step-summary";
 
 /** 时间轴步骤排序事件的载荷。 */
 interface TimelineStepReorderPayload {
@@ -27,6 +24,8 @@ interface TimelineStepDuplicatePayload {
   step: TimelineStep;
   /** 源步骤的当前索引。 */
   index: number;
+  /** 复制时允许覆写副本名称，供“后插一步”这类快捷入口复用。 */
+  name?: string;
 }
 
 /** 时间轴步骤触发方式选项。 */
@@ -42,22 +41,6 @@ const triggerOptions = [
   {
     label: "对象点击",
     value: "node-click",
-  },
-] as const;
-
-/** 时间轴动作类型选项。 */
-const actionTypeOptions = [
-  {
-    label: formatTimelineActionLabel("show-node"),
-    value: "show-node",
-  },
-  {
-    label: formatTimelineActionLabel("hide-node"),
-    value: "hide-node",
-  },
-  {
-    label: formatTimelineActionLabel("play-animation"),
-    value: "play-animation",
   },
 ] as const;
 
@@ -95,6 +78,25 @@ const hasSlide = computed(() => Boolean(props.slide));
 /** 当前页面是否已经有对象可供 timeline 配置。 */
 const hasNodes = computed(() => (props.slide?.nodes.length ?? 0) > 0);
 
+/** 当前页面步骤数量，供头部批量操作和命名兜底复用。 */
+const stepCount = computed(() => props.slide?.timeline.steps.length ?? 0);
+
+/** 当前页面全部步骤 id，便于统一维护折叠状态。 */
+const stepIdList = computed(() => props.slide?.timeline.steps.map((step) => step.id) ?? []);
+
+/** 当前处于折叠态的步骤 id 列表。 */
+const collapsedStepIds = ref<string[]>([]);
+
+/** 是否需要展示“全部收起 / 展开”入口。 */
+const showCollapseAllAction = computed(() => stepCount.value > 1);
+
+/** 当前页面是否已经全部折叠。 */
+const isEveryStepCollapsed = computed(
+  () =>
+    stepIdList.value.length > 0 &&
+    stepIdList.value.every((stepId) => collapsedStepIds.value.includes(stepId)),
+);
+
 /** 当前页面的节点选项，供动作和动画配置下拉框复用。 */
 const nodeOptions = computed(() =>
   (props.slide?.nodes ?? []).map((node) => ({
@@ -104,19 +106,24 @@ const nodeOptions = computed(() =>
   })),
 );
 
-/** 当前页面的动画选项，供动作和摘要展示复用。 */
-const animationOptions = computed(() =>
-  (props.slide?.timeline.animations ?? []).map((animation) => ({
-    value: animation.id,
-    targetId: animation.targetId,
-    label: `${formatAnimationKindLabel(animation.kind)} · ${animation.durationMs}ms`,
-  })),
-);
-
 /** 当前最适合作为默认目标节点的 id。 */
 const preferredNodeId = computed(
   () => props.selectedNodeId ?? props.slide?.nodes[0]?.id ?? "",
 );
+
+/** 切换页面时重置局部折叠态，避免把上一页的展开状态带到新页面。 */
+watch(
+  () => props.slide?.id ?? null,
+  () => {
+    collapsedStepIds.value = [];
+  },
+);
+
+/** 步骤列表变化时清理已失效的折叠记录，保持状态集合只引用当前页面。 */
+watch(stepIdList, (nextStepIds) => {
+  const validStepIdSet = new Set(nextStepIds);
+  collapsedStepIds.value = collapsedStepIds.value.filter((stepId) => validStepIdSet.has(stepId));
+});
 
 /** 读取文本输入框和下拉框的字符串值。 */
 const readTextInputValue = (value: unknown, fallback = ""): string => {
@@ -150,11 +157,6 @@ const readNumberInputValue = (value: unknown, fallback: number, minimum = 0): nu
   return Math.max(parsed, minimum);
 };
 
-/** 返回当前页面的第一条动画 id，供动作切换时兜底使用。 */
-function resolveFirstAnimationId(): string {
-  return props.slide?.timeline.animations[0]?.id ?? "";
-}
-
 /** 返回某个节点可以直接复用的第一条动画 id。 */
 function resolveFirstAnimationIdForNode(targetId: string): string {
   return props.slide?.timeline.animations.find((animation) => animation.targetId === targetId)?.id ?? "";
@@ -184,97 +186,9 @@ function resolvePrimaryActionTargetId(step: TimelineStep): string {
   return preferredNodeId.value;
 }
 
-/** 统一根据 union 字段重建 timeline 动作，避免分支更新时漏字段。 */
-function buildTimelineAction(
-  actionId: string,
-  type: TimelineAction["type"],
-  options: {
-    targetId?: string;
-    animationId?: string;
-  },
-): TimelineAction {
-  switch (type) {
-    case "hide-node":
-      return {
-        id: actionId,
-        type,
-        targetId: options.targetId ?? "",
-      };
-    case "play-animation":
-      return {
-        id: actionId,
-        type,
-        animationId: options.animationId ?? "",
-      };
-    case "show-node":
-    default:
-      return {
-        id: actionId,
-        type: "show-node",
-        targetId: options.targetId ?? "",
-        animationId: options.animationId || undefined,
-      };
-  }
-}
-
 /** 统一向外发出 step 更新。 */
 function emitStep(step: TimelineStep): void {
   emit("upsert-step", step);
-}
-
-/** 计算某个动作在当前表单里可选的动画列表。 */
-function resolveAnimationOptionsForAction(action: TimelineAction) {
-  if (action.type === "show-node") {
-    return animationOptions.value.filter((animation) => animation.targetId === action.targetId);
-  }
-
-  if (action.type === "play-animation") {
-    return animationOptions.value;
-  }
-
-  return [];
-}
-
-/** 读取动作当前真正可用的动画值，避免 show-node 选到别的对象的动画。 */
-function resolveActionAnimationValue(action: TimelineAction): string {
-  if (action.type === "play-animation") {
-    return action.animationId;
-  }
-
-  if (action.type !== "show-node" || !action.animationId) {
-    return "";
-  }
-
-  const matchedAnimation = props.slide?.timeline.animations.find(
-    (animation) =>
-      animation.id === action.animationId && animation.targetId === action.targetId,
-  );
-
-  return matchedAnimation?.id ?? "";
-}
-
-/** 读取动作当前最合理的目标节点。 */
-function resolveActionTargetId(action: TimelineAction): string {
-  if (action.type === "show-node" || action.type === "hide-node") {
-    return action.targetId;
-  }
-
-  const animation = props.slide?.timeline.animations.find(
-    (item) => item.id === action.animationId,
-  );
-  return animation?.targetId ?? preferredNodeId.value;
-}
-
-/** 在某个步骤中替换指定动作，并保持其余动作顺序不变。 */
-function updateStepAction(
-  step: TimelineStep,
-  actionId: string,
-  updater: (action: TimelineAction) => TimelineAction,
-): void {
-  emitStep({
-    ...step,
-    actions: step.actions.map((action) => (action.id === actionId ? updater(action) : action)),
-  });
 }
 
 /** 新增一个步骤，默认用当前选中对象生成首条 show-node 动作。 */
@@ -318,16 +232,59 @@ function handleStepMove(stepId: string, stepIndex: number, offset: number): void
 }
 
 /** 复制某个步骤，供外层在标准命令层中落盘。 */
-function handleDuplicateStep(step: TimelineStep, stepIndex: number): void {
+function handleDuplicateStep(
+  step: TimelineStep,
+  stepIndex: number,
+  name?: string,
+): void {
   emit("duplicate-step", {
     step,
     index: stepIndex,
+    name,
   });
+}
+
+/** 判断某个步骤当前是否处于折叠态。 */
+function isStepCollapsed(stepId: string): boolean {
+  return collapsedStepIds.value.includes(stepId);
+}
+
+/** 切换单个步骤的折叠 / 展开状态。 */
+function handleToggleStepCollapsed(stepId: string): void {
+  if (isStepCollapsed(stepId)) {
+    collapsedStepIds.value = collapsedStepIds.value.filter((currentStepId) => currentStepId !== stepId);
+    return;
+  }
+
+  collapsedStepIds.value = [...collapsedStepIds.value, stepId];
+}
+
+/** 在头部统一切换全部步骤的折叠状态。 */
+function handleToggleAllStepsCollapsed(): void {
+  collapsedStepIds.value = isEveryStepCollapsed.value ? [] : [...stepIdList.value];
+}
+
+/** 为“后插一步”生成更贴近当前上下文的新步骤名称。 */
+function resolveFollowUpStepName(stepName: string): string {
+  const normalizedStepName = stepName.trim() || `步骤 ${stepCount.value + 1}`;
+  return normalizedStepName.endsWith("后续")
+    ? `${normalizedStepName} 2`
+    : `${normalizedStepName} 后续`;
+}
+
+/** 基于当前步骤快速后插一个新步骤，减少重复配置。 */
+function handleCreateStepAfter(step: TimelineStep, stepIndex: number): void {
+  handleDuplicateStep(step, stepIndex, resolveFollowUpStepName(step.name));
 }
 
 /** 请求外层从当前步骤切入预览。 */
 function handlePreviewStep(stepIndex: number): void {
   emit("preview-step", stepIndex);
+}
+
+/** 读取某个步骤在列表头部应展示的全部摘要标签。 */
+function resolveStepSummaryChips(step: TimelineStep) {
+  return resolveTimelineStepSummaryChips(step, props.slide ?? null);
 }
 
 /** 更新步骤名称。 */
@@ -409,98 +366,6 @@ function handleStepTriggerTargetChange(
   });
 }
 
-/** 给某个步骤新增一条动作。 */
-function handleAddAction(step: TimelineStep): void {
-  emitStep({
-    ...step,
-    actions: [
-      ...step.actions,
-      createTimelineAction({
-        type: "show-node",
-        targetId: preferredNodeId.value,
-        animationId: resolveFirstAnimationIdForNode(preferredNodeId.value) || undefined,
-      }),
-    ],
-  });
-}
-
-/** 删除步骤中的一条动作。 */
-function handleRemoveAction(step: TimelineStep, actionId: string): void {
-  emitStep({
-    ...step,
-    actions: step.actions.filter((action) => action.id !== actionId),
-  });
-}
-
-/** 更新动作类型，并自动对齐目标节点和动画引用。 */
-function handleActionTypeChange(
-  step: TimelineStep,
-  actionId: string,
-  value: string | number | boolean | undefined,
-): void {
-  const nextType = readTextInputValue(value) as TimelineAction["type"];
-
-  updateStepAction(step, actionId, (action) => {
-    const currentTargetId = resolveActionTargetId(action) || preferredNodeId.value;
-    const currentAnimationId =
-      action.type === "show-node" || action.type === "play-animation"
-        ? action.animationId
-        : undefined;
-    const nextAnimationId =
-      nextType === "show-node"
-        ? resolveFirstAnimationIdForNode(currentTargetId) || undefined
-        : currentAnimationId || resolveFirstAnimationId() || undefined;
-
-    return buildTimelineAction(action.id, nextType, {
-      targetId: currentTargetId,
-      animationId: nextAnimationId,
-    });
-  });
-}
-
-/** 更新动作目标节点，并在 show-node 时自动收敛到同目标动画。 */
-function handleActionTargetChange(
-  step: TimelineStep,
-  actionId: string,
-  value: string | number | boolean | undefined,
-): void {
-  const nextTargetId = readTextInputValue(value);
-
-  updateStepAction(step, actionId, (action) => {
-    if (action.type !== "show-node" && action.type !== "hide-node") {
-      return action;
-    }
-
-    return buildTimelineAction(action.id, action.type, {
-      targetId: nextTargetId,
-      animationId:
-        action.type === "show-node"
-          ? resolveFirstAnimationIdForNode(nextTargetId) || undefined
-          : undefined,
-    });
-  });
-}
-
-/** 更新动作关联动画。 */
-function handleActionAnimationChange(
-  step: TimelineStep,
-  actionId: string,
-  value: string | number | boolean | undefined,
-): void {
-  const nextAnimationId = readTextInputValue(value);
-
-  updateStepAction(step, actionId, (action) => {
-    if (action.type === "hide-node") {
-      return action;
-    }
-
-    return buildTimelineAction(action.id, action.type, {
-      targetId: resolveActionTargetId(action),
-      animationId: nextAnimationId || undefined,
-    });
-  });
-}
-
 </script>
 
 <template>
@@ -519,14 +384,24 @@ function handleActionAnimationChange(
       <section class="group-card">
         <div class="group-head">
           <h4>步骤</h4>
-          <a-button
-            class="text-button"
-            type="text"
-            :disabled="!hasNodes"
-            @click="handleCreateStep"
-          >
-            新建步骤
-          </a-button>
+          <div class="group-head-actions">
+            <a-button
+              v-if="showCollapseAllAction"
+              class="text-button"
+              type="text"
+              @click="handleToggleAllStepsCollapsed"
+            >
+              {{ isEveryStepCollapsed ? "全部展开" : "全部收起" }}
+            </a-button>
+            <a-button
+              class="text-button"
+              type="text"
+              :disabled="!hasNodes"
+              @click="handleCreateStep"
+            >
+              新建步骤
+            </a-button>
+          </div>
         </div>
 
         <div v-if="(slide?.timeline.steps.length ?? 0) > 0" class="step-list">
@@ -534,13 +409,35 @@ function handleActionAnimationChange(
             v-for="(step, stepIndex) in slide?.timeline.steps ?? []"
             :key="step.id"
             class="step-card"
+            :class="{ 'is-collapsed': isStepCollapsed(step.id) }"
           >
             <header class="card-head">
               <div class="card-title-row">
-                <span class="card-index">步骤 {{ String(stepIndex + 1).padStart(2, "0") }}</span>
+                <div class="card-title-topline">
+                  <span class="card-index">步骤 {{ String(stepIndex + 1).padStart(2, "0") }}</span>
+                  <strong class="step-title">{{ step.name }}</strong>
+                </div>
+                <div class="step-summary-row">
+                  <span
+                    v-for="summaryChip in resolveStepSummaryChips(step)"
+                    :key="summaryChip.key"
+                    class="summary-chip"
+                    :class="`is-${summaryChip.tone}`"
+                  >
+                    {{ summaryChip.label }}
+                  </span>
+                </div>
               </div>
 
               <div class="step-card-actions">
+                <a-button
+                  class="text-button step-collapse-button"
+                  type="text"
+                  size="mini"
+                  @click="handleToggleStepCollapsed(step.id)"
+                >
+                  {{ isStepCollapsed(step.id) ? "展开" : "收起" }}
+                </a-button>
                 <a-button
                   class="text-button"
                   type="text"
@@ -558,6 +455,14 @@ function handleActionAnimationChange(
                   @click="handleStepMove(step.id, stepIndex, 1)"
                 >
                   下移
+                </a-button>
+                <a-button
+                  class="text-button"
+                  type="text"
+                  size="mini"
+                  @click="handleCreateStepAfter(step, stepIndex)"
+                >
+                  后插一步
                 </a-button>
                 <a-button
                   class="text-button"
@@ -587,144 +492,55 @@ function handleActionAnimationChange(
               </div>
             </header>
 
-            <div class="field-grid step-field-grid">
-              <div class="field field-span-2">
-                <span class="field-label">名称</span>
-                <a-input class="field-input" :model-value="step.name" @input="handleStepNameInput(step, $event)" />
-              </div>
-
-              <div class="field">
-                <span class="field-label">触发</span>
-                <a-select class="field-input" :model-value="step.trigger.type" popup-container="body" @change="handleStepTriggerTypeChange(step, $event)">
-                  <a-option v-for="option in triggerOptions" :key="option.value" :value="option.value">
-                    {{ option.label }}
-                  </a-option>
-                </a-select>
-              </div>
-
-              <div v-if="step.trigger.type === 'node-click'" class="field">
-                <span class="field-label">对象</span>
-                <a-select
-                  class="field-input"
-                  :model-value="step.trigger.targetId"
-                  popup-container="body"
-                  @change="handleStepTriggerTargetChange(step, $event)"
-                >
-                  <a-option v-for="option in nodeOptions" :key="option.value" :value="option.value">
-                    {{ option.label }} · {{ option.detail }}
-                  </a-option>
-                </a-select>
-              </div>
-
-              <div v-if="step.trigger.type === 'auto'" class="field">
-                <span class="field-label">延迟(ms)</span>
-                <a-input-number
-                  class="field-input"
-                  min="0"
-                  :model-value="step.trigger.delayMs"
-                  @change="handleStepDelayChange(step, $event)"
-                />
-              </div>
-            </div>
-
-            <div class="subsection-head">
-              <strong>动作</strong>
-              <a-button
-                class="text-button"
-                type="text"
-                size="small"
-                :disabled="!hasNodes"
-                @click="handleAddAction(step)"
-              >
-                添加动作
-              </a-button>
-            </div>
-
-            <div v-if="step.actions.length > 0" class="action-list">
-              <article
-                v-for="(action, actionIndex) in step.actions"
-                :key="action.id"
-                class="action-card"
-              >
-                <div class="action-head">
-                  <div class="action-copy">
-                    <strong>动作 {{ actionIndex + 1 }}</strong>
-                  </div>
-                  <a-button
-                    class="danger-text-button"
-                    status="danger"
-                    type="text"
-                    @click="handleRemoveAction(step, action.id)"
-                  >
-                    删除
-                  </a-button>
+            <div v-if="!isStepCollapsed(step.id)" class="step-card-body">
+              <div class="field-grid step-field-grid">
+                <div class="field field-span-2">
+                  <span class="field-label">名称</span>
+                  <a-input class="field-input" :model-value="step.name" @input="handleStepNameInput(step, $event)" />
                 </div>
 
-                <div class="field-grid action-field-grid">
-                  <div class="field">
-                    <span class="field-label">类型</span>
-                    <a-select
-                      class="field-input"
-                      :model-value="action.type"
-                      popup-container="body"
-                      @change="handleActionTypeChange(step, action.id, $event)"
-                    >
-                      <a-option
-                        v-for="option in actionTypeOptions"
-                        :key="option.value"
-                        :value="option.value"
-                      >
-                        {{ option.label }}
-                      </a-option>
-                    </a-select>
-                  </div>
-
-                  <div v-if="action.type !== 'play-animation'" class="field">
-                    <span class="field-label">对象</span>
-                    <a-select
-                      class="field-input"
-                      :model-value="resolveActionTargetId(action)"
-                      popup-container="body"
-                      @change="handleActionTargetChange(step, action.id, $event)"
-                    >
-                      <a-option v-for="option in nodeOptions" :key="option.value" :value="option.value">
-                        {{ option.label }} · {{ option.detail }}
-                      </a-option>
-                    </a-select>
-                  </div>
-
-                  <div
-                    v-if="action.type !== 'hide-node'"
-                    class="field"
-                    :class="{ 'field-span-2': action.type === 'play-animation' }"
-                  >
-                    <span class="field-label">动画</span>
-                    <a-select
-                      class="field-input"
-                      :model-value="resolveActionAnimationValue(action)"
-                      popup-container="body"
-                      @change="handleActionAnimationChange(step, action.id, $event)"
-                    >
-                      <a-option v-if="action.type === 'show-node'" value="">无</a-option>
-                      <a-option
-                        v-if="action.type === 'play-animation' && resolveAnimationOptionsForAction(action).length === 0"
-                        value=""
-                      >
-                        请先到组件属性中创建动画
-                      </a-option>
-                      <a-option
-                        v-for="option in resolveAnimationOptionsForAction(action)"
-                        :key="option.value"
-                        :value="option.value"
-                      >
-                        {{ option.label }}
-                      </a-option>
-                    </a-select>
-                  </div>
+                <div class="field">
+                  <span class="field-label">触发</span>
+                  <a-select class="field-input" :model-value="step.trigger.type" popup-container="body" @change="handleStepTriggerTypeChange(step, $event)">
+                    <a-option v-for="option in triggerOptions" :key="option.value" :value="option.value">
+                      {{ option.label }}
+                    </a-option>
+                  </a-select>
                 </div>
-              </article>
+
+                <div v-if="step.trigger.type === 'node-click'" class="field">
+                  <span class="field-label">对象</span>
+                  <a-select
+                    class="field-input"
+                    :model-value="step.trigger.targetId"
+                    popup-container="body"
+                    @change="handleStepTriggerTargetChange(step, $event)"
+                  >
+                    <a-option v-for="option in nodeOptions" :key="option.value" :value="option.value">
+                      {{ option.label }} · {{ option.detail }}
+                    </a-option>
+                  </a-select>
+                </div>
+
+                <div v-if="step.trigger.type === 'auto'" class="field">
+                  <span class="field-label">延迟(ms)</span>
+                  <a-input-number
+                    class="field-input"
+                    min="0"
+                    :model-value="step.trigger.delayMs"
+                    @change="handleStepDelayChange(step, $event)"
+                  />
+                </div>
+              </div>
+
+              <TimelineStepActionsEditor
+                :has-nodes="hasNodes"
+                :selected-node-id="props.selectedNodeId"
+                :slide="props.slide ?? null"
+                :step="step"
+                @update-step="emitStep"
+              />
             </div>
-            <p v-else class="panel-empty">暂无动作。</p>
           </article>
         </div>
         <p v-else class="panel-empty">暂无步骤。</p>
@@ -732,236 +548,4 @@ function handleActionAnimationChange(
     </template>
   </section>
 </template>
-
-<style scoped>
-.timeline-panel {
-  display: grid;
-  gap: var(--cw-space-3);
-  min-width: 0;
-  padding: var(--cw-space-4);
-  border: 1px solid var(--cw-color-border);
-  border-radius: var(--cw-radius-lg);
-  background:
-    linear-gradient(180deg, rgba(22, 93, 255, 0.04), rgba(255, 255, 255, 0.98)),
-    var(--cw-color-surface);
-  box-shadow: var(--cw-shadow-weak);
-}
-
-.group-head,
-.card-head,
-.subsection-head,
-.action-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--cw-space-3);
-  min-width: 0;
-}
-
-.group-head h4 {
-  margin: 0;
-}
-
-.group-card,
-.step-card,
-.animation-card,
-.action-card {
-  display: grid;
-  gap: var(--cw-space-2);
-  min-width: 0;
-  padding: 12px;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  border-radius: var(--cw-radius-md);
-  background: rgba(255, 255, 255, 0.96);
-}
-
-.step-card {
-  gap: 10px;
-}
-
-.action-card {
-  gap: 10px;
-}
-
-.card-index {
-  display: inline-flex;
-  align-items: center;
-  min-height: 24px;
-  min-width: 0;
-  padding: 0;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--cw-color-muted);
-}
-
-.group-copy,
-.panel-empty {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.6;
-  color: var(--cw-color-muted);
-}
-
-.step-list,
-.animation-list,
-.action-list {
-  display: grid;
-  gap: var(--cw-space-2);
-}
-
-.card-title-row,
-.action-copy {
-  display: grid;
-  gap: var(--cw-space-2);
-  min-width: 0;
-}
-
-.step-card-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 2px;
-}
-
-.field-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--cw-space-2);
-}
-
-.step-field-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.action-field-grid {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.field {
-  display: grid;
-  gap: 6px;
-  min-width: 0;
-}
-
-.advanced-fields {
-  margin: 0;
-  padding: 12px;
-  border: 1px dashed rgba(22, 93, 255, 0.24);
-  border-radius: var(--cw-radius-md);
-  background: rgba(248, 250, 252, 0.72);
-}
-
-.advanced-fields > summary {
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--cw-color-muted);
-}
-
-.advanced-fields[open] > summary {
-  margin-bottom: var(--cw-space-2);
-}
-
-.advanced-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--cw-space-2);
-}
-
-.field-span-2 {
-  grid-column: span 2;
-}
-
-.field-label {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.4;
-  color: var(--cw-color-muted);
-}
-
-.field-input {
-  width: 100%;
-  min-width: 0;
-}
-
-.field-input:deep(.arco-input-wrapper),
-.field-input:deep(.arco-select-view),
-.field-input:deep(.arco-input-number) {
-  width: 100%;
-  min-width: 0;
-  min-height: 40px;
-}
-
-.field-input:deep(.arco-select-view) {
-  padding-right: 8px;
-}
-
-.soft-button,
-.text-button,
-.danger-text-button {
-  min-height: 32px;
-  font-size: 13px;
-}
-
-.field-input:deep(.arco-select-view-value),
-.field-input:deep(.arco-select-view-single),
-.field-input:deep(.arco-input),
-.field-input:deep(.arco-input-number-input) {
-  min-width: 0;
-}
-
-.field-input:deep(.arco-select-view-value) {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.field-input:deep(.arco-select-view-inner),
-.field-input:deep(.arco-input-wrapper),
-.field-input:deep(.arco-input-number) {
-  border-radius: 12px;
-}
-
-.card-head :deep(.arco-btn),
-.subsection-head :deep(.arco-btn),
-.action-head :deep(.arco-btn) {
-  flex-shrink: 0;
-}
-
-.empty-card {
-  text-align: left;
-}
-
-@media (max-width: 768px) {
-  .timeline-panel,
-  .group-card,
-  .step-card,
-  .animation-card,
-  .action-card {
-    padding: var(--cw-space-4);
-  }
-
-  .summary-grid,
-  .field-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .advanced-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .field-span-2 {
-    grid-column: span 1;
-  }
-
-  .panel-head,
-  .group-head,
-  .card-head,
-  .subsection-head,
-  .action-head {
-    flex-direction: column;
-    align-items: stretch;
-  }
-}
-</style>
+<style scoped src="./TimelinePanel.css"></style>

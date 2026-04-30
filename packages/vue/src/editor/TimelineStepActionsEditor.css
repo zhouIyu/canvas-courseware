@@ -1,0 +1,138 @@
+.timeline-step-actions-editor,
+.action-list,
+.action-card,
+.action-copy,
+.field,
+.field-grid {
+  min-width: 0;
+}
+
+.timeline-step-actions-editor,
+.action-list {
+  display: grid;
+  gap: var(--cw-space-2);
+}
+
+.action-card {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: var(--cw-radius-md);
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.subsection-head,
+.action-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--cw-space-3);
+  min-width: 0;
+}
+
+.action-copy {
+  display: grid;
+  gap: var(--cw-space-2);
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--cw-space-2);
+}
+
+.action-field-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.field-span-2 {
+  grid-column: span 2;
+}
+
+.field-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--cw-color-muted);
+}
+
+.field-input {
+  width: 100%;
+  min-width: 0;
+}
+
+.field-input:deep(.arco-input-wrapper),
+.field-input:deep(.arco-select-view),
+.field-input:deep(.arco-input-number) {
+  width: 100%;
+  min-width: 0;
+  min-height: 40px;
+}
+
+.field-input:deep(.arco-select-view) {
+  padding-right: 8px;
+}
+
+.text-button,
+.danger-text-button {
+  min-height: 32px;
+  font-size: 13px;
+}
+
+.field-input:deep(.arco-select-view-value),
+.field-input:deep(.arco-select-view-single),
+.field-input:deep(.arco-input),
+.field-input:deep(.arco-input-number-input) {
+  min-width: 0;
+}
+
+.field-input:deep(.arco-select-view-value) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.field-input:deep(.arco-select-view-inner),
+.field-input:deep(.arco-input-wrapper),
+.field-input:deep(.arco-input-number) {
+  border-radius: 12px;
+}
+
+.subsection-head :deep(.arco-btn),
+.action-head :deep(.arco-btn) {
+  flex-shrink: 0;
+}
+
+.panel-empty {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--cw-color-muted);
+}
+
+@media (max-width: 768px) {
+  .action-card {
+    padding: var(--cw-space-4);
+  }
+
+  .field-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .field-span-2 {
+    grid-column: span 1;
+  }
+
+  .subsection-head,
+  .action-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

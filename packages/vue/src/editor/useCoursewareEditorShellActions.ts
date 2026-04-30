@@ -44,6 +44,8 @@ interface TimelineStepDuplicatePayload {
   step: TimelineStep;
   /** 源步骤当前所处的索引。 */
   index: number;
+  /** 复制时允许覆写副本名称，供快捷后插步骤等入口复用。 */
+  name?: string;
 }
 
 /** 浮层图层拖拽排序事件的载荷。 */
@@ -346,7 +348,9 @@ export function useCoursewareEditorShellActions(
       return;
     }
 
-    const duplicatedStep = cloneTimelineStep(payload.step);
+    const duplicatedStep = cloneTimelineStep(payload.step, {
+      name: payload.name,
+    });
     options.upsertTimelineStep(options.activeSlide.value.id, duplicatedStep, payload.index + 1);
   };
 
