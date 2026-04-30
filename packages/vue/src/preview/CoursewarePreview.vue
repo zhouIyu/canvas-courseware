@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { CoursewareDocument } from "@canvas-courseware/core";
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
+import StageViewportControls from "../shared/StageViewportControls.vue";
 import {
   DEFAULT_PREVIEW_HEIGHT,
   createSlideBackgroundStyle,
@@ -8,6 +9,9 @@ import {
   formatPlaybackSummary,
   formatStepIndexLabel,
   formatTriggerLabel,
+  resolveWorkspaceViewportDensity,
+  type WorkspaceViewportDensity,
+  useStageViewportFit,
 } from "../shared";
 import { useCoursewarePreview } from "./useCoursewarePreview";
 
@@ -100,74 +104,43 @@ watch(
   },
 );
 
-/** 预览画布容器高度。 */
-const stageStyle = computed(() => ({
-  minHeight: `${props.height}px`,
-}));
+/** 预览区里真正承担画布适配职责的内容区 DOM 引用。 */
+const previewFitViewportRef = ref<HTMLDivElement | null>(null);
 
-/** 预览区滚动容器引用，用来计算可用宽高。 */
-const previewStageRef = ref<HTMLDivElement | null>(null);
+/** 当前激活画布的原始尺寸，供共享 fit 逻辑消费。 */
+const activeSlideSize = computed(() =>
+  activeSlide.value
+    ? {
+        width: activeSlide.value.size.width,
+        height: activeSlide.value.size.height,
+      }
+    : null,
+);
 
-/** 预览区当前可用尺寸。 */
-const previewStageSize = ref({
-  width: 0,
-  height: 0,
+/** 预览态复用共享的舞台适配逻辑，统一按真实内容区等比缩放。 */
+const {
+  canZoomIn,
+  canZoomOut,
+  canvasBackdropStyle,
+  canvasFrameStyle,
+  canvasSurfaceStyle,
+  isActualSizeZoom,
+  isFitZoom,
+  scalePercent,
+  shouldAllowViewportScroll,
+  zoomIn,
+  zoomOut,
+  zoomToActualSize,
+  zoomToFit,
+} = useStageViewportFit({
+  viewportRef: previewFitViewportRef,
+  slideSize: activeSlideSize,
 });
 
-/** 预览 canvas 实际尺寸。 */
-const canvasStyle = computed(() => {
-  if (!activeSlide.value) {
-    return {};
-  }
-
-  return {
-    width: `${activeSlide.value.size.width}px`,
-    height: `${activeSlide.value.size.height}px`,
-  };
-});
-
-/** 预览态按容器宽高等比缩放，保证整张画布始终完整显示。 */
-const canvasScale = computed(() => {
-  if (
-    !activeSlide.value ||
-    previewStageSize.value.width <= 0 ||
-    previewStageSize.value.height <= 0
-  ) {
-    return 1;
-  }
-
-  const availableWidth = Math.max(previewStageSize.value.width - 88, 180);
-  const availableHeight = Math.max(previewStageSize.value.height - 80, 160);
-  const widthScale = availableWidth / activeSlide.value.size.width;
-  const heightScale = availableHeight / activeSlide.value.size.height;
-
-  return Math.min(1, widthScale, heightScale);
-});
-
-/** 缩放后的预览画布外框尺寸。 */
-const canvasFrameStyle = computed(() => {
-  if (!activeSlide.value) {
-    return {};
-  }
-
-  return {
-    width: `${activeSlide.value.size.width * canvasScale.value}px`,
-    height: `${activeSlide.value.size.height * canvasScale.value}px`,
-  };
-});
-
-/** 预览画布保持原始尺寸渲染，只通过 transform 做缩放。 */
-const canvasSurfaceStyle = computed(() => {
-  if (!activeSlide.value) {
-    return {};
-  }
-
-  return {
-    ...canvasStyle.value,
-    transform: `scale(${canvasScale.value})`,
-    transformOrigin: "top left",
-  };
-});
+/** 当前预览态画布视图控制展示的缩放标签。 */
+const previewZoomLabel = computed(() =>
+  isFitZoom.value ? `适配 ${scalePercent.value}%` : `${scalePercent.value}%`,
+);
 
 /** 播放状态摘要。 */
 const playbackSummary = computed(() =>
@@ -402,16 +375,89 @@ const hasSlideThumbnail = (slideId: string) => Boolean(props.slideThumbnailMap[s
 /** 当前是否以内嵌工作台模式渲染。 */
 const isEmbedded = computed(() => !props.showHeader);
 
+/** 当前工作区高度对应的视觉密度档位。 */
+const previewViewportDensity = computed<WorkspaceViewportDensity>(() =>
+  resolveWorkspaceViewportDensity(props.height),
+);
+
+/** 内嵌工作台里优先把中心区域让给课件本身，收起附加说明卡片。 */
+const shouldShowInsightStrip = computed(
+  () => !isEmbedded.value && previewViewportDensity.value === "spacious",
+);
+
+/** 当前画布区头部是否需要展示标题。 */
+const shouldShowStageHeading = computed(() => !isEmbedded.value);
+
 /** 内嵌模式下是否展示就地播放控制入口。 */
 const showEmbeddedPlaybackActions = computed(() => isEmbedded.value);
 
+/**
+ * 按高度密度返回预览壳层变量。
+ * 不同屏幕下统一通过 CSS 变量压缩边栏、留白与步骤卡片高度。
+ */
+const resolvePreviewLayoutVariables = (
+  density: WorkspaceViewportDensity,
+): Record<string, string> => {
+  if (density === "dense") {
+    return {
+      "--cw-preview-rail-width": "148px",
+      "--cw-preview-side-width": "224px",
+      "--cw-preview-layout-gap": "10px",
+      "--cw-preview-layout-padding": "10px",
+      "--cw-preview-stage-padding-block-start": "8px",
+      "--cw-preview-stage-padding-inline": "10px",
+      "--cw-preview-stage-padding-block-end": "12px",
+      "--cw-preview-fit-padding-block-start": "4px",
+      "--cw-preview-fit-padding-inline": "8px",
+      "--cw-preview-fit-padding-block-end": "10px",
+      "--cw-preview-step-card-height": "68px",
+      "--cw-preview-slide-thumbnail-height": "44px",
+    };
+  }
+
+  if (density === "compact") {
+    return {
+      "--cw-preview-rail-width": "160px",
+      "--cw-preview-side-width": "240px",
+      "--cw-preview-layout-gap": "10px",
+      "--cw-preview-layout-padding": "10px",
+      "--cw-preview-stage-padding-block-start": "10px",
+      "--cw-preview-stage-padding-inline": "12px",
+      "--cw-preview-stage-padding-block-end": "14px",
+      "--cw-preview-fit-padding-block-start": "6px",
+      "--cw-preview-fit-padding-inline": "12px",
+      "--cw-preview-fit-padding-block-end": "12px",
+      "--cw-preview-step-card-height": "74px",
+      "--cw-preview-slide-thumbnail-height": "48px",
+    };
+  }
+
+  return {
+    "--cw-preview-rail-width": "176px",
+    "--cw-preview-side-width": "264px",
+    "--cw-preview-layout-gap": "12px",
+    "--cw-preview-layout-padding": "12px",
+    "--cw-preview-stage-padding-block-start": "14px",
+    "--cw-preview-stage-padding-inline": "16px",
+    "--cw-preview-stage-padding-block-end": "20px",
+    "--cw-preview-fit-padding-block-start": "10px",
+    "--cw-preview-fit-padding-inline": "20px",
+    "--cw-preview-fit-padding-block-end": "22px",
+    "--cw-preview-step-card-height": "84px",
+    "--cw-preview-slide-thumbnail-height": "52px",
+  };
+};
+
 /** 内嵌模式下固定预览器总高度，避免把页面继续撑高。 */
 const previewShellStyle = computed(() =>
-  isEmbedded.value
-    ? {
-        height: `${props.height}px`,
-      }
-    : {},
+  ({
+    ...resolvePreviewLayoutVariables(previewViewportDensity.value),
+    ...(isEmbedded.value
+      ? {
+          height: `${props.height}px`,
+        }
+      : {}),
+  }),
 );
 
 /** 当前左侧 slide 栏是否已收起。 */
@@ -426,6 +472,12 @@ const previewLayoutClass = computed(() => ({
   "is-right-collapsed": isTimelineCollapsed.value,
 }));
 
+/** 当前画布壳层是否处于“只保留课件主体”的紧凑模式。 */
+const previewStageShellClass = computed(() => ({
+  "is-stage-only": !shouldShowInsightStrip.value,
+  "is-embedded-stage": isEmbedded.value,
+}));
+
 /** 切换左侧 slide 栏显隐。 */
 const toggleSlideRail = () => {
   isSlideRailCollapsed.value = !isSlideRailCollapsed.value;
@@ -436,32 +488,6 @@ const toggleTimelinePanel = () => {
   isTimelineCollapsed.value = !isTimelineCollapsed.value;
 };
 
-/** 读取预览区当前可用尺寸，用于画布自适应缩放。 */
-const updatePreviewStageSize = () => {
-  previewStageSize.value = {
-    width: previewStageRef.value?.clientWidth ?? 0,
-    height: previewStageRef.value?.clientHeight ?? 0,
-  };
-};
-
-/** 监听预览区尺寸变化。 */
-let previewStageResizeObserver: ResizeObserver | null = null;
-
-onMounted(() => {
-  updatePreviewStageSize();
-
-  if (previewStageRef.value) {
-    previewStageResizeObserver = new ResizeObserver(() => {
-      updatePreviewStageSize();
-    });
-    previewStageResizeObserver.observe(previewStageRef.value);
-  }
-});
-
-onBeforeUnmount(() => {
-  previewStageResizeObserver?.disconnect();
-  previewStageResizeObserver = null;
-});
 </script>
 
 <template>
@@ -572,9 +598,9 @@ onBeforeUnmount(() => {
         </div>
       </aside>
 
-      <section class="preview-stage-shell">
+      <section class="preview-stage-shell" :class="previewStageShellClass">
         <header class="section-head stage-head">
-          <div>
+          <div v-if="shouldShowStageHeading">
             <h3>当前画布</h3>
           </div>
           <div class="stage-head-actions">
@@ -609,6 +635,17 @@ onBeforeUnmount(() => {
                 </a-button>
               </div>
             </div>
+            <StageViewportControls
+              :can-zoom-in="canZoomIn"
+              :can-zoom-out="canZoomOut"
+              :is-actual-size-zoom="isActualSizeZoom"
+              :is-fit-zoom="isFitZoom"
+              :zoom-label="previewZoomLabel"
+              @zoom-in="zoomIn"
+              @zoom-out="zoomOut"
+              @zoom-to-actual-size="zoomToActualSize"
+              @zoom-to-fit="zoomToFit"
+            />
             <div class="status-badges">
               <a-tag :color="playbackStatusTagColor" bordered>{{ playbackStatusLabel }}</a-tag>
               <a-tag bordered>{{ slidePositionLabel }}</a-tag>
@@ -617,7 +654,7 @@ onBeforeUnmount(() => {
           </div>
         </header>
 
-        <div class="playback-insight-strip">
+        <div v-if="shouldShowInsightStrip" class="playback-insight-strip">
           <article class="playback-insight-card">
             <span class="playback-insight-label">页面定位</span>
             <strong class="preview-slide-position">{{ slidePositionLabel }}</strong>
@@ -641,16 +678,22 @@ onBeforeUnmount(() => {
           </article>
         </div>
 
-        <div ref="previewStageRef" class="preview-stage" :style="stageStyle">
-          <div class="preview-stage-scroll">
-            <div v-if="activeSlide" class="preview-stage-frame" :style="canvasFrameStyle">
-              <div class="preview-stage-surface" :style="canvasSurfaceStyle">
-                <canvas ref="previewCanvasRef" />
+        <div class="preview-stage">
+          <div
+            ref="previewFitViewportRef"
+            class="preview-stage-viewport"
+            :class="{ 'is-scrollable': shouldAllowViewportScroll }"
+          >
+            <div class="preview-stage-scroll" :style="canvasBackdropStyle">
+              <div v-if="activeSlide" class="preview-stage-frame" :style="canvasFrameStyle">
+                <div class="preview-stage-surface" :style="canvasSurfaceStyle">
+                  <canvas ref="previewCanvasRef" />
+                </div>
               </div>
-            </div>
-            <div v-else class="empty-state">
-              <strong>还没有可预览的页面</strong>
-              <p>编辑器新增页面后，这里会自动同步同一份文档内容。</p>
+              <div v-else class="empty-state">
+                <strong>还没有可预览的页面</strong>
+                <p>编辑器新增页面后，这里会自动同步同一份文档内容。</p>
+              </div>
             </div>
           </div>
         </div>

@@ -20,6 +20,8 @@ import {
   type CSSProperties,
   type ComponentPublicInstance,
 } from "vue";
+import StageViewportControls from "../shared/StageViewportControls.vue";
+import { useStageViewportFit } from "../shared";
 import FloatingLayerManager from "./FloatingLayerManager.vue";
 import LocalImageFileTrigger from "./LocalImageFileTrigger.vue";
 import SlideSettingsEntryButton from "./SlideSettingsEntryButton.vue";
@@ -96,8 +98,6 @@ const props = withDefaults(
     nodeTimelineSummaryMap?: Record<string, NodeTimelineSummary>;
     /** 当前选中的节点 id 列表。 */
     selectedNodeIds?: string[];
-    /** 当前三栏区域的可用高度。 */
-    paneHeight?: number;
     /** 当前激活页的 1-based 页序。 */
     slideIndex?: number | null;
   }>(),
@@ -107,7 +107,6 @@ const props = withDefaults(
     editingTextToolNode: null,
     nodeTimelineSummaryMap: () => ({}),
     selectedNodeIds: () => [],
-    paneHeight: 320,
     slideIndex: null,
   },
 );
@@ -161,17 +160,11 @@ const emit = defineEmits<{
 /** 工作区容器引用，用于挂载右键菜单与文本浮层。 */
 const workspaceShellRef = ref<HTMLElement | null>(null);
 
-/** 中间编辑区滚动容器的 DOM 引用。 */
-const stageViewportRef = ref<HTMLDivElement | null>(null);
+/** 中间编辑区里真正负责容纳画布的可用区 DOM 引用。 */
+const stageFitViewportRef = ref<HTMLDivElement | null>(null);
 
 /** 当前编辑区右键菜单状态。 */
 const contextMenuState = ref<EditorContextMenuState | null>(null);
-
-/** 中间编辑区当前可用尺寸。 */
-const stageViewportSize = ref({
-  width: 0,
-  height: 0,
-});
 
 /** 把数值约束到指定区间内，避免菜单超出容器。 */
 const clamp = (value: number, minimum: number, maximum: number): number =>
@@ -228,56 +221,41 @@ const assignCanvasRef = (value: Element | ComponentPublicInstance | null) => {
   props.setCanvasElement?.(value instanceof HTMLCanvasElement ? value : null);
 };
 
-/** 当前舞台容器的高度样式。 */
-const stageStyle = computed(() => ({
-  minHeight: `${props.paneHeight}px`,
-}));
+/** 当前激活画布的原始尺寸，供共享 fit 逻辑消费。 */
+const activeSlideSize = computed(() =>
+  props.activeSlide
+    ? {
+        width: props.activeSlide.size.width,
+        height: props.activeSlide.size.height,
+      }
+    : null,
+);
 
-/** 根据中间区域宽高等比缩放画布，保证始终完整显示且不放大。 */
-const canvasScale = computed(() => {
-  if (
-    !props.activeSlide ||
-    stageViewportSize.value.width <= 0 ||
-    stageViewportSize.value.height <= 0
-  ) {
-    return 1;
-  }
-
-  /** 预留滚动容器与画布包裹层的水平留白，保证边缘不贴死。 */
-  const availableWidth = Math.max(stageViewportSize.value.width - 88, 180);
-  /** 预留上下留白，保证缩放后画布仍完整可见。 */
-  const availableHeight = Math.max(stageViewportSize.value.height - 80, 160);
-  const widthScale = availableWidth / props.activeSlide.size.width;
-  const heightScale = availableHeight / props.activeSlide.size.height;
-
-  return Math.min(1, widthScale, heightScale);
+/** 统一复用共享的舞台适配逻辑，避免继续依赖硬编码留白值。 */
+const {
+  canZoomIn,
+  canZoomOut,
+  canvasBackdropStyle,
+  canvasFrameStyle,
+  canvasSurfaceStyle,
+  isActualSizeZoom,
+  isFitZoom,
+  scalePercent,
+  shouldAllowViewportScroll,
+  viewportContentSize,
+  zoomIn,
+  zoomOut,
+  zoomToActualSize,
+  zoomToFit,
+} = useStageViewportFit({
+  viewportRef: stageFitViewportRef,
+  slideSize: activeSlideSize,
 });
 
-/** 缩放后的画布外框尺寸，保证布局高度与展示尺寸一致。 */
-const canvasFrameStyle = computed(() => {
-  if (!props.activeSlide) {
-    return {};
-  }
-
-  return {
-    width: `${props.activeSlide.size.width * canvasScale.value}px`,
-    height: `${props.activeSlide.size.height * canvasScale.value}px`,
-  };
-});
-
-/** 实际渲染画布仍保持原始尺寸，只通过 transform 缩放。 */
-const canvasSurfaceStyle = computed(() => {
-  if (!props.activeSlide) {
-    return {};
-  }
-
-  return {
-    width: `${props.activeSlide.size.width}px`,
-    height: `${props.activeSlide.size.height}px`,
-    transform: `scale(${canvasScale.value})`,
-    transformOrigin: "top left",
-  };
-});
+/** 当前编辑态画布视图控制显示的缩放标签。 */
+const stageZoomLabel = computed(() =>
+  isFitZoom.value ? `适配 ${scalePercent.value}%` : `${scalePercent.value}%`,
+);
 
 /** 把视口坐标换算成工作区内的绝对定位，供文本浮层直接挂载。 */
 const textToolStyle = computed<CSSProperties>(() => {
@@ -402,24 +380,6 @@ const handleContextMenuKeydown = (event: KeyboardEvent) => {
   }
 };
 
-/** 读取中间编辑区当前可用尺寸，用于画布等比缩放。 */
-const updateStageViewportSize = () => {
-  const viewportRect = stageViewportRef.value?.getBoundingClientRect();
-  stageViewportSize.value = {
-    /**
-     * 这里改为读取 border-box 尺寸，而不是 `clientWidth / clientHeight`。
-     * 在部分浏览器里，选中 Fabric 对象后如果出现滚动条预留或临时布局抖动，
-     * `clientWidth` 会短暂变小，进而把整块画布误判为“可用区域缩小”并重新缩放。
-     */
-    width: viewportRect ? Math.round(viewportRect.width) : 0,
-    height: viewportRect ? Math.round(viewportRect.height) : 0,
-  };
-
-  if (props.inlineTextEditingLayout) {
-    emit("refresh-inline-text-layout");
-  }
-};
-
 /** 右键菜单中快速插入文本。 */
 const handleContextMenuAddText = () => {
   closeContextMenu();
@@ -506,9 +466,6 @@ const handleTextToolNodeUpdate = (nodeId: string, patch: NodePatch) => {
   emit("update-node", nodeId, patch);
 };
 
-/** 监听舞台尺寸变化，让布局与画布缩放及时同步。 */
-let stageViewportResizeObserver: ResizeObserver | null = null;
-
 watch(
   () => props.activeSlide?.id ?? null,
   () => {
@@ -516,26 +473,24 @@ watch(
   },
 );
 
+/** 可用区尺寸变化后，同步刷新文本工具条定位，避免浮层停留在旧位置。 */
+watch(
+  viewportContentSize,
+  () => {
+    if (props.inlineTextEditingLayout) {
+      emit("refresh-inline-text-layout");
+    }
+  },
+);
+
 onMounted(() => {
-  updateStageViewportSize();
   window.addEventListener("pointerdown", handleGlobalPointerDown, true);
   window.addEventListener("keydown", handleContextMenuKeydown);
-
-  if (!stageViewportRef.value) {
-    return;
-  }
-
-  stageViewportResizeObserver = new ResizeObserver(() => {
-    updateStageViewportSize();
-  });
-  stageViewportResizeObserver.observe(stageViewportRef.value);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("pointerdown", handleGlobalPointerDown, true);
   window.removeEventListener("keydown", handleContextMenuKeydown);
-  stageViewportResizeObserver?.disconnect();
-  stageViewportResizeObserver = null;
 });
 
 /** 暴露给父层的舞台交互方法。 */
@@ -565,6 +520,18 @@ defineExpose({
         @open-inspector="emit('open-inspector')"
         @open-timeline="emit('open-timeline')"
       />
+
+      <StageViewportControls
+        :can-zoom-in="canZoomIn"
+        :can-zoom-out="canZoomOut"
+        :is-actual-size-zoom="isActualSizeZoom"
+        :is-fit-zoom="isFitZoom"
+        :zoom-label="stageZoomLabel"
+        @zoom-in="zoomIn"
+        @zoom-out="zoomOut"
+        @zoom-to-actual-size="zoomToActualSize"
+        @zoom-to-fit="zoomToFit"
+      />
     </div>
 
     <TextTool
@@ -574,20 +541,24 @@ defineExpose({
     />
 
     <div
-      ref="stageViewportRef"
       class="stage-scroll"
-      :style="stageStyle"
       @contextmenu.prevent="handleStageViewportContextMenu"
     >
-      <div class="stage-backdrop">
-        <div v-if="activeSlide" class="stage-scale-frame" :style="canvasFrameStyle">
-          <div class="stage-surface" :style="canvasSurfaceStyle">
-            <canvas :ref="assignCanvasRef" />
+      <div
+        ref="stageFitViewportRef"
+        class="stage-fit-viewport"
+        :class="{ 'is-scrollable': shouldAllowViewportScroll }"
+      >
+        <div class="stage-backdrop" :style="canvasBackdropStyle">
+          <div v-if="activeSlide" class="stage-scale-frame" :style="canvasFrameStyle">
+            <div class="stage-surface" :style="canvasSurfaceStyle">
+              <canvas :ref="assignCanvasRef" />
+            </div>
           </div>
-        </div>
-        <div v-else class="empty-stage">
-          <strong>还没有可编辑的页面</strong>
-          <p>先新增一个 slide，再开始插入文本、矩形或图片。</p>
+          <div v-else class="empty-stage">
+            <strong>还没有可编辑的页面</strong>
+            <p>先新增一个 slide，再开始插入文本、矩形或图片。</p>
+          </div>
         </div>
       </div>
     </div>

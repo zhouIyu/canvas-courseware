@@ -672,7 +672,7 @@ onBeforeUnmount(() => {
 
 .slide-list {
   display: grid;
-  gap: 10px;
+  gap: var(--cw-slide-list-gap, 10px);
   align-content: start;
   min-height: 0;
   padding-right: 4px;
@@ -685,7 +685,7 @@ onBeforeUnmount(() => {
   position: relative;
   display: grid;
   gap: 8px;
-  padding: 8px;
+  padding: var(--cw-slide-card-shell-padding, 8px);
   border: 1px solid transparent;
   border-radius: 14px;
   background: transparent;
@@ -821,7 +821,7 @@ onBeforeUnmount(() => {
   display: grid;
   gap: 8px;
   justify-items: center;
-  min-height: 78px;
+  min-height: var(--cw-slide-thumbnail-min-height, 78px);
   padding: 12px;
   border: 1px solid #dfe6ee;
   border-radius: 12px;
@@ -893,7 +893,7 @@ onBeforeUnmount(() => {
 }
 
 .slide-card-hint {
-  display: flex;
+  display: var(--cw-slide-card-hint-display, flex);
   align-items: center;
   justify-content: space-between;
   gap: 8px;

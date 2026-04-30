@@ -1,0 +1,73 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-04-30T03:04:35.767Z",
+  "tolerancePx": 0.5,
+  "viewports": [
+    {
+      "id": "desktop-1440x900",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "id": "desktop-1280x720",
+      "width": 1280,
+      "height": 720
+    }
+  ],
+  "checks": [
+    {
+      "viewport": {
+        "id": "desktop-1440x900",
+        "width": 1440,
+        "height": 900
+      },
+      "editMetrics": {
+        "mode": "edit",
+        "frameWidth": 1080,
+        "frameHeight": 607.5,
+        "fitWidth": 1080,
+        "fitHeight": 720,
+        "surfaceTransform": "matrix(0.84375, 0, 0, 0.84375, 0, 0)",
+        "hasInsightStrip": false
+      },
+      "previewMetrics": {
+        "mode": "preview",
+        "frameWidth": 890,
+        "frameHeight": 500.625,
+        "fitWidth": 890,
+        "fitHeight": 547,
+        "surfaceTransform": "matrix(0.695312, 0, 0, 0.695312, 0, 0)",
+        "hasInsightStrip": false
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "viewport": {
+        "id": "desktop-1280x720",
+        "width": 1280,
+        "height": 720
+      },
+      "editMetrics": {
+        "mode": "edit",
+        "frameWidth": 950,
+        "frameHeight": 534.375,
+        "fitWidth": 950,
+        "fitHeight": 720,
+        "surfaceTransform": "matrix(0.742188, 0, 0, 0.742188, 0, 0)",
+        "hasInsightStrip": false
+      },
+      "previewMetrics": {
+        "mode": "preview",
+        "frameWidth": 760,
+        "frameHeight": 427.5,
+        "fitWidth": 760,
+        "fitHeight": 547,
+        "surfaceTransform": "matrix(0.59375, 0, 0, 0.59375, 0, 0)",
+        "hasInsightStrip": false
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    }
+  ]
+}

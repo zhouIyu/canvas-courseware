@@ -1,0 +1,264 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-04-30T03:04:04.350Z",
+  "viewports": [
+    {
+      "id": "desktop-1440x900",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "id": "desktop-1280x720",
+      "width": 1280,
+      "height": 720
+    }
+  ],
+  "checks": [
+    {
+      "viewport": {
+        "id": "desktop-1440x900",
+        "width": 1440,
+        "height": 900
+      },
+      "editChecks": {
+        "initialMetrics": {
+          "mode": "edit",
+          "zoomLabel": "适配 84%",
+          "frameWidth": 1080,
+          "frameHeight": 607.5,
+          "viewportClientWidth": 1112,
+          "viewportClientHeight": 746,
+          "viewportScrollWidth": 1112,
+          "viewportScrollHeight": 746,
+          "surfaceTransform": "matrix(0.84375, 0, 0, 0.84375, 0, 0)"
+        },
+        "actualSizeMetrics": {
+          "mode": "edit",
+          "zoomLabel": "100%",
+          "frameWidth": 1280,
+          "frameHeight": 720,
+          "viewportClientWidth": 1082,
+          "viewportClientHeight": 746,
+          "viewportScrollWidth": 1312,
+          "viewportScrollHeight": 746,
+          "surfaceTransform": "matrix(1, 0, 0, 1, 0, 0)"
+        },
+        "zoomOutMetrics": {
+          "mode": "edit",
+          "zoomLabel": "90%",
+          "frameWidth": 1152,
+          "frameHeight": 648,
+          "viewportClientWidth": 1082,
+          "viewportClientHeight": 746,
+          "viewportScrollWidth": 1184,
+          "viewportScrollHeight": 746,
+          "surfaceTransform": "matrix(0.9, 0, 0, 0.9, 0, 0)"
+        },
+        "zoomInMetrics": {
+          "mode": "edit",
+          "zoomLabel": "100%",
+          "frameWidth": 1280,
+          "frameHeight": 720,
+          "viewportClientWidth": 1082,
+          "viewportClientHeight": 746,
+          "viewportScrollWidth": 1312,
+          "viewportScrollHeight": 746,
+          "surfaceTransform": "matrix(1, 0, 0, 1, 0, 0)"
+        },
+        "fitMetrics": {
+          "mode": "edit",
+          "zoomLabel": "适配 84%",
+          "frameWidth": 1080,
+          "frameHeight": 607.5,
+          "viewportClientWidth": 1112,
+          "viewportClientHeight": 746,
+          "viewportScrollWidth": 1112,
+          "viewportScrollHeight": 746,
+          "surfaceTransform": "matrix(0.84375, 0, 0, 0.84375, 0, 0)"
+        }
+      },
+      "previewChecks": {
+        "initialMetrics": {
+          "mode": "preview",
+          "zoomLabel": "适配 70%",
+          "frameWidth": 890,
+          "frameHeight": 500.625,
+          "viewportClientWidth": 914,
+          "viewportClientHeight": 565,
+          "viewportScrollWidth": 914,
+          "viewportScrollHeight": 565,
+          "surfaceTransform": "matrix(0.695312, 0, 0, 0.695312, 0, 0)"
+        },
+        "actualSizeMetrics": {
+          "mode": "preview",
+          "zoomLabel": "100%",
+          "frameWidth": 1280,
+          "frameHeight": 720,
+          "viewportClientWidth": 884,
+          "viewportClientHeight": 565,
+          "viewportScrollWidth": 1304,
+          "viewportScrollHeight": 738,
+          "surfaceTransform": "matrix(1, 0, 0, 1, 0, 0)"
+        },
+        "zoomOutMetrics": {
+          "mode": "preview",
+          "zoomLabel": "90%",
+          "frameWidth": 1152,
+          "frameHeight": 648,
+          "viewportClientWidth": 884,
+          "viewportClientHeight": 565,
+          "viewportScrollWidth": 1176,
+          "viewportScrollHeight": 666,
+          "surfaceTransform": "matrix(0.9, 0, 0, 0.9, 0, 0)"
+        },
+        "zoomInMetrics": {
+          "mode": "preview",
+          "zoomLabel": "100%",
+          "frameWidth": 1280,
+          "frameHeight": 720,
+          "viewportClientWidth": 884,
+          "viewportClientHeight": 565,
+          "viewportScrollWidth": 1304,
+          "viewportScrollHeight": 738,
+          "surfaceTransform": "matrix(1, 0, 0, 1, 0, 0)"
+        },
+        "fitMetrics": {
+          "mode": "preview",
+          "zoomLabel": "适配 70%",
+          "frameWidth": 890,
+          "frameHeight": 500.625,
+          "viewportClientWidth": 914,
+          "viewportClientHeight": 565,
+          "viewportScrollWidth": 914,
+          "viewportScrollHeight": 565,
+          "surfaceTransform": "matrix(0.695312, 0, 0, 0.695312, 0, 0)"
+        }
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "viewport": {
+        "id": "desktop-1280x720",
+        "width": 1280,
+        "height": 720
+      },
+      "editChecks": {
+        "initialMetrics": {
+          "mode": "edit",
+          "zoomLabel": "适配 74%",
+          "frameWidth": 950,
+          "frameHeight": 534.375,
+          "viewportClientWidth": 982,
+          "viewportClientHeight": 746,
+          "viewportScrollWidth": 982,
+          "viewportScrollHeight": 746,
+          "surfaceTransform": "matrix(0.742188, 0, 0, 0.742188, 0, 0)"
+        },
+        "actualSizeMetrics": {
+          "mode": "edit",
+          "zoomLabel": "100%",
+          "frameWidth": 1280,
+          "frameHeight": 720,
+          "viewportClientWidth": 952,
+          "viewportClientHeight": 746,
+          "viewportScrollWidth": 1312,
+          "viewportScrollHeight": 746,
+          "surfaceTransform": "matrix(1, 0, 0, 1, 0, 0)"
+        },
+        "zoomOutMetrics": {
+          "mode": "edit",
+          "zoomLabel": "90%",
+          "frameWidth": 1152,
+          "frameHeight": 648,
+          "viewportClientWidth": 952,
+          "viewportClientHeight": 746,
+          "viewportScrollWidth": 1184,
+          "viewportScrollHeight": 746,
+          "surfaceTransform": "matrix(0.9, 0, 0, 0.9, 0, 0)"
+        },
+        "zoomInMetrics": {
+          "mode": "edit",
+          "zoomLabel": "100%",
+          "frameWidth": 1280,
+          "frameHeight": 720,
+          "viewportClientWidth": 952,
+          "viewportClientHeight": 746,
+          "viewportScrollWidth": 1312,
+          "viewportScrollHeight": 746,
+          "surfaceTransform": "matrix(1, 0, 0, 1, 0, 0)"
+        },
+        "fitMetrics": {
+          "mode": "edit",
+          "zoomLabel": "适配 74%",
+          "frameWidth": 950,
+          "frameHeight": 534.375,
+          "viewportClientWidth": 982,
+          "viewportClientHeight": 746,
+          "viewportScrollWidth": 982,
+          "viewportScrollHeight": 746,
+          "surfaceTransform": "matrix(0.742188, 0, 0, 0.742188, 0, 0)"
+        }
+      },
+      "previewChecks": {
+        "initialMetrics": {
+          "mode": "preview",
+          "zoomLabel": "适配 59%",
+          "frameWidth": 760,
+          "frameHeight": 427.5,
+          "viewportClientWidth": 784,
+          "viewportClientHeight": 565,
+          "viewportScrollWidth": 784,
+          "viewportScrollHeight": 565,
+          "surfaceTransform": "matrix(0.59375, 0, 0, 0.59375, 0, 0)"
+        },
+        "actualSizeMetrics": {
+          "mode": "preview",
+          "zoomLabel": "100%",
+          "frameWidth": 1280,
+          "frameHeight": 720,
+          "viewportClientWidth": 754,
+          "viewportClientHeight": 565,
+          "viewportScrollWidth": 1304,
+          "viewportScrollHeight": 738,
+          "surfaceTransform": "matrix(1, 0, 0, 1, 0, 0)"
+        },
+        "zoomOutMetrics": {
+          "mode": "preview",
+          "zoomLabel": "90%",
+          "frameWidth": 1152,
+          "frameHeight": 648,
+          "viewportClientWidth": 754,
+          "viewportClientHeight": 565,
+          "viewportScrollWidth": 1176,
+          "viewportScrollHeight": 666,
+          "surfaceTransform": "matrix(0.9, 0, 0, 0.9, 0, 0)"
+        },
+        "zoomInMetrics": {
+          "mode": "preview",
+          "zoomLabel": "100%",
+          "frameWidth": 1280,
+          "frameHeight": 720,
+          "viewportClientWidth": 754,
+          "viewportClientHeight": 565,
+          "viewportScrollWidth": 1304,
+          "viewportScrollHeight": 738,
+          "surfaceTransform": "matrix(1, 0, 0, 1, 0, 0)"
+        },
+        "fitMetrics": {
+          "mode": "preview",
+          "zoomLabel": "适配 59%",
+          "frameWidth": 760,
+          "frameHeight": 427.5,
+          "viewportClientWidth": 784,
+          "viewportClientHeight": 565,
+          "viewportScrollWidth": 784,
+          "viewportScrollHeight": 565,
+          "surfaceTransform": "matrix(0.59375, 0, 0, 0.59375, 0, 0)"
+        }
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    }
+  ]
+}

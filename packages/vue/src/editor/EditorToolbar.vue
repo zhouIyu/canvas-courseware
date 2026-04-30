@@ -77,7 +77,9 @@ const handleImageFileSelect = (file: File) => {
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
-  padding: 10px 14px;
+  padding:
+    var(--cw-editor-toolbar-padding-block, 10px)
+    var(--cw-editor-toolbar-padding-inline, 14px);
   border-bottom: 1px solid color-mix(in srgb, var(--cw-color-border) 92%, #ffffff);
   background: rgba(255, 255, 255, 0.96);
 }
@@ -107,7 +109,7 @@ const handleImageFileSelect = (file: File) => {
 .toolbar-group-insert,
 .toolbar-group-history {
   gap: 4px;
-  padding: 4px 6px;
+  padding: var(--cw-editor-toolbar-group-padding, 4px 6px);
   border: 1px solid color-mix(in srgb, var(--cw-color-border) 88%, #ffffff);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.72);
