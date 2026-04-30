@@ -23,6 +23,7 @@ import {
 import StageViewportControls from "../shared/StageViewportControls.vue";
 import { useStageViewportFit } from "../shared";
 import FloatingLayerManager from "./FloatingLayerManager.vue";
+import type { LayerSelectionPayload } from "./layer-selection";
 import LocalImageFileTrigger from "./LocalImageFileTrigger.vue";
 import SlideSettingsEntryButton from "./SlideSettingsEntryButton.vue";
 import TextTool from "./TextTool.vue";
@@ -118,7 +119,7 @@ const emit = defineEmits<{
   /** 请求更新一个节点。 */
   "update-node": [nodeId: string, patch: NodePatch];
   /** 请求选中一个节点。 */
-  "select-layer": [nodeId: string];
+  "select-layer": [payload: LayerSelectionPayload];
   /** 请求按语义调整图层顺序。 */
   "reorder-layer": [nodeId: string, position: ReorderPosition];
   /** 请求按索引写回新的图层顺序。 */

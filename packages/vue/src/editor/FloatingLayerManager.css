@@ -70,6 +70,25 @@
   color: var(--cw-color-muted);
 }
 
+.floating-layer-manager__summary {
+  margin: 0;
+  padding: 0 4px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--cw-color-muted);
+}
+
+.floating-layer-manager__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 2px 2px;
+}
+
+.floating-layer-manager__action-button {
+  border-radius: 999px;
+}
+
 .floating-layer-manager__list {
   display: grid;
   gap: 2px;

@@ -8,6 +8,7 @@ import type {
 } from "@canvas-courseware/core";
 import { cloneTimelineStep } from "@canvas-courseware/core";
 import { computed, type ComputedRef, type ShallowRef } from "vue";
+import type { LayerSelectionPayload } from "./layer-selection";
 import type {
   LayerAlignMode,
   LayerDistributeMode,
@@ -265,12 +266,23 @@ export function useCoursewareEditorShellActions(
   };
 
   /** 图层面板选中节点时，把选择同步回标准 snapshot。 */
-  const handleLayerSelect = (nodeId: string) => {
-    if (!options.activeSlide.value) {
+  const handleLayerSelect = (payload: LayerSelectionPayload) => {
+    const activeSlide = options.activeSlide.value;
+    if (!activeSlide) {
       return;
     }
 
-    options.selectNodes(options.activeSlide.value.id, [nodeId]);
+    const currentSelectionNodeIds =
+      options.snapshot.value.selection.slideId === activeSlide.id
+        ? options.snapshot.value.selection.nodeIds
+        : [];
+    const nextSelectionNodeIds = resolveNextLayerSelectionNodeIds(
+      activeSlide,
+      currentSelectionNodeIds,
+      payload,
+    );
+
+    options.selectNodes(activeSlide.id, nextSelectionNodeIds);
   };
 
   /** 图层面板层级按钮的派发入口。 */
@@ -394,4 +406,26 @@ export function useCoursewareEditorShellActions(
     handleTimelineStepUpsert,
     slideCount,
   };
+}
+
+/** 按页面原始顺序生成下一次图层选择结果，避免多选时顺序漂移。 */
+function resolveNextLayerSelectionNodeIds(
+  activeSlide: Slide,
+  currentSelectionNodeIds: string[],
+  payload: LayerSelectionPayload,
+): string[] {
+  if (!payload.appendToSelection) {
+    return [payload.nodeId];
+  }
+
+  const nextSelectionNodeIdSet = new Set(currentSelectionNodeIds);
+  if (nextSelectionNodeIdSet.has(payload.nodeId)) {
+    nextSelectionNodeIdSet.delete(payload.nodeId);
+  } else {
+    nextSelectionNodeIdSet.add(payload.nodeId);
+  }
+
+  return activeSlide.nodes
+    .filter((node) => nextSelectionNodeIdSet.has(node.id))
+    .map((node) => node.id);
 }

@@ -7,6 +7,7 @@ import type {
 } from "@canvas-courseware/core";
 import { computed, nextTick, ref, watch } from "vue";
 import { formatNodeTypeLabel } from "../shared";
+import type { LayerSelectionPayload } from "./layer-selection";
 import type {
   LayerAlignMode,
   LayerDistributeMode,
@@ -31,6 +32,14 @@ interface LayerReorderToIndexPayload {
   index: number;
 }
 
+/** 浮层面板支持的基础批量对齐动作。 */
+interface FloatingLayerAlignOption {
+  /** 当前对齐动作在命令层里的标准值。 */
+  value: LayerAlignMode;
+  /** 展示给用户的短标签。 */
+  label: string;
+}
+
 /** 浮层组件输入参数。 */
 const props = withDefaults(
   defineProps<{
@@ -51,7 +60,7 @@ const props = withDefaults(
 /** 浮层组件对外派发的交互意图。 */
 const emit = defineEmits<{
   /** 选择某个节点。 */
-  select: [nodeId: string];
+  select: [payload: LayerSelectionPayload];
   /** 更新某个节点的标准属性。 */
   "update-node": [nodeId: string, patch: NodePatch];
   /** 按位置语义调整层级。 */
@@ -63,6 +72,26 @@ const emit = defineEmits<{
   /** 对当前多选节点执行分布。 */
   distribute: [mode: LayerDistributeMode];
 }>();
+
+/** 浮层面板当前首版直接暴露的基础批量对齐动作。 */
+const batchAlignOptions: FloatingLayerAlignOption[] = [
+  {
+    value: "left",
+    label: "左对齐",
+  },
+  {
+    value: "h-center",
+    label: "水平居中",
+  },
+  {
+    value: "top",
+    label: "顶部对齐",
+  },
+  {
+    value: "v-center",
+    label: "垂直居中",
+  },
+];
 
 /** 当前浮层是否处于展开态。 */
 const isExpanded = ref(false);
@@ -93,11 +122,27 @@ const primarySelectedNode = computed(() =>
 /** 当前是否存在可定位的单个主选中对象。 */
 const hasPrimarySelection = computed(() => Boolean(primarySelectedNode.value));
 
+/** 当前是否处于多选态。 */
+const hasMultiSelection = computed(() => props.selectedNodeIds.length > 1);
+
 /** 当前选中节点 id 的只读集合，供模板快速判断高亮态。 */
 const selectedNodeIdSet = computed(() => new Set(props.selectedNodeIds));
 
 /** 当前图层顺序摘要，用于节点顺序变化后触发滚动定位。 */
 const nodeOrderKey = computed(() => props.nodes.map((node) => node.id).join("|"));
+
+/** 当前面板顶部的选中摘要文案。 */
+const selectionSummary = computed(() => {
+  if (hasMultiSelection.value) {
+    return `已选中 ${props.selectedNodeIds.length} 个对象，可直接执行基础批量对齐。`;
+  }
+
+  if (primarySelectedNode.value) {
+    return `当前对象为「${primarySelectedNode.value.name}」，按住 Shift 可继续加入多选。`;
+  }
+
+  return "点击图层即可同步选中，按住 Shift 可把多个对象加入同一选区。";
+});
 
 /** 单选时是否还可以继续上移。 */
 const canMoveForward = computed(() => {
@@ -127,9 +172,17 @@ const toggleExpanded = () => {
   isExpanded.value = !isExpanded.value;
 };
 
-/** 选择某个节点。 */
-const handleSelect = (nodeId: string) => {
-  emit("select", nodeId);
+/** 派发一次图层选择请求，并带上是否需要追加到现有选区。 */
+const emitSelectionRequest = (nodeId: string, appendToSelection: boolean) => {
+  emit("select", {
+    nodeId,
+    appendToSelection,
+  });
+};
+
+/** 响应鼠标点击选择某个节点。 */
+const handleSelect = (nodeId: string, event?: MouseEvent | KeyboardEvent) => {
+  emitSelectionRequest(nodeId, Boolean(event?.shiftKey));
 };
 
 /** 使用键盘选中某个图层项，补齐无鼠标场景。 */
@@ -139,7 +192,12 @@ const handleLayerKeydown = (event: KeyboardEvent, nodeId: string) => {
   }
 
   event.preventDefault();
-  handleSelect(nodeId);
+  handleSelect(nodeId, event);
+};
+
+/** 响应图层卡片点击，支持通过 Shift 把对象纳入多选。 */
+const handleLayerClick = (nodeId: string, event: MouseEvent) => {
+  handleSelect(nodeId, event);
 };
 
 /** 按语义位置派发层级调整动作。 */
@@ -149,6 +207,15 @@ const handleReorder = (position: ReorderPosition) => {
   }
 
   emit("reorder", primarySelectedNode.value.id, position);
+};
+
+/** 派发首版批量对齐动作。 */
+const handleAlign = (mode: LayerAlignMode) => {
+  if (!hasMultiSelection.value) {
+    return;
+  }
+
+  emit("align", mode);
 };
 
 /** 进入图层重命名编辑态。 */
@@ -420,6 +487,23 @@ watch(
         </div>
       </div>
 
+      <p class="floating-layer-manager__summary">
+        {{ selectionSummary }}
+      </p>
+
+      <div v-if="hasMultiSelection" class="floating-layer-manager__actions">
+        <a-button
+          v-for="option in batchAlignOptions"
+          :key="option.value"
+          class="floating-layer-manager__action-button"
+          size="mini"
+          type="outline"
+          @click="handleAlign(option.value)"
+        >
+          {{ option.label }}
+        </a-button>
+      </div>
+
       <div v-if="nodes.length > 0" class="floating-layer-manager__list">
         <article
           v-for="node in nodes"
@@ -443,7 +527,7 @@ watch(
             :aria-pressed="isNodeSelected(node.id)"
             role="button"
             tabindex="0"
-            @click="handleSelect(node.id)"
+            @click="handleLayerClick(node.id, $event)"
             @keydown="handleLayerKeydown($event, node.id)"
           >
             <div class="floating-layer-item__head">

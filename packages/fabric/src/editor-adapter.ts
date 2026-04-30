@@ -114,6 +114,11 @@ export class FabricEditorAdapter {
     this.context.canvas = new Canvas(options.canvasElement, {
       preserveObjectStacking: true,
       selection: true,
+      /**
+       * 显式把编辑态多选修饰键固定为 Shift。
+       * 这样无论 Fabric 默认值是否变化，当前工作台里的 Shift 多选语义都保持稳定。
+       */
+      selectionKey: "shiftKey",
       backgroundColor: "#FFFFFF",
       targetFindTolerance: EDITOR_TARGET_FIND_TOLERANCE,
       fireRightClick: true,

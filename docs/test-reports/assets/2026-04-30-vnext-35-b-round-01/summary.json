@@ -1,0 +1,125 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-04-30T03:24:54.470Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "marquee-selection",
+      "selectionNodeIds": [
+        "rect-primary",
+        "rect-secondary"
+      ]
+    },
+    {
+      "id": "shift-selection",
+      "selectionNodeIds": [
+        "rect-primary",
+        "rect-secondary"
+      ]
+    },
+    {
+      "id": "align-left",
+      "action": "左对齐",
+      "geometries": [
+        {
+          "id": "rect-primary",
+          "x": 140,
+          "y": 140,
+          "width": 220,
+          "height": 140
+        },
+        {
+          "id": "rect-secondary",
+          "x": 140,
+          "y": 300,
+          "width": 140,
+          "height": 92
+        }
+      ]
+    },
+    {
+      "id": "align-h-center",
+      "action": "水平居中",
+      "geometries": [
+        {
+          "id": "rect-primary",
+          "x": 140,
+          "y": 140,
+          "width": 220,
+          "height": 140
+        },
+        {
+          "id": "rect-secondary",
+          "x": 180,
+          "y": 300,
+          "width": 140,
+          "height": 92
+        }
+      ]
+    },
+    {
+      "id": "align-top",
+      "action": "顶部对齐",
+      "geometries": [
+        {
+          "id": "rect-primary",
+          "x": 140,
+          "y": 140,
+          "width": 220,
+          "height": 140
+        },
+        {
+          "id": "rect-secondary",
+          "x": 180,
+          "y": 140,
+          "width": 140,
+          "height": 92
+        }
+      ]
+    },
+    {
+      "id": "align-v-center",
+      "action": "垂直居中",
+      "geometries": [
+        {
+          "id": "rect-primary",
+          "x": 140,
+          "y": 140,
+          "width": 220,
+          "height": 140
+        },
+        {
+          "id": "rect-secondary",
+          "x": 180,
+          "y": 164,
+          "width": 140,
+          "height": 92
+        }
+      ]
+    },
+    {
+      "id": "persistence-after-align",
+      "geometries": [
+        {
+          "id": "rect-primary",
+          "x": 140,
+          "y": 140,
+          "width": 220,
+          "height": 140
+        },
+        {
+          "id": "rect-secondary",
+          "x": 180,
+          "y": 164,
+          "width": 140,
+          "height": 92
+        }
+      ]
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}
