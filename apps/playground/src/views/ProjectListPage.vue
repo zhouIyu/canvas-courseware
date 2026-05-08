@@ -14,11 +14,17 @@ import {
 } from "../projects/project-thumbnails";
 import type { ProjectSummary } from "../projects/types";
 
+/** 项目列表支持的排序模式。 */
+type ProjectSortMode = "updated-desc" | "updated-asc";
+
 /** 项目搜索关键字。 */
 const searchQuery = ref("");
 
 /** 当前项目摘要列表。 */
 const projectSummaries = ref<ProjectSummary[]>([]);
+
+/** 当前项目排序模式。 */
+const projectSortMode = ref<ProjectSortMode>("updated-desc");
 
 /** 当前是否展示新建项目弹窗。 */
 const isCreateProjectModalVisible = ref(false);
@@ -29,20 +35,93 @@ const isCreatingProject = ref(false);
 /** 当前路由实例，用于跳转到工作台页。 */
 const router = useRouter();
 
+/** 项目列表完整时间使用的格式化器。 */
+const detailedUpdatedAtFormatter = new Intl.DateTimeFormat("zh-CN", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+/** 项目列表短时间使用的格式化器。 */
+const shortUpdatedAtTimeFormatter = new Intl.DateTimeFormat("zh-CN", {
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+/** 同年份日期时间使用的格式化器。 */
+const sameYearUpdatedAtFormatter = new Intl.DateTimeFormat("zh-CN", {
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+/** 项目标题比较使用的本地化排序器。 */
+const projectTitleCollator = new Intl.Collator("zh-CN");
+
+/** 项目列表排序选项。 */
+const projectSortOptions = [
+  {
+    label: "最近编辑优先",
+    value: "updated-desc",
+  },
+  {
+    label: "较早编辑优先",
+    value: "updated-asc",
+  },
+] satisfies Array<{ label: string; value: ProjectSortMode }>;
+
 /** 刷新项目列表页的数据源。 */
 const refreshProjectSummaries = () => {
   projectSummaries.value = projectRepository.list();
 };
 
-/** 使用更易读的格式展示更新时间。 */
-const formatUpdatedAt = (updatedAt: string): string =>
-  new Intl.DateTimeFormat("zh-CN", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(updatedAt));
+/** 判断两个时间是否处于同一自然日。 */
+const isSameCalendarDay = (sourceDate: Date, targetDate: Date): boolean =>
+  sourceDate.getFullYear() === targetDate.getFullYear()
+  && sourceDate.getMonth() === targetDate.getMonth()
+  && sourceDate.getDate() === targetDate.getDate();
+
+/** 读取项目更新时间对应的时间戳，异常值统一回退为 0。 */
+const resolveUpdatedAtTimestamp = (updatedAt: string): number => {
+  const parsedTimestamp = Date.parse(updatedAt);
+  return Number.isNaN(parsedTimestamp) ? 0 : parsedTimestamp;
+};
+
+/** 生成项目卡片中更易扫读的最后编辑摘要。 */
+const formatUpdatedAtSummary = (updatedAt: string): string => {
+  const updatedDate = new Date(updatedAt);
+  if (Number.isNaN(updatedDate.getTime())) {
+    return "时间未知";
+  }
+
+  const currentDate = new Date();
+  if (isSameCalendarDay(updatedDate, currentDate)) {
+    return `今天 ${shortUpdatedAtTimeFormatter.format(updatedDate)}`;
+  }
+
+  const yesterday = new Date(currentDate);
+  yesterday.setDate(currentDate.getDate() - 1);
+  if (isSameCalendarDay(updatedDate, yesterday)) {
+    return `昨天 ${shortUpdatedAtTimeFormatter.format(updatedDate)}`;
+  }
+
+  if (updatedDate.getFullYear() === currentDate.getFullYear()) {
+    return sameYearUpdatedAtFormatter.format(updatedDate);
+  }
+
+  return detailedUpdatedAtFormatter.format(updatedDate);
+};
+
+/** 生成项目卡片中的完整最后编辑时间。 */
+const formatUpdatedAtDetail = (updatedAt: string): string => {
+  const updatedDate = new Date(updatedAt);
+  return Number.isNaN(updatedDate.getTime())
+    ? updatedAt
+    : detailedUpdatedAtFormatter.format(updatedDate);
+};
 
 /** 生成项目标题首字母占位。 */
 const resolveProjectInitial = (projectTitle: string): string =>
@@ -55,9 +134,15 @@ const resolveProjectThumbnailStyle = (thumbnail: string | null) =>
 /** 判断项目封面当前是否已经有真实截图。 */
 const hasProjectThumbnailImage = (thumbnail: string | null) => isImageThumbnailSource(thumbnail);
 
-/** 当前搜索结果。 */
-const filteredProjects = computed(() => {
-  const keyword = searchQuery.value.trim().toLowerCase();
+/** 当前规整后的搜索关键字。 */
+const normalizedSearchQuery = computed(() => searchQuery.value.trim().toLowerCase());
+
+/** 当前是否处于搜索态。 */
+const hasSearchQuery = computed(() => normalizedSearchQuery.value.length > 0);
+
+/** 当前搜索命中的项目。 */
+const matchedProjects = computed(() => {
+  const keyword = normalizedSearchQuery.value;
   if (!keyword) {
     return projectSummaries.value;
   }
@@ -67,12 +152,61 @@ const filteredProjects = computed(() => {
   );
 });
 
-/** 当前项目总数。 */
-const projectCountLabel = computed(() => `${projectSummaries.value.length} 个项目`);
+/** 按当前排序模式重新整理项目列表。 */
+const displayedProjects = computed(() => {
+  const direction = projectSortMode.value === "updated-asc" ? 1 : -1;
+  return [...matchedProjects.value].sort((leftProject, rightProject) => {
+    const leftTimestamp = resolveUpdatedAtTimestamp(leftProject.updatedAt);
+    const rightTimestamp = resolveUpdatedAtTimestamp(rightProject.updatedAt);
+    if (leftTimestamp === rightTimestamp) {
+      return projectTitleCollator.compare(leftProject.title, rightProject.title);
+    }
+
+    return (leftTimestamp - rightTimestamp) * direction;
+  });
+});
+
+/** 当前排序模式的人类可读说明。 */
+const projectSortLabel = computed(() =>
+  projectSortMode.value === "updated-asc" ? "按较早编辑优先排序" : "按最近编辑优先排序",
+);
+
+/** 当前项目总数与筛选结果说明。 */
+const projectCountLabel = computed(() => {
+  const totalProjectCount = projectSummaries.value.length;
+  if (!hasSearchQuery.value) {
+    return `共 ${totalProjectCount} 个项目，${projectSortLabel.value}`;
+  }
+
+  return `共 ${totalProjectCount} 个项目，匹配 ${matchedProjects.value.length} 个，${projectSortLabel.value}`;
+});
+
+/** 当前空状态文案。 */
+const emptyStateDescription = computed(() =>
+  hasSearchQuery.value ? `没有匹配“${searchQuery.value.trim()}”的项目` : "还没有项目，先创建一个吧",
+);
 
 /** 打开新建项目弹窗。 */
 const openCreateProjectModal = () => {
   isCreateProjectModalVisible.value = true;
+};
+
+/** 判断外部值是否为受支持的项目排序模式。 */
+const isProjectSortMode = (value: unknown): value is ProjectSortMode =>
+  value === "updated-desc" || value === "updated-asc";
+
+/** 根据选择器结果切换当前排序模式。 */
+const handleProjectSortModeChange = (value: unknown) => {
+  if (!isProjectSortMode(value)) {
+    return;
+  }
+
+  projectSortMode.value = value;
+};
+
+/** 清空当前搜索关键字并回到完整项目列表。 */
+const clearSearchQuery = () => {
+  searchQuery.value = "";
 };
 
 /** 关闭新建项目弹窗。 */
@@ -160,13 +294,27 @@ onMounted(() => {
             class="search-input"
             placeholder="搜索项目名称..."
           />
+          <a-select
+            class="sort-select"
+            :model-value="projectSortMode"
+            popup-container="body"
+            @change="handleProjectSortModeChange"
+          >
+            <a-option
+              v-for="option in projectSortOptions"
+              :key="option.value"
+              :value="option.value"
+            >
+              {{ option.label }}
+            </a-option>
+          </a-select>
           <a-button type="primary" @click="openCreateProjectModal">新建项目</a-button>
         </div>
       </header>
 
-      <div v-if="filteredProjects.length > 0" class="project-grid">
+      <div v-if="displayedProjects.length > 0" class="project-grid">
         <a-card
-          v-for="project in filteredProjects"
+          v-for="project in displayedProjects"
           :key="project.id"
           :bordered="false"
           class="project-card"
@@ -184,8 +332,14 @@ onMounted(() => {
           </template>
 
           <div class="project-copy">
+            <div class="project-updated">
+              <span class="project-updated-label">最后编辑</span>
+              <strong>{{ formatUpdatedAtSummary(project.updatedAt) }}</strong>
+              <span class="project-updated-detail">
+                {{ formatUpdatedAtDetail(project.updatedAt) }}
+              </span>
+            </div>
             <div class="project-meta">
-              <span>{{ formatUpdatedAt(project.updatedAt) }}</span>
               <span>{{ project.slideCount }} 页</span>
               <span>{{ formatProjectCanvasSize(project.canvasSize) }}</span>
             </div>
@@ -206,8 +360,21 @@ onMounted(() => {
         </a-card>
       </div>
 
-      <a-empty v-else class="empty-state" description="没有匹配的项目">
-        <a-button type="primary" @click="openCreateProjectModal">创建项目</a-button>
+      <a-empty v-else class="empty-state" :description="emptyStateDescription">
+        <a-button
+          v-if="hasSearchQuery"
+          type="outline"
+          @click="clearSearchQuery"
+        >
+          清空搜索
+        </a-button>
+        <a-button
+          v-else
+          type="primary"
+          @click="openCreateProjectModal"
+        >
+          创建项目
+        </a-button>
       </a-empty>
     </section>
 
@@ -283,6 +450,10 @@ onMounted(() => {
   width: min(320px, 100%);
 }
 
+.sort-select {
+  width: 172px;
+}
+
 .project-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -320,6 +491,29 @@ onMounted(() => {
 .project-copy {
   display: grid;
   gap: var(--cw-space-2);
+}
+
+.project-updated {
+  display: grid;
+  gap: 2px;
+}
+
+.project-updated-label {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--cw-color-muted);
+}
+
+.project-updated strong {
+  font-size: 18px;
+  line-height: 1.3;
+  color: var(--cw-color-text);
+}
+
+.project-updated-detail {
+  font-size: 12px;
+  line-height: 1.5;
+  color: color-mix(in srgb, var(--cw-color-muted) 88%, #ffffff);
 }
 
 .project-meta {
@@ -392,6 +586,10 @@ onMounted(() => {
   }
 
   .search-input {
+    width: 100%;
+  }
+
+  .sort-select {
     width: 100%;
   }
 
