@@ -13,11 +13,18 @@ import {
   updatePlayerWaitingState,
 } from "./state";
 
+/** 定位播放步骤时可选的额外控制项。 */
+export interface SeekPlayerToStepOptions {
+  /** 定位完成后，是否继续沿用下一步原有的自动触发行为。 */
+  autoplayNextAutoStep?: boolean;
+}
+
 /** 把预览定位到指定步骤之前的状态。 */
 export async function seekPlayerToStep(
   context: FabricPlayerAdapterContext,
   stepIndex: number,
   slideId?: string | null,
+  options: SeekPlayerToStepOptions = {},
 ): Promise<FabricPlayerAdapterState> {
   if (slideId !== undefined) {
     context.currentSlideId = slideId;
@@ -32,8 +39,14 @@ export async function seekPlayerToStep(
     return context.state;
   }
 
+  const shouldAutoplayNextAutoStep = options.autoplayNextAutoStep ?? true;
   const targetStepIndex = clampStepIndex(stepIndex, slide.timeline.steps.length);
   if (targetStepIndex === 0) {
+    if (!shouldAutoplayNextAutoStep) {
+      clearPlayerAutoTimer(context);
+      applyManualPlayerWaitingState(context);
+    }
+
     return context.state;
   }
 
@@ -61,6 +74,11 @@ export async function seekPlayerToStep(
     status: "idle",
     nextTrigger: null,
   });
+
+  if (!shouldAutoplayNextAutoStep) {
+    applyManualPlayerWaitingState(context);
+    return context.state;
+  }
 
   updatePlayerWaitingState(context, version, () => {
     void playNextPlayerStep(context, true);
@@ -275,4 +293,38 @@ async function executePlayerAction(
 /** 把任意输入的步骤索引夹在合法范围内。 */
 function clampStepIndex(stepIndex: number, stepCount: number): number {
   return Math.min(Math.max(stepIndex, 0), stepCount);
+}
+
+/** 在手动回退步骤后，强制停在当前焦点步骤，等待用户再次触发。 */
+function applyManualPlayerWaitingState(
+  context: FabricPlayerAdapterContext,
+): FabricPlayerAdapterState {
+  const nextStep = getNextPlayerStep(context);
+  if (!nextStep) {
+    syncTriggerAffordance(context, null);
+    setPlayerState(context, {
+      ...context.state,
+      status: "completed",
+      nextTrigger: null,
+    });
+    return context.state;
+  }
+
+  if (nextStep.trigger.type === "page-click" || nextStep.trigger.type === "node-click") {
+    syncTriggerAffordance(context, nextStep);
+    setPlayerState(context, {
+      ...context.state,
+      status: "paused",
+      nextTrigger: nextStep.trigger.type,
+    });
+    return context.state;
+  }
+
+  syncTriggerAffordance(context, null);
+  setPlayerState(context, {
+    ...context.state,
+    status: "paused",
+    nextTrigger: "auto",
+  });
+  return context.state;
 }

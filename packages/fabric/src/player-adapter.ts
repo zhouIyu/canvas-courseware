@@ -4,7 +4,13 @@ import {
   createFabricPlayerAdapterContext,
   type FabricPlayerAdapterContext,
 } from "./player-adapter/context";
-import { handlePlayerPointerDown, playNextPlayerStep, resetPlayerAdapter, seekPlayerToStep } from "./player-adapter/playback";
+import {
+  handlePlayerPointerDown,
+  playNextPlayerStep,
+  resetPlayerAdapter,
+  seekPlayerToStep,
+  type SeekPlayerToStepOptions,
+} from "./player-adapter/playback";
 import { disposePlayerCanvas, syncTriggerAffordance } from "./player-adapter/rendering";
 import {
   clearPlayerAutoTimer,
@@ -96,8 +102,9 @@ export class FabricPlayerAdapter {
   async seekToStep(
     stepIndex: number,
     slideId?: string | null,
+    options?: SeekPlayerToStepOptions,
   ): Promise<FabricPlayerAdapterState> {
-    return seekPlayerToStep(this.context, stepIndex, slideId);
+    return seekPlayerToStep(this.context, stepIndex, slideId, options);
   }
 
   /** 重置当前预览页面到初始播放状态。 */

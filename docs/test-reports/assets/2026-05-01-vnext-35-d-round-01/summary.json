@@ -1,0 +1,62 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-05-08T09:03:54.463Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "initial-preview-state",
+      "nextTrigger": "点击页面继续",
+      "slidePosition": "第 1 / 2 页",
+      "previousStepDisabled": true,
+      "firstStepStatus": "待触发",
+      "secondStepStatus": "待执行"
+    },
+    {
+      "id": "keyboard-play-next",
+      "firstStepStatus": "已完成",
+      "secondStepStatus": "已完成",
+      "previousStepDisabled": false
+    },
+    {
+      "id": "keyboard-step-backward",
+      "nextTrigger": "自动继续",
+      "firstStepStatus": "已完成",
+      "stepStatus": "自动触发"
+    },
+    {
+      "id": "keyboard-replay",
+      "nextTrigger": "点击页面继续",
+      "firstStepStatus": "待触发",
+      "secondStepStatus": "待执行"
+    },
+    {
+      "id": "immersive-enter",
+      "isShellImmersive": true,
+      "hasTopbar": false,
+      "hasInsightStrip": false,
+      "hasStageHint": true,
+      "hasEmbeddedActions": true,
+      "fullscreenElementClassName": null,
+      "stageHintText": "等待继续快捷键：← 上一步 · →/空格 下一步 · R 重播 · F / Esc 退出"
+    },
+    {
+      "id": "immersive-exit",
+      "isShellImmersive": false,
+      "hasTopbar": false,
+      "hasInsightStrip": false,
+      "hasStageHint": false,
+      "hasEmbeddedActions": true,
+      "fullscreenElementClassName": null,
+      "stageHintText": ""
+    },
+    {
+      "id": "page-navigation-shortcuts",
+      "slidePosition": "第 1 / 2 页"
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

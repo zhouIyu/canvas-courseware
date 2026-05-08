@@ -2,6 +2,8 @@
 import type { CoursewareDocument } from "@canvas-courseware/core";
 import { computed, ref, watch } from "vue";
 import StageViewportControls from "../shared/StageViewportControls.vue";
+import PreviewPlaybackControls from "./PreviewPlaybackControls.vue";
+import PreviewTimelineSidebar from "./PreviewTimelineSidebar.vue";
 import {
   DEFAULT_PREVIEW_HEIGHT,
   createSlideBackgroundStyle,
@@ -14,6 +16,7 @@ import {
   useStageViewportFit,
 } from "../shared";
 import { useCoursewarePreview } from "./useCoursewarePreview";
+import { usePreviewImmersivePlayback } from "./usePreviewImmersivePlayback";
 
 /** 外部触发预览跳转时使用的请求结构。 */
 interface PreviewPlaybackRequest {
@@ -68,6 +71,9 @@ const {
   document: props.document,
   slideId: props.slideId,
 });
+
+/** 预览壳层根节点引用，供沉浸播放与全屏能力复用。 */
+const previewShellRef = ref<HTMLElement | null>(null);
 
 /** 外部文档变化时，替换底层播放文档。 */
 watch(
@@ -209,6 +215,12 @@ const completedStepCount = computed(() =>
   Math.min(state.value.stepIndex, stepCount.value),
 );
 
+/** 当前是否存在可播放页面。 */
+const hasActiveSlide = computed(() => Boolean(activeSlide.value));
+
+/** 当前是否还能回退到上一步。 */
+const canStepBackward = computed(() => hasActiveSlide.value && state.value.stepIndex > 0);
+
 /** 当前尚未执行的下一步。 */
 const nextStep = computed(() =>
   activeSlide.value?.timeline.steps[state.value.stepIndex] ?? null,
@@ -319,38 +331,15 @@ const replayCurrentSlide = async () => {
   await resetPreview();
 };
 
-/** 生成某一步当前对应的状态文案。 */
-const resolveStepStatusLabel = (stepIndex: number) => {
-  if (stepIndex < completedStepCount.value) {
-    return "已完成";
+/** 手动回退到上一步，并停在该步等待用户再次触发。 */
+const stepBackward = async () => {
+  if (!activeSlide.value || !canStepBackward.value) {
+    return;
   }
 
-  if (stepIndex === state.value.stepIndex && stepIndex < stepCount.value) {
-    if (state.value.status === "playing") {
-      return "播放中";
-    }
-
-    if (state.value.nextTrigger === "auto") {
-      return "自动触发";
-    }
-
-    return "待触发";
-  }
-
-  return "待执行";
-};
-
-/** 生成某一步状态标签使用的色值，保证当前焦点更容易识别。 */
-const resolveStepStatusColor = (stepIndex: number) => {
-  if (stepIndex < completedStepCount.value) {
-    return "#00b42a";
-  }
-
-  if (stepIndex === state.value.stepIndex && stepIndex < stepCount.value) {
-    return state.value.status === "paused" ? "#ff7d00" : "#165dff";
-  }
-
-  return "#86909c";
+  await startPreviewFromStep(Math.max(state.value.stepIndex - 1, 0), activeSlide.value.id, {
+    autoplayNextAutoStep: false,
+  });
 };
 
 /** 生成预览侧栏缩略页背景样式，优先使用保存后的真实截图。 */
@@ -382,14 +371,26 @@ const previewViewportDensity = computed<WorkspaceViewportDensity>(() =>
 
 /** 内嵌工作台里优先把中心区域让给课件本身，收起附加说明卡片。 */
 const shouldShowInsightStrip = computed(
-  () => !isEmbedded.value && previewViewportDensity.value === "spacious",
+  () =>
+    !isImmersivePlayback.value &&
+    !isEmbedded.value &&
+    previewViewportDensity.value === "spacious",
 );
 
 /** 当前画布区头部是否需要展示标题。 */
-const shouldShowStageHeading = computed(() => !isEmbedded.value);
+const shouldShowStageHeading = computed(
+  () => !isEmbedded.value && !isImmersivePlayback.value,
+);
 
-/** 内嵌模式下是否展示就地播放控制入口。 */
-const showEmbeddedPlaybackActions = computed(() => isEmbedded.value);
+/** 当前是否展示组件级顶部工具栏。 */
+const shouldShowHeader = computed(
+  () => props.showHeader && !isImmersivePlayback.value,
+);
+
+/** 当前是否在画布头部展示播放控制入口。 */
+const shouldShowInlinePlaybackActions = computed(
+  () => isEmbedded.value || isImmersivePlayback.value,
+);
 
 /**
  * 按高度密度返回预览壳层变量。
@@ -466,16 +467,28 @@ const isSlideRailCollapsed = ref(false);
 /** 当前右侧步骤栏是否已收起。 */
 const isTimelineCollapsed = ref(false);
 
+/** 当前左侧栏在沉浸播放下会被强制收起，但不覆盖用户原始开关状态。 */
+const effectiveSlideRailCollapsed = computed(
+  () => isImmersivePlayback.value || isSlideRailCollapsed.value,
+);
+
+/** 当前右侧栏在沉浸播放下会被强制收起，但不覆盖用户原始开关状态。 */
+const effectiveTimelineCollapsed = computed(
+  () => isImmersivePlayback.value || isTimelineCollapsed.value,
+);
+
 /** 预览三栏布局的动态 class。 */
 const previewLayoutClass = computed(() => ({
-  "is-left-collapsed": isSlideRailCollapsed.value,
-  "is-right-collapsed": isTimelineCollapsed.value,
+  "is-left-collapsed": effectiveSlideRailCollapsed.value,
+  "is-right-collapsed": effectiveTimelineCollapsed.value,
+  "is-immersive-layout": isImmersivePlayback.value,
 }));
 
 /** 当前画布壳层是否处于“只保留课件主体”的紧凑模式。 */
 const previewStageShellClass = computed(() => ({
   "is-stage-only": !shouldShowInsightStrip.value,
   "is-embedded-stage": isEmbedded.value,
+  "is-immersive-stage": isImmersivePlayback.value,
 }));
 
 /** 切换左侧 slide 栏显隐。 */
@@ -488,15 +501,66 @@ const toggleTimelinePanel = () => {
   isTimelineCollapsed.value = !isTimelineCollapsed.value;
 };
 
+/** 判断当前预览壳层是否处于可响应全局快捷键的可见状态。 */
+const isPreviewShellVisible = () => {
+  const element = previewShellRef.value;
+  if (!element) {
+    return false;
+  }
+
+  if (element.offsetParent !== null) {
+    return true;
+  }
+
+  const documentWithFullscreen = document as Document & {
+    webkitFullscreenElement?: Element | null;
+  };
+  return (
+    document.fullscreenElement === element ||
+    documentWithFullscreen.webkitFullscreenElement === element
+  );
+};
+
+/** 预览壳层复用的沉浸播放、全屏与键盘控制能力。 */
+const {
+  immersiveToggleLabel,
+  isImmersivePlayback,
+  toggleImmersivePlayback,
+} = usePreviewImmersivePlayback({
+  shellRef: previewShellRef,
+  hasActiveSlide,
+  canStepBackward,
+  canActivatePreviousSlide,
+  canActivateNextSlide,
+  isKeyboardScopeActive: isPreviewShellVisible,
+  onPlayNextStep: playNextStep,
+  onStepBackward: stepBackward,
+  onReplayCurrentSlide: replayCurrentSlide,
+  onActivatePreviousSlide: () => activateRelativeSlide(-1),
+  onActivateNextSlide: () => activateRelativeSlide(1),
+});
+
+/** 沉浸播放下展示的轻量键盘提示。 */
+const immersivePlaybackHint = computed(
+  () => "快捷键：← 上一步 · →/空格 下一步 · R 重播 · F / Esc 退出",
+);
+
 </script>
 
 <template>
-  <section class="preview-shell" :class="{ 'is-embedded': isEmbedded }" :style="previewShellStyle">
-    <header v-if="showHeader" class="preview-topbar">
+  <section
+    ref="previewShellRef"
+    class="preview-shell"
+    :class="{ 'is-embedded': isEmbedded, 'is-immersive': isImmersivePlayback }"
+    :style="previewShellStyle"
+  >
+    <header v-if="shouldShowHeader" class="preview-topbar">
       <div class="preview-heading">
         <div class="title-row">
           <h2>{{ title }}</h2>
-          <a-tag :color="playbackStatusTagColor" bordered>{{ playbackStatusLabel }}</a-tag>
+          <a-tag class="playback-status-tag" :color="playbackStatusTagColor" bordered>
+            {{ playbackStatusLabel }}
+          </a-tag>
         </div>
         <p class="preview-copy">
           {{ playbackSummary }} · {{ nextTriggerLabel }} · {{ activeSlide?.name ?? "未选择页面" }}
@@ -504,68 +568,56 @@ const toggleTimelinePanel = () => {
       </div>
       <div class="preview-topbar-actions">
         <div class="status-badges topbar-badges">
-          <a-tag bordered>{{ slidePositionLabel }}</a-tag>
-          <a-tag bordered>{{ stepPositionLabel }}</a-tag>
-          <a-tag bordered>{{ stageSizeLabel }}</a-tag>
+          <a-tag class="preview-slide-position-tag" bordered>{{ slidePositionLabel }}</a-tag>
+          <a-tag class="preview-step-position-tag" bordered>{{ stepPositionLabel }}</a-tag>
+          <a-tag class="preview-stage-size-tag" bordered>{{ stageSizeLabel }}</a-tag>
         </div>
-        <div class="preview-actions">
-          <a-button
-            class="preview-text-button"
-            type="text"
-            :disabled="!canActivatePreviousSlide"
-            @click="activateRelativeSlide(-1)"
-          >
-            上一页
-          </a-button>
-          <a-button
-            class="preview-text-button"
-            type="text"
-            :disabled="!activeSlide"
-            @click="replayCurrentSlide"
-          >
-            重播当前页
-          </a-button>
-          <a-button
-            class="preview-text-button"
-            type="text"
-            :disabled="!canActivateNextSlide"
-            @click="activateRelativeSlide(1)"
-          >
-            下一页
-          </a-button>
-          <a-button type="primary" :disabled="!activeSlide" @click="playNextStep">
-            播放下一步
-          </a-button>
-        </div>
+        <PreviewPlaybackControls
+          class="preview-actions"
+          :can-activate-next-slide="canActivateNextSlide"
+          :can-activate-previous-slide="canActivatePreviousSlide"
+          :can-step-backward="canStepBackward"
+          :has-active-slide="hasActiveSlide"
+          :immersive-toggle-label="immersiveToggleLabel"
+          :is-immersive-playback="isImmersivePlayback"
+          @activate-next-slide="activateRelativeSlide(1)"
+          @activate-previous-slide="activateRelativeSlide(-1)"
+          @play-next-step="playNextStep"
+          @replay-current-slide="replayCurrentSlide"
+          @step-backward="stepBackward"
+          @toggle-immersive-playback="toggleImmersivePlayback"
+        />
       </div>
     </header>
 
     <main class="preview-layout" :class="previewLayoutClass">
       <a-button
+        v-if="!isImmersivePlayback"
         class="preview-side-badge preview-side-badge-left"
         type="text"
-        :aria-label="isSlideRailCollapsed ? '展开左侧页面栏' : '收起左侧页面栏'"
+        :aria-label="effectiveSlideRailCollapsed ? '展开左侧页面栏' : '收起左侧页面栏'"
         @click="toggleSlideRail"
       >
-        {{ isSlideRailCollapsed ? "›" : "‹" }}
+        {{ effectiveSlideRailCollapsed ? "›" : "‹" }}
       </a-button>
       <a-button
+        v-if="!isImmersivePlayback"
         class="preview-side-badge preview-side-badge-right"
         type="text"
-        :aria-label="isTimelineCollapsed ? '展开右侧步骤栏' : '收起右侧步骤栏'"
+        :aria-label="effectiveTimelineCollapsed ? '展开右侧步骤栏' : '收起右侧步骤栏'"
         @click="toggleTimelinePanel"
       >
-        {{ isTimelineCollapsed ? "‹" : "›" }}
+        {{ effectiveTimelineCollapsed ? "‹" : "›" }}
       </a-button>
 
-      <aside class="preview-rail slide-shell" :class="{ 'is-collapsed': isSlideRailCollapsed }">
+      <aside v-show="!effectiveSlideRailCollapsed" class="preview-rail slide-shell">
         <header class="section-head compact">
           <div>
-            <h3>{{ isSlideRailCollapsed ? "页面" : "快速切换" }}</h3>
+            <h3>快速切换</h3>
           </div>
         </header>
 
-        <div v-if="!isSlideRailCollapsed" class="slide-chip-list">
+        <div class="slide-chip-list">
           <a-button
             v-for="(slide, index) in state.document?.slides ?? []"
             :key="slide.id"
@@ -592,10 +644,6 @@ const toggleTimelinePanel = () => {
             </div>
           </a-button>
         </div>
-        <div v-else class="collapsed-side-shell">
-          <span class="collapsed-count">{{ state.document?.slides.length ?? 0 }}</span>
-          <small>{{ activeSlideIndex >= 0 ? `当前第 ${activeSlideIndex + 1} 页` : "未选择页面" }}</small>
-        </div>
       </aside>
 
       <section class="preview-stage-shell" :class="previewStageShellClass">
@@ -604,36 +652,22 @@ const toggleTimelinePanel = () => {
             <h3>当前画布</h3>
           </div>
           <div class="stage-head-actions">
-            <div v-if="showEmbeddedPlaybackActions" class="embedded-preview-actions">
-              <div class="preview-actions preview-actions-compact">
-                <a-button
-                  class="preview-text-button embedded-preview-button"
-                  type="text"
-                  :disabled="!canActivatePreviousSlide"
-                  @click="activateRelativeSlide(-1)"
-                >
-                  上一页
-                </a-button>
-                <a-button
-                  class="preview-text-button embedded-preview-button"
-                  type="text"
-                  :disabled="!activeSlide"
-                  @click="replayCurrentSlide"
-                >
-                  重播当前页
-                </a-button>
-                <a-button
-                  class="preview-text-button embedded-preview-button"
-                  type="text"
-                  :disabled="!canActivateNextSlide"
-                  @click="activateRelativeSlide(1)"
-                >
-                  下一页
-                </a-button>
-                <a-button type="primary" :disabled="!activeSlide" @click="playNextStep">
-                  播放下一步
-                </a-button>
-              </div>
+            <div v-if="shouldShowInlinePlaybackActions" class="embedded-preview-actions">
+              <PreviewPlaybackControls
+                class="preview-actions preview-actions-compact"
+                :can-activate-next-slide="canActivateNextSlide"
+                :can-activate-previous-slide="canActivatePreviousSlide"
+                :can-step-backward="canStepBackward"
+                :has-active-slide="hasActiveSlide"
+                :immersive-toggle-label="immersiveToggleLabel"
+                :is-immersive-playback="isImmersivePlayback"
+                @activate-next-slide="activateRelativeSlide(1)"
+                @activate-previous-slide="activateRelativeSlide(-1)"
+                @play-next-step="playNextStep"
+                @replay-current-slide="replayCurrentSlide"
+                @step-backward="stepBackward"
+                @toggle-immersive-playback="toggleImmersivePlayback"
+              />
             </div>
             <StageViewportControls
               :can-zoom-in="canZoomIn"
@@ -646,10 +680,16 @@ const toggleTimelinePanel = () => {
               @zoom-to-actual-size="zoomToActualSize"
               @zoom-to-fit="zoomToFit"
             />
-            <div class="status-badges">
+            <div v-if="!isImmersivePlayback" class="status-badges">
+              <a-tag class="playback-status-tag" :color="playbackStatusTagColor" bordered>
+                {{ playbackStatusLabel }}
+              </a-tag>
+              <a-tag class="preview-slide-position-tag" bordered>{{ slidePositionLabel }}</a-tag>
+              <a-tag class="preview-next-trigger-tag" bordered>{{ nextTriggerLabel }}</a-tag>
+            </div>
+            <div v-else class="immersive-playback-hint">
               <a-tag :color="playbackStatusTagColor" bordered>{{ playbackStatusLabel }}</a-tag>
-              <a-tag bordered>{{ slidePositionLabel }}</a-tag>
-              <a-tag bordered>{{ nextTriggerLabel }}</a-tag>
+              <span>{{ immersivePlaybackHint }}</span>
             </div>
           </div>
         </header>
@@ -699,48 +739,13 @@ const toggleTimelinePanel = () => {
         </div>
       </section>
 
-      <aside v-show="!isTimelineCollapsed" class="preview-side timeline-shell">
-        <header class="section-head compact">
-          <div>
-            <h3>步骤状态</h3>
-          </div>
-        </header>
-
-        <ol
-          v-if="!isTimelineCollapsed && (activeSlide?.timeline.steps.length ?? 0) > 0"
-          class="steps-list"
-        >
-          <li
-            v-for="(step, index) in activeSlide?.timeline.steps ?? []"
-            :key="step.id"
-            class="preview-step-card"
-            :class="{
-              'is-done': index < state.stepIndex,
-              'is-current': index === state.stepIndex,
-            }"
-          >
-            <div class="preview-step-marker">
-              <div class="step-index">{{ String(index + 1).padStart(2, '0') }}</div>
-            </div>
-            <div class="step-copy">
-              <div class="step-row">
-                <strong>{{ step.name }}</strong>
-                <a-tag class="preview-step-status" :color="resolveStepStatusColor(index)" bordered>
-                  {{ resolveStepStatusLabel(index) }}
-                </a-tag>
-              </div>
-              <div class="step-row step-row-meta">
-                <span class="step-trigger">{{ formatTriggerLabel(step.trigger.type) }}</span>
-                <small>{{ step.actions.length }} 个动作</small>
-              </div>
-            </div>
-          </li>
-        </ol>
-        <div v-else-if="!isTimelineCollapsed" class="empty-state compact">
-          <strong>当前页面还没有步骤</strong>
-          <p>后续 timeline 配置完成后，这里会直接展示页面点击、自动触发与对象点击的执行顺序。</p>
-        </div>
-      </aside>
+      <PreviewTimelineSidebar
+        v-show="!effectiveTimelineCollapsed"
+        :completed-step-count="completedStepCount"
+        :playback-status="state.status"
+        :step-index="state.stepIndex"
+        :steps="activeSlide?.timeline.steps ?? []"
+      />
     </main>
   </section>
 </template>

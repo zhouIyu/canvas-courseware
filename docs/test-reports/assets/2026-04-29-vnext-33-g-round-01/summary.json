@@ -1,6 +1,6 @@
 {
   "baseUrl": "http://127.0.0.1:32173/projects",
-  "executedAt": "2026-04-29T03:35:23.064Z",
+  "executedAt": "2026-05-08T09:06:13.376Z",
   "desktopViewport": {
     "width": 1440,
     "height": 900
@@ -9,28 +9,29 @@
     {
       "id": "initial-preview-status",
       "slidePosition": "第 1 / 2 页",
-      "hintTitle": "下一步：第 1 步 · 展示诗句内容",
-      "hintCopy": "已完成 0 / 2 步 · 点击页面继续",
+      "nextTrigger": "点击页面继续",
+      "playbackStatus": "等待继续",
       "previousDisabled": true,
       "nextDisabled": false
     },
     {
       "id": "first-slide-completed",
-      "stepProgress": "已完成 2 / 2 步",
+      "playbackStatus": "已完成",
+      "nextTrigger": "无",
       "firstStepStatus": "已完成",
       "secondStepStatus": "已完成"
     },
     {
       "id": "second-slide-navigation",
       "slidePosition": "第 2 / 2 页",
-      "hintTitle": "下一步：第 1 步 · 显示流程提示",
+      "nextTrigger": "点击页面继续",
       "previousDisabled": false,
       "nextDisabled": true
     },
     {
       "id": "replay-current-slide",
-      "stepProgress": "已完成 0 / 1 步",
-      "hintCopy": "已完成 0 / 1 步 · 点击页面继续",
+      "playbackStatus": "等待继续",
+      "hintCopy": "点击页面继续",
       "stepStatus": "待触发"
     },
     {

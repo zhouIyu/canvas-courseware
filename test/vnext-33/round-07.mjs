@@ -51,20 +51,6 @@ async function readNormalizedText(page, selector) {
   return normalizeInlineText(await page.locator(selector).innerText());
 }
 
-/**
- * 等待预览提示标题切换到指定文本。
- *
- * @param {import("playwright").Page} page
- * @param {string} expectedText
- * @returns {Promise<void>}
- */
-async function waitForPlaybackHint(page, expectedText) {
-  await page.waitForFunction((targetText) => {
-    const element = document.querySelector(".playback-hint-title");
-    return element?.textContent?.includes(targetText) ?? false;
-  }, expectedText);
-}
-
 await ensureDirectory(ASSET_DIR);
 
 /** 当前浏览器会话。 */
@@ -103,7 +89,8 @@ try {
     .filter({ hasText: "预览" })
     .click();
   await page.waitForURL(/\/projects\/[^/]+\?mode=preview$/);
-  await page.locator(".playback-insight-strip").waitFor();
+  await page.locator(".preview-stage-shell").waitFor();
+  await page.locator(".preview-slide-position-tag").waitFor();
 
   const previousSlideButton = page.getByRole("button", { name: "上一页" });
   const replaySlideButton = page.getByRole("button", { name: "重播当前页" });
@@ -111,33 +98,36 @@ try {
   const playNextStepButton = page.getByRole("button", { name: "播放下一步" });
 
   logStep("verify initial preview controls and first-slide status");
-  const initialSlidePosition = await readNormalizedText(page, ".preview-slide-position");
-  const initialHintTitle = await readNormalizedText(page, ".playback-hint-title");
-  const initialHintCopy = await readNormalizedText(page, ".playback-hint-copy");
+  const initialSlidePosition = await readNormalizedText(page, ".preview-slide-position-tag");
+  const initialNextTrigger = await readNormalizedText(page, ".preview-next-trigger-tag");
+  const initialPlaybackStatus = await readNormalizedText(page, ".playback-status-tag");
   const initialPreviousDisabled = await previousSlideButton.isDisabled();
   const initialNextDisabled = await nextSlideButton.isDisabled();
 
   summary.checks.push({
     id: "initial-preview-status",
     slidePosition: initialSlidePosition,
-    hintTitle: initialHintTitle,
-    hintCopy: initialHintCopy,
+    nextTrigger: initialNextTrigger,
+    playbackStatus: initialPlaybackStatus,
     previousDisabled: initialPreviousDisabled,
     nextDisabled: initialNextDisabled,
   });
 
   assertOrThrow(initialSlidePosition.includes("第 1 / 2 页"), `首屏页码提示异常：${initialSlidePosition}`);
-  assertOrThrow(initialHintTitle.includes("下一步：第 1 步"), `首屏步骤提示异常：${initialHintTitle}`);
-  assertOrThrow(initialHintCopy.includes("点击页面继续"), `首屏触发提示异常：${initialHintCopy}`);
+  assertOrThrow(initialPlaybackStatus.includes("等待继续"), `首屏播放状态异常：${initialPlaybackStatus}`);
+  assertOrThrow(initialNextTrigger.includes("点击页面继续"), `首屏触发提示异常：${initialNextTrigger}`);
   assertOrThrow(initialPreviousDisabled, "首屏位于第一页时，“上一页”应为禁用状态。");
   assertOrThrow(!initialNextDisabled, "首屏位于第一页时，“下一页”不应被禁用。");
 
   logStep("play first slide and wait for auto completion");
   await playNextStepButton.click();
-  await page.locator(".playback-hint-copy").filter({ hasText: "自动继续" }).waitFor();
-  await waitForPlaybackHint(page, "当前页已播放完成");
+  await page
+    .locator(".steps-list .preview-step-card:nth-child(2) .preview-step-status")
+    .filter({ hasText: "已完成" })
+    .waitFor();
 
-  const firstSlideProgress = await readNormalizedText(page, ".preview-step-progress");
+  const firstSlidePlaybackStatus = await readNormalizedText(page, ".playback-status-tag");
+  const firstSlideNextTrigger = await readNormalizedText(page, ".preview-next-trigger-tag");
   const firstStepStatus = await readNormalizedText(
     page,
     ".steps-list .preview-step-card:nth-child(1) .preview-step-status",
@@ -149,48 +139,52 @@ try {
 
   summary.checks.push({
     id: "first-slide-completed",
-    stepProgress: firstSlideProgress,
+    playbackStatus: firstSlidePlaybackStatus,
+    nextTrigger: firstSlideNextTrigger,
     firstStepStatus,
     secondStepStatus,
   });
 
-  assertOrThrow(firstSlideProgress.includes("已完成 2 / 2 步"), `第一页完成态进度异常：${firstSlideProgress}`);
+  assertOrThrow(firstSlidePlaybackStatus.includes("已完成"), `第一页完成态状态异常：${firstSlidePlaybackStatus}`);
+  assertOrThrow(firstSlideNextTrigger.includes("无"), `第一页完成态触发提示异常：${firstSlideNextTrigger}`);
   assertOrThrow(firstStepStatus.includes("已完成"), `第一页首个步骤状态异常：${firstStepStatus}`);
   assertOrThrow(secondStepStatus.includes("已完成"), `第一页第二个步骤状态异常：${secondStepStatus}`);
 
   logStep("go to second slide and verify slide navigation state");
   await nextSlideButton.click();
   await page.waitForFunction(() => {
-    const element = document.querySelector(".preview-slide-position");
+    const element = document.querySelector(".preview-slide-position-tag");
     return element?.textContent?.includes("第 2 / 2 页") ?? false;
   });
 
-  const secondSlidePosition = await readNormalizedText(page, ".preview-slide-position");
-  const secondSlideHintTitle = await readNormalizedText(page, ".playback-hint-title");
+  const secondSlidePosition = await readNormalizedText(page, ".preview-slide-position-tag");
+  const secondSlideNextTrigger = await readNormalizedText(page, ".preview-next-trigger-tag");
   const secondSlidePreviousDisabled = await previousSlideButton.isDisabled();
   const secondSlideNextDisabled = await nextSlideButton.isDisabled();
 
   summary.checks.push({
     id: "second-slide-navigation",
     slidePosition: secondSlidePosition,
-    hintTitle: secondSlideHintTitle,
+    nextTrigger: secondSlideNextTrigger,
     previousDisabled: secondSlidePreviousDisabled,
     nextDisabled: secondSlideNextDisabled,
   });
 
   assertOrThrow(secondSlidePosition.includes("第 2 / 2 页"), `切到第二页后的页码提示异常：${secondSlidePosition}`);
-  assertOrThrow(secondSlideHintTitle.includes("下一步：第 1 步"), `第二页首个步骤提示异常：${secondSlideHintTitle}`);
+  assertOrThrow(secondSlideNextTrigger.includes("点击页面继续"), `第二页首个步骤提示异常：${secondSlideNextTrigger}`);
   assertOrThrow(!secondSlidePreviousDisabled, "切到第二页后，“上一页”不应保持禁用。");
   assertOrThrow(secondSlideNextDisabled, "切到最后一页后，“下一页”应被禁用。");
 
   logStep("complete second slide and verify replay resets step state");
   await playNextStepButton.click();
-  await waitForPlaybackHint(page, "当前页已播放完成");
+  await page
+    .locator(".steps-list .preview-step-card:nth-child(1) .preview-step-status")
+    .filter({ hasText: "已完成" })
+    .waitFor();
   await replaySlideButton.click();
-  await waitForPlaybackHint(page, "下一步：第 1 步");
 
-  const replayStepProgress = await readNormalizedText(page, ".preview-step-progress");
-  const replayHintCopy = await readNormalizedText(page, ".playback-hint-copy");
+  const replayPlaybackStatus = await readNormalizedText(page, ".playback-status-tag");
+  const replayHintCopy = await readNormalizedText(page, ".preview-next-trigger-tag");
   const replayStepStatus = await readNormalizedText(
     page,
     ".steps-list .preview-step-card:nth-child(1) .preview-step-status",
@@ -198,23 +192,23 @@ try {
 
   summary.checks.push({
     id: "replay-current-slide",
-    stepProgress: replayStepProgress,
+    playbackStatus: replayPlaybackStatus,
     hintCopy: replayHintCopy,
     stepStatus: replayStepStatus,
   });
 
-  assertOrThrow(replayStepProgress.includes("已完成 0 / 1 步"), `重播后步骤进度异常：${replayStepProgress}`);
+  assertOrThrow(replayPlaybackStatus.includes("等待继续"), `重播后播放状态异常：${replayPlaybackStatus}`);
   assertOrThrow(replayHintCopy.includes("点击页面继续"), `重播后触发提示异常：${replayHintCopy}`);
   assertOrThrow(replayStepStatus.includes("待触发"), `重播后步骤状态异常：${replayStepStatus}`);
 
   logStep("go back to first slide and capture evidence");
   await previousSlideButton.click();
   await page.waitForFunction(() => {
-    const element = document.querySelector(".preview-slide-position");
+    const element = document.querySelector(".preview-slide-position-tag");
     return element?.textContent?.includes("第 1 / 2 页") ?? false;
   });
 
-  const returnedSlidePosition = await readNormalizedText(page, ".preview-slide-position");
+  const returnedSlidePosition = await readNormalizedText(page, ".preview-slide-position-tag");
   summary.checks.push({
     id: "return-to-first-slide",
     slidePosition: returnedSlidePosition,

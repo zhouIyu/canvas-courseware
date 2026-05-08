@@ -144,8 +144,14 @@ export function useCoursewarePreview(options: UseCoursewarePreviewOptions = {}) 
   };
 
   /** 从指定步骤开始预览，并自动对齐目标 slide。 */
-  const startPreviewFromStep = async (stepIndex: number, slideId?: string | null) => {
-    await adapter.seekToStep(stepIndex, slideId);
+  const startPreviewFromStep = async (
+    stepIndex: number,
+    slideId?: string | null,
+    options?: {
+      autoplayNextAutoStep?: boolean;
+    },
+  ) => {
+    await adapter.seekToStep(stepIndex, slideId, options);
   };
 
   return {
