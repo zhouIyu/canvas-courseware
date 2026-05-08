@@ -1,0 +1,228 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-04-30T05:57:15.783Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "seed-scenario",
+      "projectId": "document-69b6df35-9f19-46ef-bdf3-8ee1f3979b85",
+      "nodeIds": {
+        "imagePrimary": "node-b11f323c-338e-43d5-9f10-35fc06a1f3dd",
+        "textPrimary": "node-b8386e09-2d90-480c-9a32-44c7d4cb0807",
+        "batchText": "node-04ae6868-18c7-4fcc-9ff6-b25b27687a1e",
+        "batchRect": "node-c5002073-fbce-44c4-ae8d-04e7bb3ceb3c",
+        "imageBackground": "node-58ca5654-ba0f-47db-b33a-3008d6f537e0"
+      },
+      "animationIds": {
+        "imagePrimary": "animation-4c5fbd9f-1216-40fe-88ff-bd575b0b0d65",
+        "imageBackground": "animation-d6664e84-bcea-4168-9c8c-dfb3153d1612"
+      },
+      "timelinePanelStepCount": 5,
+      "timeline": {
+        "stepCount": 5,
+        "animationCount": 2,
+        "animationIds": [
+          "animation-4c5fbd9f-1216-40fe-88ff-bd575b0b0d65",
+          "animation-d6664e84-bcea-4168-9c8c-dfb3153d1612"
+        ],
+        "animationTargets": [
+          "node-b11f323c-338e-43d5-9f10-35fc06a1f3dd",
+          "node-58ca5654-ba0f-47db-b33a-3008d6f537e0"
+        ],
+        "steps": [
+          {
+            "id": "step-37cda760-c6d6-418d-80e2-440719485ad2",
+            "name": "对象触发步骤",
+            "triggerType": "node-click",
+            "triggerTargetId": "node-b11f323c-338e-43d5-9f10-35fc06a1f3dd",
+            "actionCount": 1,
+            "actionTargets": [
+              "node-b8386e09-2d90-480c-9a32-44c7d4cb0807"
+            ],
+            "actionAnimationIds": []
+          },
+          {
+            "id": "step-894e3824-c7af-4392-a58b-6749fe927c89",
+            "name": "图片动作步骤",
+            "triggerType": "page-click",
+            "triggerTargetId": null,
+            "actionCount": 1,
+            "actionTargets": [
+              "node-b11f323c-338e-43d5-9f10-35fc06a1f3dd"
+            ],
+            "actionAnimationIds": [
+              "animation-4c5fbd9f-1216-40fe-88ff-bd575b0b0d65"
+            ]
+          },
+          {
+            "id": "step-c500909c-fb7f-436d-8b02-8fbf73932d7c",
+            "name": "混合动作步骤",
+            "triggerType": "page-click",
+            "triggerTargetId": null,
+            "actionCount": 2,
+            "actionTargets": [
+              "node-b11f323c-338e-43d5-9f10-35fc06a1f3dd",
+              "node-b8386e09-2d90-480c-9a32-44c7d4cb0807"
+            ],
+            "actionAnimationIds": []
+          },
+          {
+            "id": "step-dfa0d288-fbbe-4374-8ca1-bbac14d62d98",
+            "name": "批量删除步骤",
+            "triggerType": "page-click",
+            "triggerTargetId": null,
+            "actionCount": 2,
+            "actionTargets": [
+              "node-04ae6868-18c7-4fcc-9ff6-b25b27687a1e",
+              "node-c5002073-fbce-44c4-ae8d-04e7bb3ceb3c"
+            ],
+            "actionAnimationIds": []
+          },
+          {
+            "id": "step-de3a8d4b-f62d-4e38-8bdc-1c7b502ee99b",
+            "name": "背景转换步骤",
+            "triggerType": "node-click",
+            "triggerTargetId": "node-58ca5654-ba0f-47db-b33a-3008d6f537e0",
+            "actionCount": 1,
+            "actionTargets": [
+              "node-58ca5654-ba0f-47db-b33a-3008d6f537e0"
+            ],
+            "actionAnimationIds": [
+              "animation-d6664e84-bcea-4168-9c8c-dfb3153d1612"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "single-delete-cleanup",
+      "timelinePanelStepCount": 3,
+      "timeline": {
+        "stepCount": 3,
+        "animationCount": 1,
+        "animationIds": [
+          "animation-d6664e84-bcea-4168-9c8c-dfb3153d1612"
+        ],
+        "animationTargets": [
+          "node-58ca5654-ba0f-47db-b33a-3008d6f537e0"
+        ],
+        "steps": [
+          {
+            "id": "step-c500909c-fb7f-436d-8b02-8fbf73932d7c",
+            "name": "混合动作步骤",
+            "triggerType": "page-click",
+            "triggerTargetId": null,
+            "actionCount": 1,
+            "actionTargets": [
+              "node-b8386e09-2d90-480c-9a32-44c7d4cb0807"
+            ],
+            "actionAnimationIds": []
+          },
+          {
+            "id": "step-dfa0d288-fbbe-4374-8ca1-bbac14d62d98",
+            "name": "批量删除步骤",
+            "triggerType": "page-click",
+            "triggerTargetId": null,
+            "actionCount": 2,
+            "actionTargets": [
+              "node-04ae6868-18c7-4fcc-9ff6-b25b27687a1e",
+              "node-c5002073-fbce-44c4-ae8d-04e7bb3ceb3c"
+            ],
+            "actionAnimationIds": []
+          },
+          {
+            "id": "step-de3a8d4b-f62d-4e38-8bdc-1c7b502ee99b",
+            "name": "背景转换步骤",
+            "triggerType": "node-click",
+            "triggerTargetId": "node-58ca5654-ba0f-47db-b33a-3008d6f537e0",
+            "actionCount": 1,
+            "actionTargets": [
+              "node-58ca5654-ba0f-47db-b33a-3008d6f537e0"
+            ],
+            "actionAnimationIds": [
+              "animation-d6664e84-bcea-4168-9c8c-dfb3153d1612"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "batch-delete-cleanup",
+      "timelinePanelStepCount": 2,
+      "timeline": {
+        "stepCount": 2,
+        "animationCount": 1,
+        "animationIds": [
+          "animation-d6664e84-bcea-4168-9c8c-dfb3153d1612"
+        ],
+        "animationTargets": [
+          "node-58ca5654-ba0f-47db-b33a-3008d6f537e0"
+        ],
+        "steps": [
+          {
+            "id": "step-c500909c-fb7f-436d-8b02-8fbf73932d7c",
+            "name": "混合动作步骤",
+            "triggerType": "page-click",
+            "triggerTargetId": null,
+            "actionCount": 1,
+            "actionTargets": [
+              "node-b8386e09-2d90-480c-9a32-44c7d4cb0807"
+            ],
+            "actionAnimationIds": []
+          },
+          {
+            "id": "step-de3a8d4b-f62d-4e38-8bdc-1c7b502ee99b",
+            "name": "背景转换步骤",
+            "triggerType": "node-click",
+            "triggerTargetId": "node-58ca5654-ba0f-47db-b33a-3008d6f537e0",
+            "actionCount": 1,
+            "actionTargets": [
+              "node-58ca5654-ba0f-47db-b33a-3008d6f537e0"
+            ],
+            "actionAnimationIds": [
+              "animation-d6664e84-bcea-4168-9c8c-dfb3153d1612"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "set-background-cleanup",
+      "fitModalText": "设为背景画布图片 · 背景候选选择铺满方式，确认后仍可在页面设置里继续调整。裁切铺满铺满整个页面，可能裁掉图片边缘，适合横图做封面。完整显示完整保留图片内容，可能在四周留白，适合竖图或信息图。拉伸铺满直接拉伸到整页，不留白也不裁切，但会改变图片比例。完整显示完整保留图片内容，可能在四周留白，适合竖图或信息图。取消确认设为背景",
+      "timelinePanelStepCount": 1,
+      "timeline": {
+        "stepCount": 1,
+        "animationCount": 0,
+        "animationIds": [],
+        "animationTargets": [],
+        "steps": [
+          {
+            "id": "step-c500909c-fb7f-436d-8b02-8fbf73932d7c",
+            "name": "混合动作步骤",
+            "triggerType": "page-click",
+            "triggerTargetId": null,
+            "actionCount": 1,
+            "actionTargets": [
+              "node-b8386e09-2d90-480c-9a32-44c7d4cb0807"
+            ],
+            "actionAnimationIds": []
+          }
+        ]
+      },
+      "backgroundImageFit": "contain",
+      "hasBackgroundImage": true
+    },
+    {
+      "id": "preview-cleanup",
+      "previewStepCardCount": 1,
+      "previewDoneStepCount": 1,
+      "consoleErrorCount": 0,
+      "pageErrorCount": 0
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}
