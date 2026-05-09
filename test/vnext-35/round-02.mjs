@@ -10,8 +10,8 @@ import {
   writeJsonFile,
 } from "../shared/browser-test-helpers.mjs";
 
-/** 正式项目列表地址。 */
-const BASE_URL = "http://127.0.0.1:32173/projects";
+/** 正式项目列表地址，允许在端口占用时临时覆写。 */
+const BASE_URL = process.env.CW_BASE_URL ?? "http://127.0.0.1:32173/projects";
 
 /** 项目本地存储键名。 */
 const STORAGE_KEY = "canvas-courseware.projects";

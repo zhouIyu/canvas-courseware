@@ -116,21 +116,17 @@ export function useEditorClipboardKeyboard(options: UseEditorClipboardKeyboardOp
       lastPasteSlideId.value === activeSlideId ? pasteCount.value + 1 : 1;
     const nextOffset = KEYBOARD_PASTE_OFFSET * pasteIteration;
     const activeNodesLength = options.activeSlide.value?.nodes.length ?? 0;
-    const createdNodeIds: string[] = [];
+    const pastedNodes = clipboard.nodes.map((sourceNode) =>
+      createNodeFromClipboard(sourceNode, nextOffset),
+    );
+    const createdNodeIds = pastedNodes.map((node) => node.id);
 
-    for (let index = 0; index < clipboard.nodes.length; index += 1) {
-      const sourceNode = clipboard.nodes[index];
-      const pastedNode = createNodeFromClipboard(sourceNode, nextOffset);
-
-      options.controller.execute({
-        type: COMMAND_TYPES.NODE_CREATE,
-        slideId: activeSlideId,
-        node: pastedNode,
-        index: activeNodesLength + index,
-      });
-
-      createdNodeIds.push(pastedNode.id);
-    }
+    options.controller.execute({
+      type: COMMAND_TYPES.NODE_BATCH_CREATE,
+      slideId: activeSlideId,
+      nodes: pastedNodes,
+      index: activeNodesLength,
+    });
 
     pasteCount.value = pasteIteration;
     lastPasteSlideId.value = activeSlideId;

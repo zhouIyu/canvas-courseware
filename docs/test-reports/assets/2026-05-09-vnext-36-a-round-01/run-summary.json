@@ -1,0 +1,139 @@
+{
+  "baseUrl": "http://127.0.0.1:32174/projects",
+  "executedAt": "2026-05-09T08:29:15.199Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "expectedOffset": 24,
+  "checks": [
+    {
+      "id": "horizontal-distribute",
+      "label": "水平分布",
+      "undoDepthBefore": 3,
+      "undoDepthAfter": 4,
+      "redoDepthAfter": 0,
+      "geometries": [
+        {
+          "id": "rect-vnext36-primary",
+          "x": 120,
+          "y": 120,
+          "width": 180,
+          "height": 120
+        },
+        {
+          "id": "rect-vnext36-secondary",
+          "x": 505,
+          "y": 320,
+          "width": 160,
+          "height": 96
+        },
+        {
+          "id": "rect-vnext36-tertiary",
+          "x": 860,
+          "y": 220,
+          "width": 200,
+          "height": 140
+        }
+      ]
+    },
+    {
+      "id": "vertical-distribute",
+      "label": "垂直分布",
+      "undoDepthBefore": 4,
+      "undoDepthAfter": 5,
+      "redoDepthAfter": 0,
+      "geometries": [
+        {
+          "id": "rect-vnext36-primary",
+          "x": 120,
+          "y": 120,
+          "width": 180,
+          "height": 120
+        },
+        {
+          "id": "rect-vnext36-secondary",
+          "x": 505,
+          "y": 320,
+          "width": 160,
+          "height": 96
+        },
+        {
+          "id": "rect-vnext36-tertiary",
+          "x": 860,
+          "y": 204,
+          "width": 200,
+          "height": 140
+        }
+      ]
+    },
+    {
+      "id": "batch-paste",
+      "label": "批量粘贴",
+      "undoDepthBefore": 5,
+      "undoDepthAfter": 6,
+      "redoDepthAfter": 0,
+      "offsets": [
+        {
+          "sourceId": "rect-vnext36-primary",
+          "createdId": "node-67ac1591-15a0-4732-af62-8f021c8cabae",
+          "offsetX": 24,
+          "offsetY": 24
+        },
+        {
+          "sourceId": "rect-vnext36-secondary",
+          "createdId": "node-6fc2fb92-a22b-4399-8399-bf2955989224",
+          "offsetX": 24,
+          "offsetY": 24
+        },
+        {
+          "sourceId": "rect-vnext36-tertiary",
+          "createdId": "node-785a49c2-f8a2-451d-8512-23c40f376d9f",
+          "offsetX": 24,
+          "offsetY": 24
+        }
+      ]
+    },
+    {
+      "id": "batch-duplicate",
+      "label": "批量重复",
+      "undoDepthBefore": 6,
+      "undoDepthAfter": 7,
+      "redoDepthAfter": 0,
+      "offsets": [
+        {
+          "sourceId": "node-67ac1591-15a0-4732-af62-8f021c8cabae",
+          "createdId": "node-5a2fcd66-3193-42a6-86aa-79f792ca384d",
+          "offsetX": 24,
+          "offsetY": 24
+        },
+        {
+          "sourceId": "node-6fc2fb92-a22b-4399-8399-bf2955989224",
+          "createdId": "node-7f3551c8-eccf-43c8-9fe2-7f0e51e7b1fd",
+          "offsetX": 24,
+          "offsetY": 24
+        },
+        {
+          "sourceId": "node-785a49c2-f8a2-451d-8512-23c40f376d9f",
+          "createdId": "node-bb297b94-c50f-46e4-81c1-df1b2a1daa19",
+          "offsetX": 24,
+          "offsetY": 24
+        }
+      ]
+    },
+    {
+      "id": "batch-delete",
+      "label": "批量删除",
+      "undoDepthBefore": 7,
+      "undoDepthAfter": 8,
+      "redoDepthAfter": 0,
+      "remainingNodeCount": 6
+    },
+    {
+      "id": "reload-persistence",
+      "nodeCount": 6
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

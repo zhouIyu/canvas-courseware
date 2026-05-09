@@ -1,8 +1,8 @@
 {
-  "baseUrl": "http://127.0.0.1:32173/projects",
+  "baseUrl": "http://127.0.0.1:32174/projects",
   "imagePath": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-04-07-vnext-08-round-01/vnext08-sample.png",
   "expectedOffset": 24,
-  "executedAt": "2026-04-15T09:23:23.336Z",
+  "executedAt": "2026-05-09T08:29:18.458Z",
   "desktopViewport": {
     "width": 1440,
     "height": 900
@@ -10,8 +10,8 @@
   "checks": [
     {
       "label": "text-copy-paste",
-      "sourceId": "node-25eb04f9-6aff-42c4-8b05-c9b7351a0966",
-      "createdId": "node-fbfe67d6-e3c6-4f32-baf8-006145fcc745",
+      "sourceId": "node-d421f8c0-4f96-4a22-a675-2d101425907a",
+      "createdId": "node-8614e336-2e20-4b46-a684-51b6fd3fdcb9",
       "offsetX": 24,
       "offsetY": 24,
       "widthEqual": true,
@@ -20,8 +20,8 @@
     },
     {
       "label": "rect-duplicate",
-      "sourceId": "node-9fe6f2b4-6bc7-4eb4-9d05-1763720d4391",
-      "createdId": "node-b4aacba0-de43-4920-abf3-0a40901ed74a",
+      "sourceId": "node-787f2275-707e-4535-84b9-9b7464165202",
+      "createdId": "node-5355a408-05da-42bc-80cc-97d7f13a90e6",
       "offsetX": 24,
       "offsetY": 24,
       "widthEqual": true,
@@ -30,8 +30,8 @@
     },
     {
       "label": "image-copy-paste",
-      "sourceId": "node-e724a120-1eeb-4418-a87d-7a27474b0d9a",
-      "createdId": "node-edb9fbaa-8ef7-4bfb-82cc-f18e425d0286",
+      "sourceId": "node-0422c598-8d6e-4d8c-a440-85c885eb0f62",
+      "createdId": "node-91e6dd40-d3d0-4bcf-bd36-7405357a376a",
       "offsetX": 24,
       "offsetY": 24,
       "widthEqual": true,

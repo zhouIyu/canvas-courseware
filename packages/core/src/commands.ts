@@ -19,6 +19,7 @@ export const COMMAND_TYPES = {
   SLIDE_REORDER: "slide.reorder",
   SLIDE_ACTIVATE: "slide.activate",
   NODE_CREATE: "node.create",
+  NODE_BATCH_CREATE: "node.batch.create",
   NODE_BATCH_UPDATE: "node.batch.update",
   NODE_UPDATE: "node.update",
   NODE_IMAGE_SET_AS_BACKGROUND: "node.image.set-as-background",
@@ -49,6 +50,7 @@ export type EditorCommand =
   | ReorderSlideCommand
   | ActivateSlideCommand
   | CreateNodeCommand
+  | BatchCreateNodesCommand
   | BatchUpdateNodesCommand
   | UpdateNodeCommand
   | SetImageNodeAsBackgroundCommand
@@ -112,6 +114,16 @@ export interface CreateNodeCommand {
   type: typeof COMMAND_TYPES.NODE_CREATE;
   slideId: string;
   node: CoursewareNode;
+  index?: number;
+}
+
+/** 以一次标准命令批量创建多个节点，避免复制/粘贴拆成多条历史记录。 */
+export interface BatchCreateNodesCommand {
+  type: typeof COMMAND_TYPES.NODE_BATCH_CREATE;
+  slideId: string;
+  /** 需要依次插入当前 slide 的节点列表。 */
+  nodes: CoursewareNode[];
+  /** 批量插入的起始索引。 */
   index?: number;
 }
 

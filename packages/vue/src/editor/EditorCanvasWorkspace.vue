@@ -517,9 +517,10 @@ defineExpose({
         @reorder="handleFloatingLayerReorder"
         @reorder-to-index="emit('reorder-layer-to-index', $event)"
         @align="emit('align-layers', $event)"
+        @copy-selection="emit('copy-selection')"
+        @delete-selection="emit('delete-selection')"
         @distribute="emit('distribute-layers', $event)"
-        @open-inspector="emit('open-inspector')"
-        @open-timeline="emit('open-timeline')"
+        @duplicate-selection="emit('duplicate-selection')"
       />
 
       <StageViewportControls

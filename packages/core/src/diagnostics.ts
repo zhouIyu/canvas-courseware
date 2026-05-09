@@ -246,6 +246,17 @@ export function describeEditorCommand(
           nodeType: command.node.type,
         },
       };
+    case COMMAND_TYPES.NODE_BATCH_CREATE:
+      return {
+        event: "node.batch.create",
+        message: "已批量创建组件",
+        level: "info",
+        context: {
+          slideId: command.slideId,
+          nodeCount: command.nodes.length,
+          nodeTypes: command.nodes.map((node) => node.type).join(","),
+        },
+      };
     case COMMAND_TYPES.NODE_IMAGE_SET_AS_BACKGROUND:
       return {
         event: "background.set-from-node",

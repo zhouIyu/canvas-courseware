@@ -50,6 +50,8 @@ export function reduceSnapshot(
       return activateSlide(snapshot, command.slideId);
     case COMMAND_TYPES.NODE_CREATE:
       return createNode(snapshot, command.slideId, command.node, command.index);
+    case COMMAND_TYPES.NODE_BATCH_CREATE:
+      return createNodes(snapshot, command.slideId, command.nodes, command.index);
     case COMMAND_TYPES.NODE_BATCH_UPDATE:
       return updateNodes(snapshot, command.slideId, command.updates);
     case COMMAND_TYPES.NODE_UPDATE:
@@ -104,6 +106,23 @@ function createNode(
   return updateDocumentSlide(snapshot, slideId, (slide) => ({
     ...slide,
     nodes: insertNodeAt(slide.nodes, node, index),
+  }));
+}
+
+/** 在指定 slide 中批量新增多个节点，并保持输入顺序稳定。 */
+function createNodes(
+  snapshot: EditorSnapshot,
+  slideId: string,
+  nodes: CoursewareNode[],
+  index?: number,
+): EditorSnapshot {
+  if (nodes.length === 0) {
+    return snapshot;
+  }
+
+  return updateDocumentSlide(snapshot, slideId, (slide) => ({
+    ...slide,
+    nodes: insertNodesAt(slide.nodes, nodes, index),
   }));
 }
 
@@ -420,5 +439,13 @@ function insertNodeAt<TNode>(nodes: TNode[], node: TNode, index?: number): TNode
   const nextNodes = [...nodes];
   const targetIndex = Math.min(Math.max(index ?? nextNodes.length, 0), nextNodes.length);
   nextNodes.splice(targetIndex, 0, node);
+  return nextNodes;
+}
+
+/** 在节点数组中按目标索引一次性插入多个节点。 */
+function insertNodesAt<TNode>(nodes: TNode[], nextItems: TNode[], index?: number): TNode[] {
+  const nextNodes = [...nodes];
+  const targetIndex = Math.min(Math.max(index ?? nextNodes.length, 0), nextNodes.length);
+  nextNodes.splice(targetIndex, 0, ...nextItems);
   return nextNodes;
 }

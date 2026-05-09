@@ -71,6 +71,12 @@ const emit = defineEmits<{
   align: [mode: LayerAlignMode];
   /** 对当前多选节点执行分布。 */
   distribute: [mode: LayerDistributeMode];
+  /** 复制当前多选结果。 */
+  "copy-selection": [];
+  /** 重复当前多选结果。 */
+  "duplicate-selection": [];
+  /** 删除当前多选结果。 */
+  "delete-selection": [];
 }>();
 
 /** 浮层面板当前首版直接暴露的基础批量对齐动作。 */
@@ -84,12 +90,20 @@ const batchAlignOptions: FloatingLayerAlignOption[] = [
     label: "水平居中",
   },
   {
+    value: "right",
+    label: "右对齐",
+  },
+  {
     value: "top",
     label: "顶部对齐",
   },
   {
     value: "v-center",
     label: "垂直居中",
+  },
+  {
+    value: "bottom",
+    label: "底部对齐",
   },
 ];
 
@@ -124,6 +138,9 @@ const hasPrimarySelection = computed(() => Boolean(primarySelectedNode.value));
 
 /** 当前是否处于多选态。 */
 const hasMultiSelection = computed(() => props.selectedNodeIds.length > 1);
+
+/** 当前是否满足分布操作条件。 */
+const canDistributeSelection = computed(() => props.selectedNodeIds.length > 2);
 
 /** 当前选中节点 id 的只读集合，供模板快速判断高亮态。 */
 const selectedNodeIdSet = computed(() => new Set(props.selectedNodeIds));
@@ -216,6 +233,42 @@ const handleAlign = (mode: LayerAlignMode) => {
   }
 
   emit("align", mode);
+};
+
+/** 派发批量分布动作。 */
+const handleDistribute = (mode: LayerDistributeMode) => {
+  if (!canDistributeSelection.value) {
+    return;
+  }
+
+  emit("distribute", mode);
+};
+
+/** 复制当前多选结果。 */
+const handleBatchCopy = () => {
+  if (!hasMultiSelection.value) {
+    return;
+  }
+
+  emit("copy-selection");
+};
+
+/** 重复当前多选结果。 */
+const handleBatchDuplicate = () => {
+  if (!hasMultiSelection.value) {
+    return;
+  }
+
+  emit("duplicate-selection");
+};
+
+/** 删除当前多选结果。 */
+const handleBatchDelete = () => {
+  if (!hasMultiSelection.value) {
+    return;
+  }
+
+  emit("delete-selection");
 };
 
 /** 进入图层重命名编辑态。 */
@@ -492,16 +545,66 @@ watch(
       </p>
 
       <div v-if="hasMultiSelection" class="floating-layer-manager__actions">
-        <a-button
-          v-for="option in batchAlignOptions"
-          :key="option.value"
-          class="floating-layer-manager__action-button"
-          size="mini"
-          type="outline"
-          @click="handleAlign(option.value)"
-        >
-          {{ option.label }}
-        </a-button>
+        <div class="floating-layer-manager__action-group">
+          <span class="floating-layer-manager__action-label">对齐</span>
+          <a-button
+            v-for="option in batchAlignOptions"
+            :key="option.value"
+            class="floating-layer-manager__action-button"
+            size="mini"
+            type="outline"
+            @click="handleAlign(option.value)"
+          >
+            {{ option.label }}
+          </a-button>
+        </div>
+        <div v-if="canDistributeSelection" class="floating-layer-manager__action-group">
+          <span class="floating-layer-manager__action-label">分布</span>
+          <a-button
+            class="floating-layer-manager__action-button"
+            size="mini"
+            type="outline"
+            @click="handleDistribute('horizontal')"
+          >
+            水平分布
+          </a-button>
+          <a-button
+            class="floating-layer-manager__action-button"
+            size="mini"
+            type="outline"
+            @click="handleDistribute('vertical')"
+          >
+            垂直分布
+          </a-button>
+        </div>
+        <div class="floating-layer-manager__action-group">
+          <span class="floating-layer-manager__action-label">批量操作</span>
+          <a-button
+            class="floating-layer-manager__action-button"
+            size="mini"
+            type="outline"
+            @click="handleBatchCopy"
+          >
+            复制
+          </a-button>
+          <a-button
+            class="floating-layer-manager__action-button"
+            size="mini"
+            type="outline"
+            @click="handleBatchDuplicate"
+          >
+            重复
+          </a-button>
+          <a-button
+            class="floating-layer-manager__action-button"
+            size="mini"
+            type="outline"
+            status="danger"
+            @click="handleBatchDelete"
+          >
+            删除
+          </a-button>
+        </div>
       </div>
 
       <div v-if="nodes.length > 0" class="floating-layer-manager__list">

@@ -89,6 +89,20 @@
   border-radius: 999px;
 }
 
+.floating-layer-manager__action-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.floating-layer-manager__action-label {
+  flex: 0 0 100%;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--cw-color-muted);
+}
+
 .floating-layer-manager__list {
   display: grid;
   gap: 2px;
