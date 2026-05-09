@@ -13,6 +13,7 @@ import {
   type ProjectCreateOptions,
 } from "./project-creation";
 import { resolveProjectPrimaryThumbnail } from "./project-thumbnails";
+import { createDefaultProjectWorkspaceState } from "./project-workspace-state";
 import type { ProjectRecord } from "./types";
 
 /** 生成项目更新时间字符串。 */
@@ -35,6 +36,7 @@ export function createProjectRecordFromDocument(
     updatedAt: createUpdatedAt(),
     thumbnail: resolveProjectPrimaryThumbnail(document, slideThumbnails),
     slideThumbnails,
+    workspaceState: createDefaultProjectWorkspaceState(),
     document: {
       ...document,
       meta: {

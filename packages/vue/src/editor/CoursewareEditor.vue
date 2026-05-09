@@ -18,11 +18,7 @@ import {
   watch,
   type ComponentPublicInstance,
 } from "vue";
-import {
-  DEFAULT_EDITOR_HEIGHT,
-  resolveWorkspaceViewportDensity,
-  type WorkspaceViewportDensity,
-} from "../shared";
+import { DEFAULT_EDITOR_HEIGHT } from "../shared";
 import BackgroundImageFitModal from "./BackgroundImageFitModal.vue";
 import EditorCanvasWorkspace from "./EditorCanvasWorkspace.vue";
 import EditorToolbar from "./EditorToolbar.vue";
@@ -31,6 +27,8 @@ import SlideRailPanel from "./SlideRailPanel.vue";
 import SlideSettingsDrawer from "./SlideSettingsDrawer.vue";
 import TimelinePanel from "./TimelinePanel.vue";
 import { provideCoursewareDiagnosticLogger } from "./diagnostics";
+import { useCoursewareEditorTimelineWorkspaceState, type TimelineCollapsedStepIdsChangePayload } from "./useCoursewareEditorTimelineWorkspaceState";
+import { useCoursewareEditorViewport } from "./useCoursewareEditorViewport";
 import { useCoursewareEditor } from "./useCoursewareEditor";
 import { useCoursewareEditorShellActions } from "./useCoursewareEditorShellActions";
 import { useSlideSettingsDrawer } from "./useSlideSettingsDrawer";
@@ -76,6 +74,8 @@ const props = withDefaults(
     showHeader?: boolean;
     /** 外部传入的 slide 缩略图缓存，供左侧页面栏优先展示真实封面。 */
     slideThumbnailMap?: Record<string, string | null>;
+    /** 外部持久化托管的时间轴折叠态映射。 */
+    timelineCollapsedStepIdsBySlideId?: Record<string, string[]>;
     /** 外部注入的统一诊断 logger，供编辑器关键链路复用。 */
     diagnosticLogger?: DiagnosticLogger | null;
   }>(),
@@ -84,6 +84,7 @@ const props = withDefaults(
     height: DEFAULT_EDITOR_HEIGHT,
     showHeader: true,
     slideThumbnailMap: () => ({}),
+    timelineCollapsedStepIdsBySlideId: () => ({}),
     diagnosticLogger: null,
   },
 );
@@ -97,6 +98,8 @@ const emit = defineEmits<{
   "snapshot-change": [snapshot: EditorSnapshot];
   /** 通知外层某一页已经完成缩略图截图，可持久化到项目仓库。 */
   "slide-thumbnail-captured": [payload: SlideThumbnailCapturedPayload];
+  /** 通知外层某个 slide 的时间轴折叠态已变化。 */
+  "timeline-collapsed-step-ids-change": [payload: TimelineCollapsedStepIdsChangePayload];
   /** 通知外层从某个时间轴步骤切入预览模式。 */
   "timeline-preview-request": [payload: TimelinePreviewRequestPayload];
 }>();
@@ -336,111 +339,30 @@ const selectedNodeAnimations = computed<NodeAnimation[]>(() => {
   );
 });
 
-/** 三栏区真正可用的高度，扣掉工具条后再分给左右侧栏和中间区。 */
-const paneHeight = computed(() => Math.max(props.height - toolbarHeight.value, 320));
-
-/** 三栏区复用同一份参考高度，让左右侧栏保持固定高度。 */
-const editorLayoutStyle = computed(() => ({
-  "--cw-editor-pane-height": `${paneHeight.value}px`,
-}));
-
-/** 当前编辑工作区高度对应的密度档位。 */
-const editorViewportDensity = computed<WorkspaceViewportDensity>(() =>
-  resolveWorkspaceViewportDensity(paneHeight.value),
-);
-
-/**
- * 按当前高度密度返回编辑态共用布局变量。
- * 这些变量会同时驱动工具栏、左侧页面栏、中间舞台留白和右侧管理栏体积。
- */
-const resolveEditorViewportVariables = (
-  density: WorkspaceViewportDensity,
-): Record<string, string> => {
-  if (density === "dense") {
-    return {
-      "--cw-slide-rail-width": "188px",
-      "--cw-editor-side-width": "272px",
-      "--cw-editor-layout-gap": "10px",
-      "--cw-editor-layout-padding": "10px",
-      "--cw-editor-stage-padding-block-start": "10px",
-      "--cw-editor-stage-padding-inline": "12px",
-      "--cw-editor-stage-padding-block-end": "14px",
-      "--cw-editor-fit-padding-block-start": "6px",
-      "--cw-editor-fit-padding-inline": "10px",
-      "--cw-editor-fit-padding-block-end": "12px",
-      "--cw-editor-toolbar-padding-block": "8px",
-      "--cw-editor-toolbar-padding-inline": "12px",
-      "--cw-editor-toolbar-group-padding": "3px 5px",
-      "--cw-slide-list-gap": "8px",
-      "--cw-slide-card-shell-padding": "6px",
-      "--cw-slide-thumbnail-min-height": "60px",
-      "--cw-slide-card-hint-display": "none",
-    };
-  }
-
-  if (density === "compact") {
-    return {
-      "--cw-slide-rail-width": "204px",
-      "--cw-editor-side-width": "288px",
-      "--cw-editor-layout-gap": "10px",
-      "--cw-editor-layout-padding": "10px",
-      "--cw-editor-stage-padding-block-start": "14px",
-      "--cw-editor-stage-padding-inline": "16px",
-      "--cw-editor-stage-padding-block-end": "18px",
-      "--cw-editor-fit-padding-block-start": "8px",
-      "--cw-editor-fit-padding-inline": "16px",
-      "--cw-editor-fit-padding-block-end": "18px",
-      "--cw-editor-toolbar-padding-block": "9px",
-      "--cw-editor-toolbar-padding-inline": "13px",
-      "--cw-editor-toolbar-group-padding": "4px 6px",
-      "--cw-slide-list-gap": "8px",
-      "--cw-slide-card-shell-padding": "7px",
-      "--cw-slide-thumbnail-min-height": "68px",
-      "--cw-slide-card-hint-display": "flex",
-    };
-  }
-
-  return {
-    "--cw-slide-rail-width": "220px",
-    "--cw-editor-side-width": "300px",
-    "--cw-editor-layout-gap": "12px",
-    "--cw-editor-layout-padding": "12px",
-    "--cw-editor-stage-padding-block-start": "18px",
-    "--cw-editor-stage-padding-inline": "20px",
-    "--cw-editor-stage-padding-block-end": "24px",
-    "--cw-editor-fit-padding-block-start": "12px",
-    "--cw-editor-fit-padding-inline": "24px",
-    "--cw-editor-fit-padding-block-end": "26px",
-    "--cw-editor-toolbar-padding-block": "10px",
-    "--cw-editor-toolbar-padding-inline": "14px",
-    "--cw-editor-toolbar-group-padding": "4px 6px",
-    "--cw-slide-list-gap": "10px",
-    "--cw-slide-card-shell-padding": "8px",
-    "--cw-slide-thumbnail-min-height": "78px",
-    "--cw-slide-card-hint-display": "flex",
-  };
-};
-
-/** 内嵌工作台模式下固定组件总高度，并向整棵编辑器子树下发当前密度变量。 */
-const editorShellStyle = computed(() =>
-  ({
-    ...resolveEditorViewportVariables(editorViewportDensity.value),
-    ...(isEmbedded.value
-      ? {
-          height: `${props.height}px`,
-        }
-      : {}),
-  }),
-);
-
-/** 当前三栏布局的动态 class。 */
-const editorLayoutClass = computed(() => ({
-  "is-left-collapsed": isSlideRailCollapsed.value,
-  "is-right-collapsed": isEditorSideCollapsed.value,
-}));
-
 /** 当前是否以内嵌工作台模式渲染。 */
 const isEmbedded = computed(() => !props.showHeader);
+
+/** 收敛当前激活页的时间轴折叠态双向绑定。 */
+const { activeTimelineCollapsedStepIds } =
+  useCoursewareEditorTimelineWorkspaceState({
+    activeSlide,
+    timelineCollapsedStepIdsBySlideId: computed(
+      () => props.timelineCollapsedStepIdsBySlideId,
+    ),
+    emitTimelineCollapsedStepIdsChange: (payload) => {
+      emit("timeline-collapsed-step-ids-change", payload);
+    },
+  });
+
+/** 收敛编辑器壳层的高度分配与视口密度变量。 */
+const { editorLayoutClass, editorLayoutStyle, editorShellStyle } =
+  useCoursewareEditorViewport({
+    height: computed(() => props.height),
+    toolbarHeight,
+    isSlideRailCollapsed,
+    isEditorSideCollapsed,
+    isEmbedded,
+  });
 
 /** 当前页面内全部节点的步骤归属摘要。 */
 const nodeTimelineSummaryMap = computed<Record<string, NodeTimelineSummary>>(() =>
@@ -794,6 +716,7 @@ defineExpose({
             />
             <TimelinePanel
               v-else
+              v-model:collapsed-step-ids="activeTimelineCollapsedStepIds"
               :slide="activeSlide ?? null"
               :selected-node-id="selectedNodeId"
               @duplicate-step="handleTimelineStepDuplicate"

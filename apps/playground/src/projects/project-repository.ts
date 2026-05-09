@@ -5,6 +5,10 @@ import {
   resolveProjectPrimaryThumbnail,
   sanitizeProjectSlideThumbnails,
 } from "./project-thumbnails";
+import {
+  createDefaultProjectWorkspaceState,
+  sanitizeProjectWorkspaceState,
+} from "./project-workspace-state";
 import type { ProjectRecord, ProjectRepository, ProjectSummary } from "./types";
 
 /** 浏览器本地存储的项目键名。 */
@@ -49,23 +53,34 @@ function toProjectSummary(record: ProjectRecord): ProjectSummary {
 function sanitizeStoredProjectRecord(record: ProjectRecord): ProjectRecord {
   /** 读取阶段只修正缺失字段，不主动改写更新时间。 */
   const normalizedTitle = record.title?.trim() || record.document?.meta?.title || "未命名课件";
+  /** 先标准化一份文档快照，后续缩略图与工作区状态都会依赖它做过滤。 */
+  const normalizedDocument = {
+    ...clonePlainData(record.document),
+    meta: {
+      ...clonePlainData(record.document.meta),
+      id: record.id,
+      title: normalizedTitle,
+    },
+  };
   /** 先清洗 slide 级缩略图，再反推项目首页封面。 */
-  const slideThumbnails = sanitizeProjectSlideThumbnails(record.document, record.slideThumbnails);
+  const slideThumbnails = sanitizeProjectSlideThumbnails(
+    normalizedDocument,
+    record.slideThumbnails,
+  );
+  /** 再按当前文档过滤一遍工作区状态，避免保留已失效的 slide / step 引用。 */
+  const workspaceState = sanitizeProjectWorkspaceState(
+    normalizedDocument,
+    record.workspaceState ?? createDefaultProjectWorkspaceState(),
+  );
 
   return {
     ...clonePlainData(record),
     title: normalizedTitle,
     updatedAt: record.updatedAt || new Date().toISOString(),
-    thumbnail: resolveProjectPrimaryThumbnail(record.document, slideThumbnails),
+    thumbnail: resolveProjectPrimaryThumbnail(normalizedDocument, slideThumbnails),
     slideThumbnails,
-    document: {
-      ...clonePlainData(record.document),
-      meta: {
-        ...clonePlainData(record.document.meta),
-        id: record.id,
-        title: normalizedTitle,
-      },
-    },
+    workspaceState,
+    document: normalizedDocument,
   };
 }
 
@@ -84,6 +99,10 @@ function normalizeProjectRecord(record: ProjectRecord): ProjectRecord {
     updatedAt: new Date().toISOString(),
     thumbnail: resolveProjectPrimaryThumbnail(normalizedRecord.document, slideThumbnails),
     slideThumbnails,
+    workspaceState: sanitizeProjectWorkspaceState(
+      normalizedRecord.document,
+      normalizedRecord.workspaceState,
+    ),
   };
 }
 

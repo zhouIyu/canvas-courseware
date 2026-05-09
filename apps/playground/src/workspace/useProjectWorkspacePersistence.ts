@@ -6,8 +6,10 @@ import { clearProjectAssetSourceCache, normalizeProjectDocumentAssetSources } fr
 import { projectRepository } from "../projects/project-repository";
 import { workspaceDiagnosticLogger } from "../diagnostics/workspace-diagnostics";
 import type { ProjectSlideThumbnailMap, ProjectWorkspaceMode } from "../projects/types";
+import type { TimelineCollapsedStepIdsChangePayload } from "../projects/project-workspace-state";
 import { cleanupRemovedWorkspaceAssets, hydrateWorkspaceProjectDocument, resolveRemovedWorkspaceAssetIds, resolveWorkspaceExportDocument } from "./project-workspace-persistence/asset-helpers";
 import { buildProjectWorkspaceRecord, mergeCapturedSlideThumbnail, type SlideThumbnailCapturedPayload } from "./project-workspace-persistence/record-helpers";
+import { useProjectWorkspaceTimelineState } from "./useProjectWorkspaceTimelineState";
 import { type WorkspaceSaveStatus, useWorkspaceSaveStatus } from "./useWorkspaceSaveStatus";
 
 /** 自动保存延时，单位毫秒。 */
@@ -57,6 +59,14 @@ export function useProjectWorkspacePersistence(
 
   /** 当前项目内各 slide 的缩略图缓存。 */
   const slideThumbnails = ref<ProjectSlideThumbnailMap>({});
+
+  /** 当前项目本地工作区状态，单独持久化到项目记录中。 */
+  const {
+    handleTimelineCollapsedStepIdsChange: updateTimelineCollapsedStepIds,
+    hydrateWorkspaceState,
+    resetWorkspaceState,
+    workspaceState,
+  } = useProjectWorkspaceTimelineState();
 
   /** 当前是否正在加载项目数据。 */
   const isLoading = ref(true);
@@ -148,6 +158,7 @@ export function useProjectWorkspacePersistence(
     projectTitle: projectTitle.value,
     documentModel: documentModel.value,
     slideThumbnails: slideThumbnails.value,
+    workspaceState: workspaceState.value,
   });
 
   /** 保存前主动向编辑器拉取当前页截图，保证当前页封面与最新画布保持一致。 */
@@ -315,6 +326,7 @@ export function useProjectWorkspacePersistence(
     projectTitle.value = projectRecord.title;
     documentModel.value = hydratedDocument;
     slideThumbnails.value = projectRecord.slideThumbnails;
+    hydrateWorkspaceState(projectRecord);
     editorSnapshot.value = null;
     lastSavedAt.value = projectRecord.updatedAt;
     saveStatus.value = "saved";
@@ -386,6 +398,7 @@ export function useProjectWorkspacePersistence(
     editorSnapshot.value = null;
     projectTitle.value = normalizedTitle;
     slideThumbnails.value = {};
+    resetWorkspaceState();
     documentModel.value = {
       ...nextDocument,
       meta: {
@@ -490,6 +503,17 @@ export function useProjectWorkspacePersistence(
     scheduleAutoSave();
   };
 
+  /** 接收时间轴面板的折叠态变化，并走项目级自动保存链路持久化。 */
+  const handleTimelineCollapsedStepIdsChange = (
+    payload: TimelineCollapsedStepIdsChangePayload,
+  ) => {
+    if (!updateTimelineCollapsedStepIds(payload)) {
+      return;
+    }
+
+    scheduleAutoSave();
+  };
+
   /** 手动保存当前项目。 */
   const handleSaveClick = async () => {
     await persistProject("manual");
@@ -536,6 +560,7 @@ export function useProjectWorkspacePersistence(
     handleSaveClick,
     handleSlideThumbnailCaptured,
     handleSnapshotChange,
+    handleTimelineCollapsedStepIdsChange,
     ioFeedback,
     isHydrating,
     isLoading,
@@ -545,5 +570,6 @@ export function useProjectWorkspacePersistence(
     saveStatusLabel,
     saveStatusTagColor,
     slideThumbnails,
+    workspaceState,
   };
 }

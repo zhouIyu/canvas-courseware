@@ -47,11 +47,39 @@
 }
 
 .step-card {
+  position: relative;
   gap: 10px;
+}
+
+.step-card > .card-head {
+  cursor: move;
 }
 
 .step-card.is-collapsed {
   gap: var(--cw-space-2);
+}
+
+.step-card.is-dragging {
+  opacity: 0.56;
+}
+
+.step-card.is-drop-before::before,
+.step-card.is-drop-after::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  height: 0;
+  border-top: 2px solid #165dff;
+  pointer-events: none;
+}
+
+.step-card.is-drop-before::before {
+  top: -1px;
+}
+
+.step-card.is-drop-after::after {
+  bottom: -1px;
 }
 
 .step-card-body {

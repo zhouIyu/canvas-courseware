@@ -77,25 +77,27 @@ const workspaceContentHeight = computed(() =>
 );
 
 /** 收敛项目加载、自动保存与导入导出链路。 */
-const {
-  activeSlideId,
-  documentModel,
-  editorSnapshot,
+  const {
+    activeSlideId,
+    documentModel,
+    editorSnapshot,
   handleJsonExportClick,
   handleJsonImportRequest,
   handleProjectTitleInput,
-  handleSaveClick,
-  handleSlideThumbnailCaptured,
-  handleSnapshotChange,
-  ioFeedback,
-  isLoading,
-  isProjectMissing,
+    handleSaveClick,
+    handleSlideThumbnailCaptured,
+    handleSnapshotChange,
+    handleTimelineCollapsedStepIdsChange,
+    ioFeedback,
+    isLoading,
+    isProjectMissing,
   projectTitle,
   saveStatusHint,
-  saveStatusLabel,
-  saveStatusTagColor,
-  slideThumbnails,
-} = useProjectWorkspacePersistence({
+    saveStatusLabel,
+    saveStatusTagColor,
+    slideThumbnails,
+    workspaceState,
+  } = useProjectWorkspacePersistence({
   projectId,
   workspaceMode,
   captureActiveSlideThumbnail: async () =>
@@ -247,9 +249,15 @@ onMounted(() => {
           :height="workspaceContentHeight"
           :slide-thumbnail-map="slideThumbnails"
           :show-header="false"
+          :timeline-collapsed-step-ids-by-slide-id="
+            workspaceState.timelineCollapsedStepIdsBySlideId
+          "
           class="workspace-editor"
           @snapshot-change="handleSnapshotChange"
           @slide-thumbnail-captured="handleSlideThumbnailCaptured"
+          @timeline-collapsed-step-ids-change="
+            handleTimelineCollapsedStepIdsChange
+          "
           @timeline-preview-request="handleTimelinePreviewRequest"
         />
 

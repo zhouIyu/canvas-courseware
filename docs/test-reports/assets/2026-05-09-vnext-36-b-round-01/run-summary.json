@@ -1,0 +1,50 @@
+{
+  "baseUrl": "http://127.0.0.1:32174/projects",
+  "executedAt": "2026-05-09T10:37:35.370Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "step-drag-sort",
+      "expectedTitles": [
+        "展示备注",
+        "展示标题",
+        "展示卡片"
+      ],
+      "actualTitles": [
+        "展示备注",
+        "展示标题",
+        "展示卡片"
+      ]
+    },
+    {
+      "id": "collapsed-state-switch",
+      "firstSlideCollapsedStepIds": [
+        "timeline-slide-a-step-note",
+        "timeline-slide-a-step-card"
+      ],
+      "secondSlideCollapsedStepIds": [
+        "timeline-slide-b-step-badge"
+      ]
+    },
+    {
+      "id": "reload-restore",
+      "reloadedFirstSlideTitles": [
+        "展示备注",
+        "展示标题",
+        "展示卡片"
+      ],
+      "reloadedFirstSlideCollapsedIndexes": [
+        0,
+        2
+      ],
+      "reloadedSecondSlideCollapsedIndexes": [
+        1
+      ]
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

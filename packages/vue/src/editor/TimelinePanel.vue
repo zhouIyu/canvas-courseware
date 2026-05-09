@@ -5,18 +5,15 @@ import {
   type Slide,
   type TimelineStep,
 } from "@canvas-courseware/core";
-import { computed, ref, watch } from "vue";
+import { computed } from "vue";
 import { formatNodeTypeLabel } from "../shared";
 import TimelineStepActionsEditor from "./TimelineStepActionsEditor.vue";
 import { resolveTimelineStepSummaryChips } from "./timeline-step-summary";
-
-/** 时间轴步骤排序事件的载荷。 */
-interface TimelineStepReorderPayload {
-  /** 需要移动的步骤 id。 */
-  stepId: string;
-  /** 调整后的目标索引。 */
-  index: number;
-}
+import {
+  useTimelineStepDragSort,
+  type TimelineStepReorderPayload,
+} from "./useTimelineStepDragSort";
+import { useTimelineStepCollapseState } from "./useTimelineStepCollapseState";
 
 /** 时间轴步骤复制事件的载荷。 */
 interface TimelineStepDuplicatePayload {
@@ -58,6 +55,11 @@ const props = withDefaults(
   },
 );
 
+/** 当前页面外部托管的折叠步骤 id 列表。 */
+const collapsedStepIds = defineModel<string[]>("collapsedStepIds", {
+  default: () => [],
+});
+
 /** 时间轴面板向外派发的标准化编辑意图。 */
 const emit = defineEmits<{
   /** 新增或更新一个时间轴步骤。 */
@@ -84,18 +86,8 @@ const stepCount = computed(() => props.slide?.timeline.steps.length ?? 0);
 /** 当前页面全部步骤 id，便于统一维护折叠状态。 */
 const stepIdList = computed(() => props.slide?.timeline.steps.map((step) => step.id) ?? []);
 
-/** 当前处于折叠态的步骤 id 列表。 */
-const collapsedStepIds = ref<string[]>([]);
-
-/** 是否需要展示“全部收起 / 展开”入口。 */
-const showCollapseAllAction = computed(() => stepCount.value > 1);
-
-/** 当前页面是否已经全部折叠。 */
-const isEveryStepCollapsed = computed(
-  () =>
-    stepIdList.value.length > 0 &&
-    stepIdList.value.every((stepId) => collapsedStepIds.value.includes(stepId)),
-);
+/** 当前页面步骤列表，供拖拽排序逻辑复用。 */
+const timelineSteps = computed(() => props.slide?.timeline.steps ?? []);
 
 /** 当前页面的节点选项，供动作和动画配置下拉框复用。 */
 const nodeOptions = computed(() =>
@@ -111,18 +103,31 @@ const preferredNodeId = computed(
   () => props.selectedNodeId ?? props.slide?.nodes[0]?.id ?? "",
 );
 
-/** 切换页面时重置局部折叠态，避免把上一页的展开状态带到新页面。 */
-watch(
-  () => props.slide?.id ?? null,
-  () => {
-    collapsedStepIds.value = [];
-  },
-);
+/** 收敛时间轴步骤折叠逻辑，保持 UI 状态由外层托管。 */
+const {
+  handleToggleAllStepsCollapsed,
+  handleToggleStepCollapsed,
+  isEveryStepCollapsed,
+  isStepCollapsed,
+  showCollapseAllAction,
+} = useTimelineStepCollapseState({
+  stepIdList,
+  collapsedStepIds,
+});
 
-/** 步骤列表变化时清理已失效的折叠记录，保持状态集合只引用当前页面。 */
-watch(stepIdList, (nextStepIds) => {
-  const validStepIdSet = new Set(nextStepIds);
-  collapsedStepIds.value = collapsedStepIds.value.filter((stepId) => validStepIdSet.has(stepId));
+/** 收敛时间轴步骤拖拽排序交互，排序结果继续走标准命令链路。 */
+const {
+  draggedStepId,
+  dropState,
+  handleDragOver,
+  handleDragStart,
+  handleDrop,
+  resetDragState,
+} = useTimelineStepDragSort({
+  steps: timelineSteps,
+  onReorderStep: (payload) => {
+    emit("reorder-step", payload);
+  },
 });
 
 /** 读取文本输入框和下拉框的字符串值。 */
@@ -242,26 +247,6 @@ function handleDuplicateStep(
     index: stepIndex,
     name,
   });
-}
-
-/** 判断某个步骤当前是否处于折叠态。 */
-function isStepCollapsed(stepId: string): boolean {
-  return collapsedStepIds.value.includes(stepId);
-}
-
-/** 切换单个步骤的折叠 / 展开状态。 */
-function handleToggleStepCollapsed(stepId: string): void {
-  if (isStepCollapsed(stepId)) {
-    collapsedStepIds.value = collapsedStepIds.value.filter((currentStepId) => currentStepId !== stepId);
-    return;
-  }
-
-  collapsedStepIds.value = [...collapsedStepIds.value, stepId];
-}
-
-/** 在头部统一切换全部步骤的折叠状态。 */
-function handleToggleAllStepsCollapsed(): void {
-  collapsedStepIds.value = isEveryStepCollapsed.value ? [] : [...stepIdList.value];
 }
 
 /** 为“后插一步”生成更贴近当前上下文的新步骤名称。 */
@@ -409,9 +394,21 @@ function handleStepTriggerTargetChange(
             v-for="(step, stepIndex) in slide?.timeline.steps ?? []"
             :key="step.id"
             class="step-card"
-            :class="{ 'is-collapsed': isStepCollapsed(step.id) }"
+            :class="{
+              'is-collapsed': isStepCollapsed(step.id),
+              'is-dragging': draggedStepId === step.id,
+              'is-drop-before': dropState?.stepId === step.id && dropState.placement === 'before',
+              'is-drop-after': dropState?.stepId === step.id && dropState.placement === 'after',
+            }"
+            @dragover="handleDragOver(step.id, $event)"
+            @drop="handleDrop(step.id, $event)"
           >
-            <header class="card-head">
+            <header
+              class="card-head"
+              draggable="true"
+              @dragend="resetDragState"
+              @dragstart="handleDragStart(step.id, $event)"
+            >
               <div class="card-title-row">
                 <div class="card-title-topline">
                   <span class="card-index">步骤 {{ String(stepIndex + 1).padStart(2, "0") }}</span>

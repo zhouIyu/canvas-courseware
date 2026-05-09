@@ -1,5 +1,6 @@
 import type { CoursewareDocument } from "@canvas-courseware/core";
 import type { ProjectCanvasSize, ProjectCreateOptions } from "./project-creation";
+import type { ProjectWorkspaceState } from "./project-workspace-state";
 
 /** 项目级 slide 缩略图缓存，按 slide id 保存 data URL。 */
 export type ProjectSlideThumbnailMap = Record<string, string | null>;
@@ -34,6 +35,8 @@ export interface ProjectRecord {
   slideThumbnails: ProjectSlideThumbnailMap;
   /** 当前项目对应的通用课件文档。 */
   document: CoursewareDocument;
+  /** 当前项目仅保存在本地仓库中的工作区 UI 状态。 */
+  workspaceState: ProjectWorkspaceState;
 }
 
 /** 工作台内的产品模式。 */

@@ -1,5 +1,6 @@
 import type { CoursewareDocument } from "@canvas-courseware/core";
 import { resolveProjectPrimaryThumbnail, sanitizeProjectSlideThumbnails } from "../../projects/project-thumbnails";
+import { sanitizeProjectWorkspaceState, type ProjectWorkspaceState } from "../../projects/project-workspace-state";
 import type { ProjectRecord, ProjectSlideThumbnailMap } from "../../projects/types";
 
 /** 编辑器切页前抛给应用层的缩略图截图结果。 */
@@ -20,6 +21,8 @@ export interface BuildProjectWorkspaceRecordOptions {
   documentModel: CoursewareDocument | null | undefined;
   /** 当前工作台维护的页面缩略图缓存。 */
   slideThumbnails: ProjectSlideThumbnailMap;
+  /** 当前工作台维护的本地 UI 状态。 */
+  workspaceState: ProjectWorkspaceState;
 }
 
 /** 把当前页面状态拼成一条可保存的项目记录。 */
@@ -45,6 +48,10 @@ export function buildProjectWorkspaceRecord(
       normalizedSlideThumbnails,
     ),
     slideThumbnails: normalizedSlideThumbnails,
+    workspaceState: sanitizeProjectWorkspaceState(
+      options.documentModel,
+      options.workspaceState,
+    ),
     document: {
       ...options.documentModel,
       meta: {

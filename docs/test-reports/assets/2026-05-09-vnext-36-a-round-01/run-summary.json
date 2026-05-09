@@ -1,6 +1,6 @@
 {
   "baseUrl": "http://127.0.0.1:32174/projects",
-  "executedAt": "2026-05-09T08:29:15.199Z",
+  "executedAt": "2026-05-09T10:42:17.585Z",
   "desktopViewport": {
     "width": 1440,
     "height": 900
@@ -76,19 +76,19 @@
       "offsets": [
         {
           "sourceId": "rect-vnext36-primary",
-          "createdId": "node-67ac1591-15a0-4732-af62-8f021c8cabae",
+          "createdId": "node-16c5fa19-d2e1-4f08-8cd1-1bf6f77d8354",
           "offsetX": 24,
           "offsetY": 24
         },
         {
           "sourceId": "rect-vnext36-secondary",
-          "createdId": "node-6fc2fb92-a22b-4399-8399-bf2955989224",
+          "createdId": "node-20e632bc-af42-4333-9919-762c64e43aa2",
           "offsetX": 24,
           "offsetY": 24
         },
         {
           "sourceId": "rect-vnext36-tertiary",
-          "createdId": "node-785a49c2-f8a2-451d-8512-23c40f376d9f",
+          "createdId": "node-77dafc07-6922-46fc-85d2-cc0af93742d5",
           "offsetX": 24,
           "offsetY": 24
         }
@@ -102,20 +102,20 @@
       "redoDepthAfter": 0,
       "offsets": [
         {
-          "sourceId": "node-67ac1591-15a0-4732-af62-8f021c8cabae",
-          "createdId": "node-5a2fcd66-3193-42a6-86aa-79f792ca384d",
+          "sourceId": "node-16c5fa19-d2e1-4f08-8cd1-1bf6f77d8354",
+          "createdId": "node-f887208e-0217-439a-a60a-41748b874e51",
           "offsetX": 24,
           "offsetY": 24
         },
         {
-          "sourceId": "node-6fc2fb92-a22b-4399-8399-bf2955989224",
-          "createdId": "node-7f3551c8-eccf-43c8-9fe2-7f0e51e7b1fd",
+          "sourceId": "node-20e632bc-af42-4333-9919-762c64e43aa2",
+          "createdId": "node-e3994520-a818-48a4-959c-ef56f73e4f07",
           "offsetX": 24,
           "offsetY": 24
         },
         {
-          "sourceId": "node-785a49c2-f8a2-451d-8512-23c40f376d9f",
-          "createdId": "node-bb297b94-c50f-46e4-81c1-df1b2a1daa19",
+          "sourceId": "node-77dafc07-6922-46fc-85d2-cc0af93742d5",
+          "createdId": "node-350c80f9-9fa2-47b4-a18a-40ffdf0decce",
           "offsetX": 24,
           "offsetY": 24
         }
