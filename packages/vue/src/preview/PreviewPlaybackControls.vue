@@ -10,6 +10,10 @@ const props = withDefaults(
     canStepBackward?: boolean;
     /** 当前是否存在可播放页面。 */
     hasActiveSlide?: boolean;
+    /** 当前是否还存在下一步可继续播放。 */
+    canPlayNextStep?: boolean;
+    /** 当前是否已经完整播完整份课件。 */
+    isCoursewareCompleted?: boolean;
     /** 当前是否已进入沉浸播放模式。 */
     isImmersivePlayback?: boolean;
     /** 当前沉浸播放入口的文案。 */
@@ -20,6 +24,8 @@ const props = withDefaults(
     canActivateNextSlide: false,
     canStepBackward: false,
     hasActiveSlide: false,
+    canPlayNextStep: false,
+    isCoursewareCompleted: false,
     isImmersivePlayback: false,
     immersiveToggleLabel: "沉浸播放",
   },
@@ -37,6 +43,8 @@ const emit = defineEmits<{
   "play-next-step": [];
   /** 请求切到下一页。 */
   "activate-next-slide": [];
+  /** 请求重新开始整份课件。 */
+  "restart-courseware": [];
   /** 请求切换沉浸播放状态。 */
   "toggle-immersive-playback": [];
 }>();
@@ -80,12 +88,25 @@ const emit = defineEmits<{
       class="preview-text-button"
       type="text"
       :disabled="!props.hasActiveSlide"
+      :class="{ 'is-active': props.isCoursewareCompleted }"
+      @click="emit('restart-courseware')"
+    >
+      重新开始课件
+    </a-button>
+    <a-button
+      class="preview-text-button"
+      type="text"
+      :disabled="!props.hasActiveSlide"
       :class="{ 'is-active': props.isImmersivePlayback }"
       @click="emit('toggle-immersive-playback')"
     >
       {{ props.immersiveToggleLabel }}
     </a-button>
-    <a-button type="primary" :disabled="!props.hasActiveSlide" @click="emit('play-next-step')">
+    <a-button
+      type="primary"
+      :disabled="!props.canPlayNextStep"
+      @click="emit('play-next-step')"
+    >
       播放下一步
     </a-button>
   </div>

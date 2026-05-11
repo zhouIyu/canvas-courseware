@@ -1,6 +1,6 @@
 {
   "baseUrl": "http://127.0.0.1:32173/projects",
-  "executedAt": "2026-05-08T09:03:54.463Z",
+  "executedAt": "2026-05-11T06:42:26.406Z",
   "desktopViewport": {
     "width": 1440,
     "height": 900
@@ -40,7 +40,7 @@
       "hasStageHint": true,
       "hasEmbeddedActions": true,
       "fullscreenElementClassName": null,
-      "stageHintText": "等待继续快捷键：← 上一步 · →/空格 下一步 · R 重播 · F / Esc 退出"
+      "stageHintText": "等待继续快捷键：← 上一步 · →/空格 下一步 · R 重播 · Shift+R 重新开始 · F / Esc 退出"
     },
     {
       "id": "immersive-exit",

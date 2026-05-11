@@ -1,0 +1,50 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-05-11T06:33:06.478Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "initial-courseware-progress",
+      "coursewareProgress": "已完成 0 / 2 页",
+      "coursewareCopy": "第 1 / 2 页 · 课程封面 · 0/2 步",
+      "firstSlideProgress": "0/2 步",
+      "secondSlideStatus": "未播放",
+      "playNextDisabled": false
+    },
+    {
+      "id": "first-slide-complete",
+      "coursewareProgress": "已完成 1 / 2 页",
+      "firstSlideStatus": "已完成"
+    },
+    {
+      "id": "second-slide-opened",
+      "coursewareCopy": "第 2 / 2 页 · 教学流程 · 0/1 步",
+      "sidebarSummary": "0/1 步"
+    },
+    {
+      "id": "courseware-completed",
+      "coursewareProgress": "已完成 2 / 2 页",
+      "hintTitle": "整份课件已播放完成",
+      "hintCopy": "最后停留在“教学流程”的 显示流程提示，整份课件共 3 步；可点击“重新开始课件”再次从第一页演示。",
+      "playNextDisabled": true
+    },
+    {
+      "id": "courseware-restarted",
+      "slidePosition": "第 1 / 2 页",
+      "coursewareProgress": "已完成 0 / 2 页",
+      "firstSlideStatus": "当前页",
+      "previousDisabled": true,
+      "nextDisabled": false,
+      "playNextDisabled": false
+    },
+    {
+      "id": "courseware-restarted-by-button",
+      "coursewareProgress": "已完成 0 / 2 页"
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

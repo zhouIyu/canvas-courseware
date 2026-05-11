@@ -7,16 +7,13 @@ import PreviewTimelineSidebar from "./PreviewTimelineSidebar.vue";
 import {
   DEFAULT_PREVIEW_HEIGHT,
   createSlideBackgroundStyle,
-  formatPlaybackStatus,
-  formatPlaybackSummary,
-  formatStepIndexLabel,
-  formatTriggerLabel,
   resolveWorkspaceViewportDensity,
   type WorkspaceViewportDensity,
   useStageViewportFit,
 } from "../shared";
 import { useCoursewarePreview } from "./useCoursewarePreview";
 import { usePreviewImmersivePlayback } from "./usePreviewImmersivePlayback";
+import { usePreviewPlaybackProgress } from "./usePreviewPlaybackProgress";
 
 /** 外部触发预览跳转时使用的请求结构。 */
 interface PreviewPlaybackRequest {
@@ -148,171 +145,39 @@ const previewZoomLabel = computed(() =>
   isFitZoom.value ? `适配 ${scalePercent.value}%` : `${scalePercent.value}%`,
 );
 
-/** 播放状态摘要。 */
-const playbackSummary = computed(() =>
-  formatPlaybackSummary(state.value.stepIndex, stepCount.value, state.value.status),
-);
-
-/** 当前状态的中文标签。 */
-const playbackStatusLabel = computed(() =>
-  formatPlaybackStatus(state.value.status),
-);
-
-/** 播放状态对应的标签色值。 */
-const playbackStatusTagColor = computed(() => {
-  switch (state.value.status) {
-    case "playing":
-      return "#165dff";
-    case "paused":
-      return "#ff7d00";
-    case "completed":
-      return "#00b42a";
-    case "idle":
-    default:
-      return "#64748b";
-  }
+/** 预览态统一消费的页面级 / 课件级播放进度与完成态。 */
+const {
+  activeSlideIndex,
+  canActivateNextSlide,
+  canActivatePreviousSlide,
+  canPlayNextStep,
+  canStepBackward,
+  clearSlidePlaybackHistory,
+  completedStepCount,
+  coursewareProgressCopy,
+  coursewareProgressLabel,
+  coursewareProgressPercent,
+  hasActiveSlide,
+  isCoursewareCompleted,
+  nextTriggerLabel,
+  playbackHintCopy,
+  playbackHintTitle,
+  playbackStatusLabel,
+  playbackStatusTagColor,
+  playbackSummary,
+  slideCount,
+  slidePlaybackProgressMap,
+  slidePositionLabel,
+  stageSizeLabel,
+  stepPositionLabel,
+  stepProgressLabel,
+  stepProgressPercent,
+} = usePreviewPlaybackProgress({
+  document: computed(() => state.value.document),
+  activeSlide,
+  state,
+  stepCount,
 });
-
-/** 下一步触发方式摘要。 */
-const nextTriggerLabel = computed(() =>
-  formatTriggerLabel(state.value.nextTrigger),
-);
-
-/** 当前步骤序号摘要。 */
-const stepPositionLabel = computed(() => {
-  if (stepCount.value === 0) {
-    return "没有可播放的步骤";
-  }
-
-  if (state.value.status === "completed" || state.value.stepIndex >= stepCount.value) {
-    return `当前页已完成 ${stepCount.value} 步`;
-  }
-
-  const currentStep = Math.min(state.value.stepIndex + 1, stepCount.value);
-  return `当前焦点：第 ${currentStep} / ${stepCount.value} 步`;
-});
-
-/** 当前页面的尺寸摘要。 */
-const stageSizeLabel = computed(() => {
-  if (!activeSlide.value) {
-    return "未加载页面";
-  }
-
-  return `${activeSlide.value.size.width} × ${activeSlide.value.size.height}`;
-});
-
-/** 当前激活页在文档中的序号。 */
-const activeSlideIndex = computed(() => {
-  const slides = state.value.document?.slides ?? [];
-  return slides.findIndex((slide) => slide.id === state.value.slideId);
-});
-
-/** 当前预览文档中的总页数。 */
-const slideCount = computed(() => state.value.document?.slides.length ?? 0);
-
-/** 当前已经执行完成的步骤数量。 */
-const completedStepCount = computed(() =>
-  Math.min(state.value.stepIndex, stepCount.value),
-);
-
-/** 当前是否存在可播放页面。 */
-const hasActiveSlide = computed(() => Boolean(activeSlide.value));
-
-/** 当前是否还能回退到上一步。 */
-const canStepBackward = computed(() => hasActiveSlide.value && state.value.stepIndex > 0);
-
-/** 当前尚未执行的下一步。 */
-const nextStep = computed(() =>
-  activeSlide.value?.timeline.steps[state.value.stepIndex] ?? null,
-);
-
-/** 最近一次已经完成的步骤，用于完成态回显。 */
-const lastCompletedStep = computed(() => {
-  if (!activeSlide.value || completedStepCount.value === 0) {
-    return null;
-  }
-
-  return activeSlide.value.timeline.steps[completedStepCount.value - 1] ?? null;
-});
-
-/** 当前页码在整份文档中的位置摘要。 */
-const slidePositionLabel = computed(() => {
-  if (slideCount.value === 0 || activeSlideIndex.value < 0) {
-    return "未选择页面";
-  }
-
-  return `第 ${activeSlideIndex.value + 1} / ${slideCount.value} 页`;
-});
-
-/** 当前步骤完成进度摘要。 */
-const stepProgressLabel = computed(() => {
-  if (stepCount.value === 0) {
-    return "当前没有步骤";
-  }
-
-  return `已完成 ${completedStepCount.value} / ${stepCount.value} 步`;
-});
-
-/** 当前页步骤完成进度百分比，供进度条直接消费。 */
-const stepProgressPercent = computed(() => {
-  if (stepCount.value === 0) {
-    return 0;
-  }
-
-  return Math.round((completedStepCount.value / stepCount.value) * 100);
-});
-
-/** 当前页的重点播放提示标题。 */
-const playbackHintTitle = computed(() => {
-  if (!activeSlide.value) {
-    return "未加载预览页面";
-  }
-
-  if (stepCount.value === 0) {
-    return "当前页没有播放步骤";
-  }
-
-  if (
-    state.value.status === "completed" ||
-    completedStepCount.value >= stepCount.value ||
-    !nextStep.value
-  ) {
-    return "当前页已播放完成";
-  }
-
-  return `下一步：${formatStepIndexLabel(state.value.stepIndex)} · ${nextStep.value.name}`;
-});
-
-/** 当前页的重点播放提示补充说明。 */
-const playbackHintCopy = computed(() => {
-  if (!activeSlide.value) {
-    return "切换页面后，这里会自动同步同一份课件文档与预览状态。";
-  }
-
-  if (stepCount.value === 0) {
-    return "可以先回到编辑态补齐 timeline，再回来验证页面播放顺序。";
-  }
-
-  if (
-    state.value.status === "completed" ||
-    completedStepCount.value >= stepCount.value ||
-    !nextStep.value
-  ) {
-    return lastCompletedStep.value
-      ? `最后完成：${lastCompletedStep.value.name} · 共 ${stepCount.value} 步`
-      : `当前页共 ${stepCount.value} 步，现已全部播放完成`;
-  }
-
-  return `${stepProgressLabel.value} · ${formatTriggerLabel(nextStep.value.trigger.type)}`;
-});
-
-/** 当前是否还能切到上一页。 */
-const canActivatePreviousSlide = computed(() => activeSlideIndex.value > 0);
-
-/** 当前是否还能切到下一页。 */
-const canActivateNextSlide = computed(
-  () => activeSlideIndex.value >= 0 && activeSlideIndex.value < slideCount.value - 1,
-);
 
 /** 切换到相邻页面，供“上一页 / 下一页”复用。 */
 const activateRelativeSlide = async (offset: number) => {
@@ -329,6 +194,13 @@ const activateRelativeSlide = async (offset: number) => {
 /** 从当前页起点重新播放，统一用“重播当前页”语义暴露给 UI。 */
 const replayCurrentSlide = async () => {
   await resetPreview();
+};
+
+/** 从整份课件起点重新开始预览，并清空页面级播放进度历史。 */
+const restartCourseware = async () => {
+  const firstSlideId = state.value.document?.slides[0]?.id ?? null;
+  clearSlidePlaybackHistory();
+  await activateSlide(firstSlideId);
 };
 
 /** 手动回退到上一步，并停在该步等待用户再次触发。 */
@@ -536,13 +408,14 @@ const {
   onPlayNextStep: playNextStep,
   onStepBackward: stepBackward,
   onReplayCurrentSlide: replayCurrentSlide,
+  onRestartCourseware: restartCourseware,
   onActivatePreviousSlide: () => activateRelativeSlide(-1),
   onActivateNextSlide: () => activateRelativeSlide(1),
 });
 
 /** 沉浸播放下展示的轻量键盘提示。 */
 const immersivePlaybackHint = computed(
-  () => "快捷键：← 上一步 · →/空格 下一步 · R 重播 · F / Esc 退出",
+  () => "快捷键：← 上一步 · →/空格 下一步 · R 重播 · Shift+R 重新开始 · F / Esc 退出",
 );
 
 </script>
@@ -576,14 +449,17 @@ const immersivePlaybackHint = computed(
           class="preview-actions"
           :can-activate-next-slide="canActivateNextSlide"
           :can-activate-previous-slide="canActivatePreviousSlide"
+          :can-play-next-step="canPlayNextStep"
           :can-step-backward="canStepBackward"
           :has-active-slide="hasActiveSlide"
           :immersive-toggle-label="immersiveToggleLabel"
+          :is-courseware-completed="isCoursewareCompleted"
           :is-immersive-playback="isImmersivePlayback"
           @activate-next-slide="activateRelativeSlide(1)"
           @activate-previous-slide="activateRelativeSlide(-1)"
           @play-next-step="playNextStep"
           @replay-current-slide="replayCurrentSlide"
+          @restart-courseware="restartCourseware"
           @step-backward="stepBackward"
           @toggle-immersive-playback="toggleImmersivePlayback"
         />
@@ -614,6 +490,7 @@ const immersivePlaybackHint = computed(
         <header class="section-head compact">
           <div>
             <h3>快速切换</h3>
+            <p class="slide-rail-summary">{{ coursewareProgressLabel }}</p>
           </div>
         </header>
 
@@ -622,7 +499,10 @@ const immersivePlaybackHint = computed(
             v-for="(slide, index) in state.document?.slides ?? []"
             :key="slide.id"
             class="slide-card"
-            :class="{ 'is-active': slide.id === state.slideId }"
+            :class="{
+              'is-active': slide.id === state.slideId,
+              'is-completed': slidePlaybackProgressMap[slide.id]?.isCompleted,
+            }"
             type="text"
             :aria-pressed="slide.id === state.slideId"
             @click="activateSlide(slide.id)"
@@ -631,16 +511,29 @@ const immersivePlaybackHint = computed(
               <span class="slide-index">{{ String(index + 1).padStart(2, '0') }}</span>
             </div>
 
-            <div class="slide-thumbnail" :style="resolveSlideThumbnailStyle(slide)">
-              <template v-if="!hasSlideThumbnail(slide.id)">
-                <span class="thumb-line long" />
-                <span class="thumb-line short" />
-                <span class="thumb-dots">
-                  <i />
-                  <i />
-                  <i />
-                </span>
-              </template>
+            <div class="slide-card-body">
+              <div class="slide-thumbnail" :style="resolveSlideThumbnailStyle(slide)">
+                <template v-if="!hasSlideThumbnail(slide.id)">
+                  <span class="thumb-line long" />
+                  <span class="thumb-line short" />
+                  <span class="thumb-dots">
+                    <i />
+                    <i />
+                    <i />
+                  </span>
+                </template>
+              </div>
+              <div class="slide-meta">
+                <strong>{{ slide.name }}</strong>
+                <div class="slide-meta-row">
+                  <span class="slide-progress-text">
+                    {{ slidePlaybackProgressMap[slide.id]?.progressLabel ?? "0/0 步" }}
+                  </span>
+                  <span class="slide-status-text">
+                    {{ slidePlaybackProgressMap[slide.id]?.statusLabel ?? "未播放" }}
+                  </span>
+                </div>
+              </div>
             </div>
           </a-button>
         </div>
@@ -657,14 +550,17 @@ const immersivePlaybackHint = computed(
                 class="preview-actions preview-actions-compact"
                 :can-activate-next-slide="canActivateNextSlide"
                 :can-activate-previous-slide="canActivatePreviousSlide"
+                :can-play-next-step="canPlayNextStep"
                 :can-step-backward="canStepBackward"
                 :has-active-slide="hasActiveSlide"
                 :immersive-toggle-label="immersiveToggleLabel"
+                :is-courseware-completed="isCoursewareCompleted"
                 :is-immersive-playback="isImmersivePlayback"
                 @activate-next-slide="activateRelativeSlide(1)"
                 @activate-previous-slide="activateRelativeSlide(-1)"
                 @play-next-step="playNextStep"
                 @replay-current-slide="replayCurrentSlide"
+                @restart-courseware="restartCourseware"
                 @step-backward="stepBackward"
                 @toggle-immersive-playback="toggleImmersivePlayback"
               />
@@ -687,6 +583,19 @@ const immersivePlaybackHint = computed(
               <a-tag class="preview-slide-position-tag" bordered>{{ slidePositionLabel }}</a-tag>
               <a-tag class="preview-next-trigger-tag" bordered>{{ nextTriggerLabel }}</a-tag>
             </div>
+            <div
+              v-if="!shouldShowInsightStrip && !isImmersivePlayback"
+              class="preview-stage-summary-inline"
+            >
+              <div class="preview-stage-summary-topline">
+                <strong class="courseware-progress-value">{{ coursewareProgressLabel }}</strong>
+                <span class="courseware-progress-copy">{{ coursewareProgressCopy }}</span>
+              </div>
+              <div class="preview-stage-summary-bottomline">
+                <strong class="playback-hint-title">{{ playbackHintTitle }}</strong>
+                <small class="playback-hint-copy">{{ playbackHintCopy }}</small>
+              </div>
+            </div>
             <div v-else class="immersive-playback-hint">
               <a-tag :color="playbackStatusTagColor" bordered>{{ playbackStatusLabel }}</a-tag>
               <span>{{ immersivePlaybackHint }}</span>
@@ -696,9 +605,17 @@ const immersivePlaybackHint = computed(
 
         <div v-if="shouldShowInsightStrip" class="playback-insight-strip">
           <article class="playback-insight-card">
-            <span class="playback-insight-label">页面定位</span>
-            <strong class="preview-slide-position">{{ slidePositionLabel }}</strong>
-            <small>{{ activeSlide?.name ?? "未选择页面" }} · {{ stageSizeLabel }}</small>
+            <span class="playback-insight-label">课件进度</span>
+            <strong class="preview-slide-position courseware-progress-value">
+              {{ coursewareProgressLabel }}
+            </strong>
+            <small class="courseware-progress-copy">{{ coursewareProgressCopy }}</small>
+            <div class="playback-progress-track" aria-hidden="true">
+              <span
+                class="playback-progress-fill"
+                :style="{ width: `${coursewareProgressPercent}%` }"
+              />
+            </div>
           </article>
           <article class="playback-insight-card">
             <span class="playback-insight-label">步骤进度</span>
@@ -742,7 +659,15 @@ const immersivePlaybackHint = computed(
       <PreviewTimelineSidebar
         v-show="!effectiveTimelineCollapsed"
         :completed-step-count="completedStepCount"
+        :is-active-slide="hasActiveSlide"
         :playback-status="state.status"
+        :slide-position-label="slidePositionLabel"
+        :slide-progress-label="
+          activeSlide ? slidePlaybackProgressMap[activeSlide.id]?.progressLabel ?? '0/0 步' : '0/0 步'
+        "
+        :slide-status-label="
+          activeSlide ? slidePlaybackProgressMap[activeSlide.id]?.statusLabel ?? '未播放' : '未播放'
+        "
         :step-index="state.stepIndex"
         :steps="activeSlide?.timeline.steps ?? []"
       />

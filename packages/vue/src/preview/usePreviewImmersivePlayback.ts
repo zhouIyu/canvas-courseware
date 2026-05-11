@@ -20,6 +20,8 @@ export interface UsePreviewImmersivePlaybackOptions {
   onStepBackward: () => void | Promise<void>;
   /** 请求重播当前页。 */
   onReplayCurrentSlide: () => void | Promise<void>;
+  /** 请求重新开始整份课件。 */
+  onRestartCourseware?: () => void | Promise<void>;
   /** 请求切到上一页。 */
   onActivatePreviousSlide: () => void | Promise<void>;
   /** 请求切到下一页。 */
@@ -333,6 +335,17 @@ function handlePrimaryPlaybackShortcut(
   if (event.key === "ArrowLeft" && options.canStepBackward.value) {
     event.preventDefault();
     void options.onStepBackward();
+    return true;
+  }
+
+  if (
+    event.shiftKey &&
+    (event.key === "r" || event.key === "R") &&
+    !event.metaKey &&
+    !event.ctrlKey
+  ) {
+    event.preventDefault();
+    void options.onRestartCourseware?.();
     return true;
   }
 
