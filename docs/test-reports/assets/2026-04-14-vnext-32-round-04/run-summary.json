@@ -1,9 +1,9 @@
 {
-  "baseUrl": "http://127.0.0.1:32173/projects",
+  "baseUrl": "http://127.0.0.1:32174/projects",
   "insertImagePath": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-04-07-vnext-08-round-01/vnext08-sample.png",
   "replaceImagePath": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-04-07-vnext-09-round-01/vnext09-bg-portrait.png",
   "exportedFilePath": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-04-14-vnext-32-round-04/exported-courseware.json",
-  "executedAt": "2026-04-14T10:42:46.495Z",
+  "executedAt": "2026-05-11T03:20:34.270Z",
   "browser": "Google Chrome Headless",
   "chromeExecutablePath": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
   "desktopViewport": {
@@ -13,8 +13,8 @@
   "checks": [
     {
       "id": "insert-image-persists-asset-reference",
-      "projectId": "document-446a30bd-069e-4acf-83d7-4ffb8dcde812",
-      "imageSource": "cw-asset://document-446a30bd-069e-4acf-83d7-4ffb8dcde812__c31ec27d5e09f89a10e926cf5c5a332e",
+      "projectId": "document-923d99bf-8984-4ec2-8e12-5e8bdc169bd0",
+      "imageSource": "cw-asset://document-923d99bf-8984-4ec2-8e12-5e8bdc169bd0__c31ec27d5e09f89a10e926cf5c5a332e",
       "imageAlt": "vnext08-sample.png",
       "usesLocalAssetProtocol": true,
       "assetRecordCount": 1,
@@ -24,8 +24,8 @@
     },
     {
       "id": "replace-image-cleans-up-stale-asset",
-      "previousAssetId": "document-446a30bd-069e-4acf-83d7-4ffb8dcde812__c31ec27d5e09f89a10e926cf5c5a332e",
-      "nextAssetId": "document-446a30bd-069e-4acf-83d7-4ffb8dcde812__ac459bcb71370ffca2588c71aab30898",
+      "previousAssetId": "document-923d99bf-8984-4ec2-8e12-5e8bdc169bd0__c31ec27d5e09f89a10e926cf5c5a332e",
+      "nextAssetId": "document-923d99bf-8984-4ec2-8e12-5e8bdc169bd0__ac459bcb71370ffca2588c71aab30898",
       "assetRecordCount": 1,
       "removedOldAsset": true,
       "latestFileName": "vnext09-bg-portrait.png"
@@ -33,7 +33,7 @@
     {
       "id": "reload-restores-project-after-asset-indirection",
       "titleAfterReload": "VNext-32-D 资产回归课件",
-      "imageSourceAfterReload": "cw-asset://document-446a30bd-069e-4acf-83d7-4ffb8dcde812__ac459bcb71370ffca2588c71aab30898",
+      "imageSourceAfterReload": "cw-asset://document-923d99bf-8984-4ec2-8e12-5e8bdc169bd0__ac459bcb71370ffca2588c71aab30898",
       "stillUsesLocalAssetProtocol": true
     },
     {

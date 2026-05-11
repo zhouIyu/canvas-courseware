@@ -13,6 +13,7 @@ import {
   type RectNode,
   type TextNode,
 } from "@canvas-courseware/core";
+import { loadFabricImageWithRemoteFallback } from "./image-loader";
 
 /** 编辑态控制点的可视尺寸，适当放大以改善缩放控制点的可点击性。 */
 const EDITOR_CONTROL_CORNER_SIZE = 16;
@@ -157,7 +158,7 @@ export async function createFabricImageObject(
   }
 
   try {
-    const object = (await FabricImage.fromURL(node.props.src, {}, {
+    const object = (await loadFabricImageWithRemoteFallback(node.props.src, {
       left: node.x,
       top: node.y,
       angle: node.rotation,

@@ -1,5 +1,6 @@
 import { Canvas, FabricImage } from "fabric";
 import type { ObjectFit, Slide } from "@canvas-courseware/core";
+import { loadFabricImageWithRemoteFallback } from "./image-loader";
 
 /** 便于按需读写 Fabric 画布背景图属性的局部类型。 */
 type CanvasWithBackgroundImage = Canvas & {
@@ -56,18 +57,12 @@ async function createCanvasBackgroundImage(slide: Slide): Promise<FabricImage | 
   }
 
   try {
-    const image = await FabricImage.fromURL(
-      normalizedSource,
-      {
-        crossOrigin: "anonymous",
-      },
-      {
-        originX: "left",
-        originY: "top",
-        selectable: false,
-        evented: false,
-      },
-    );
+    const image = await loadFabricImageWithRemoteFallback(normalizedSource, {
+      originX: "left",
+      originY: "top",
+      selectable: false,
+      evented: false,
+    });
 
     applyBackgroundImagePlacement(
       image,

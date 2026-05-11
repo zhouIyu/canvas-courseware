@@ -14,7 +14,7 @@ import {
 import { loadChromium } from "../shared/playwright-runtime.mjs";
 
 /** 正式项目列表地址。 */
-const BASE_URL = "http://127.0.0.1:32173/projects";
+const BASE_URL = process.env.CW_BASE_URL ?? "http://127.0.0.1:32173/projects";
 
 /** 项目列表在 localStorage 中使用的键名。 */
 const STORAGE_KEY = "canvas-courseware.projects";

@@ -9,7 +9,7 @@ type WorkspaceModeToggleValue = string | number | boolean;
 /** 顶栏导入导出反馈的只读结构。 */
 interface WorkspaceIoFeedback {
   /** 当前反馈语义。 */
-  tone: "success" | "error";
+  tone: "success" | "error" | "warning";
   /** 当前反馈文案。 */
   message: string;
 }
@@ -27,7 +27,7 @@ const props = withDefaults(
     saveStatusTagColor: string;
     /** 保存状态对应的辅助提示。 */
     saveStatusHint: string;
-    /** 最近一次导入导出的反馈。 */
+    /** 最近一次需要在顶栏显式提示用户的反馈。 */
     ioFeedback?: WorkspaceIoFeedback | null;
     /** Arco Upload 使用的 JSON 导入请求处理器。 */
     jsonImportRequest: (option: RequestOption) => Promise<Record<string, never>> | Record<string, never>;

@@ -21,8 +21,21 @@ const AUTO_SAVE_BLOCKED_RETRY_MS = 250;
 /** 自动保存当前被暂缓时的原因枚举。 */
 type AutoSaveBlockReason = "inline-text-editing" | "canvas-transform";
 
-/** 导入导出反馈语义。 */
-type IoFeedbackTone = "success" | "error";
+/** 工作台顶部反馈支持的语义色。 */
+type WorkspaceFeedbackTone = "success" | "error" | "warning";
+
+/** 工作台顶部反馈的来源类型。 */
+type WorkspaceFeedbackKind = "operation" | "asset-hydration" | "thumbnail";
+
+/** 顶部反馈条内部维护的一条结构化消息。 */
+interface WorkspaceFeedbackEntry {
+  /** 当前反馈属于哪一类能力。 */
+  kind: WorkspaceFeedbackKind;
+  /** 当前反馈语义。 */
+  tone: WorkspaceFeedbackTone;
+  /** 当前反馈文案。 */
+  message: string;
+}
 
 /** 当前保存动作的触发来源。 */
 type PersistTrigger = "manual" | "auto" | "import";
@@ -83,13 +96,24 @@ export function useProjectWorkspacePersistence(
   /** 最近一次保存时间。 */
   const lastSavedAt = ref<string | null>(null);
 
-  /** 最近一次导入导出的反馈消息。 */
-  const ioFeedback = ref<{
-    /** 当前反馈语义。 */
-    tone: IoFeedbackTone;
-    /** 当前反馈文案。 */
-    message: string;
-  } | null>(null);
+  /** 最近一次导入导出类反馈。 */
+  const operationFeedback = ref<WorkspaceFeedbackEntry | null>(null);
+
+  /** 最近一次需要保留的资源类反馈。 */
+  const resourceFeedback = ref<WorkspaceFeedbackEntry | null>(null);
+
+  /** 顶部统一展示的反馈，优先展示最新的显式操作结果。 */
+  const ioFeedback = computed(() => {
+    const feedback = operationFeedback.value ?? resourceFeedback.value;
+    if (!feedback) {
+      return null;
+    }
+
+    return {
+      tone: feedback.tone,
+      message: feedback.message,
+    };
+  });
 
   /** 自动保存计时器。 */
   let saveTimer: ReturnType<typeof setTimeout> | null = null;
@@ -152,6 +176,47 @@ export function useProjectWorkspacePersistence(
     ...context,
   });
 
+  /** 读取当前工作台真正对应的活动页 id，供缩略图告警补齐上下文。 */
+  const resolveCurrentSlideId = () =>
+    editorSnapshot.value?.activeSlideId ?? documentModel.value?.slides[0]?.id ?? null;
+
+  /** 写入一条操作类反馈，供导入、导出等显式动作复用。 */
+  const setOperationFeedback = (
+    tone: WorkspaceFeedbackTone,
+    message: string,
+  ) => {
+    operationFeedback.value = {
+      kind: "operation",
+      tone,
+      message,
+    };
+  };
+
+  /** 写入一条资源类反馈，避免缺失资产或缩略图失败时继续静默。 */
+  const setResourceFeedback = (
+    kind: Exclude<WorkspaceFeedbackKind, "operation">,
+    message: string,
+  ) => {
+    resourceFeedback.value = {
+      kind,
+      tone: "warning",
+      message,
+    };
+  };
+
+  /** 按需清理资源类反馈，避免旧警告在问题消失后继续残留。 */
+  const clearResourceFeedback = (
+    kind?: Exclude<WorkspaceFeedbackKind, "operation">,
+  ) => {
+    if (!resourceFeedback.value) {
+      return;
+    }
+
+    if (!kind || resourceFeedback.value.kind === kind) {
+      resourceFeedback.value = null;
+    }
+  };
+
   /** 把当前页面状态拼成一条可保存的项目记录。 */
   const buildProjectRecord = () => buildProjectWorkspaceRecord({
     projectId: options.projectId.value,
@@ -163,8 +228,41 @@ export function useProjectWorkspacePersistence(
 
   /** 保存前主动向编辑器拉取当前页截图，保证当前页封面与最新画布保持一致。 */
   const syncActiveSlideThumbnailBeforeSave = async () => {
-    const captured = await options.captureActiveSlideThumbnail();
-    slideThumbnails.value = mergeCapturedSlideThumbnail(slideThumbnails.value, captured);
+    try {
+      const captured = await options.captureActiveSlideThumbnail();
+      if (!captured) {
+        if (resolveCurrentSlideId()) {
+          setResourceFeedback(
+            "thumbnail",
+            "当前页面已保存，但本页资源暂时无法生成封面截图，项目列表中的缩略图可能不会立即更新。",
+          );
+          workspaceDiagnosticLogger.warn({
+            event: "project.thumbnail.capture.skipped",
+            message: "保存前未能拿到当前页缩略图，已保留上一版封面继续保存项目",
+            context: buildWorkspaceDiagnosticContext({
+              slideId: resolveCurrentSlideId(),
+            }),
+          });
+        }
+        return;
+      }
+
+      clearResourceFeedback("thumbnail");
+      slideThumbnails.value = mergeCapturedSlideThumbnail(slideThumbnails.value, captured);
+    } catch (error) {
+      setResourceFeedback(
+        "thumbnail",
+        "当前页面已保存，但封面截图更新失败，项目列表中的缩略图可能不会立即更新。",
+      );
+      workspaceDiagnosticLogger.warn({
+        event: "project.thumbnail.capture.failed",
+        message: "保存前导出当前页缩略图失败，已跳过封面更新继续保存项目",
+        context: buildWorkspaceDiagnosticContext({
+          slideId: resolveCurrentSlideId(),
+        }),
+        error,
+      });
+    }
   };
 
   /** 真正执行一次自动保存；若仍被连续编辑阻塞，则延后重试。 */
@@ -301,7 +399,8 @@ export function useProjectWorkspacePersistence(
     isLoading.value = true;
     isProjectMissing.value = false;
     isHydrating.value = true;
-    ioFeedback.value = null;
+    operationFeedback.value = null;
+    clearResourceFeedback();
     clearSaveTimer();
 
     const projectRecord = projectRepository.get(options.projectId.value);
@@ -318,13 +417,21 @@ export function useProjectWorkspacePersistence(
       return;
     }
 
-    const hydratedDocument = await hydrateWorkspaceProjectDocument(projectRecord, {
+    const hydrationResult = await hydrateWorkspaceProjectDocument(projectRecord, {
       buildDiagnosticContext: buildWorkspaceDiagnosticContext,
       diagnosticLogger: workspaceDiagnosticLogger,
     });
+    if (hydrationResult.missingAssetIds.length > 0) {
+      setResourceFeedback(
+        "asset-hydration",
+        `项目已恢复，但有 ${hydrationResult.missingAssetIds.length} 个本地图片资源缺失，相关资源已保留原始引用。`,
+      );
+    } else {
+      clearResourceFeedback("asset-hydration");
+    }
 
     projectTitle.value = projectRecord.title;
-    documentModel.value = hydratedDocument;
+    documentModel.value = hydrationResult.document;
     slideThumbnails.value = projectRecord.slideThumbnails;
     hydrateWorkspaceState(projectRecord);
     editorSnapshot.value = null;
@@ -346,11 +453,8 @@ export function useProjectWorkspacePersistence(
   };
 
   /** 记录一条导入导出反馈，供顶部状态区展示。 */
-  const setIoFeedback = (tone: IoFeedbackTone, message: string) => {
-    ioFeedback.value = {
-      tone,
-      message,
-    };
+  const setIoFeedback = (tone: WorkspaceFeedbackTone, message: string) => {
+    setOperationFeedback(tone, message);
   };
 
   /** 导出当前项目的标准 JSON。 */

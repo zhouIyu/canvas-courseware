@@ -1,0 +1,62 @@
+{
+  "document": {
+    "version": "1.0.0",
+    "meta": {
+      "id": "document-60864097-3253-4b07-8011-d5e79bfaecf8",
+      "title": "VNext-36-D 资源链路回归课件",
+      "createdAt": "2026-05-11T03:19:08.606Z",
+      "updatedAt": "2026-05-11T03:19:14.749Z"
+    },
+    "slides": [
+      {
+        "id": "slide-c53a1100-d9b4-43cf-9197-c21a12f73013",
+        "name": "第1页",
+        "size": {
+          "width": 1280,
+          "height": 720
+        },
+        "background": {
+          "fill": "#FFFFFF",
+          "image": {
+            "src": "http://127.0.0.1:32174/test-assets/vnext-36-remote-grid.svg",
+            "fit": "cover"
+          }
+        },
+        "nodes": [
+          {
+            "id": "node-0d9a9d7d-514c-4f0c-a968-b4d0c5f2236b",
+            "type": "image",
+            "name": "vnext08-sample",
+            "x": 480,
+            "y": 270,
+            "width": 320,
+            "height": 180,
+            "rotation": 0,
+            "opacity": 1,
+            "visible": true,
+            "locked": false,
+            "props": {
+              "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUAAAAC0CAIAAABqhmJGAAACM0lEQVR42u3TwQ0AEBBFQRU46k55ilMFTUiWNT/vLlmZ0vqS9GjFCSSAJQEsCWAJYEkASwJYEsASwJIAlgSwBLAkgCUBLAlgCWBJAEsCWBLAEsCSAJYEsASwJIAlASwJYAlgSQBLAlgSwBLAkgCWBLAEsCSAJQEsCWAJYEkASwJYAjjsbbM0A9gMYIDNAAbYDGCADWCAzQAG2AxggM0ABtgABtgMYIDNAAbYAAbYDGCAzQAG2AxggA1ggM0ABtgMYIDNADYDGGAzgAE2AxhgAxhgM4ABNgMYYDOAATaAATYDGGAzgAE2A9gMYIDNAAbYDGCADWCAzQAG2AxggM0ABtgABtgMYIDNAAbYAAbYDGCAzQAG2AxggA1ggM0ABtgMYIDNAAbYAD4AuI4ZlV+3NItCBLAZwAAbwACbAQywGcAAmwEMsAEMsBnAAJsBDLAZwAAbwACbAQywGcAAG8AAmwEMsBnAAJsBDLABDLAZwACbAQywGcBmAANsBjDAZgADbAADbAYwwGYAA2wGMMAGMMBmAANsBjDAZgCbAQywGcAAmwEMsAEMsBnAAJsBDLAZwAAbwACbAQywGcAAG8AAmwEMsBnAAJsBDLABDLAZwACbAQyw2feAJQEsASwJYEkASwJYAlgSwJIAlgSwBLAkgCUBLAEsCWBJAEsCWAJYEsCSAJYEsASwJIAlASwBLAlgSQBLAlgCWBLAkgCWAHYFCWBJAEsCWAJYEsCSAJYEsASwpBva6Uq2pjoG1kMAAAAASUVORK5CYII=",
+              "objectFit": "contain",
+              "alt": "vnext08-sample.png"
+            }
+          }
+        ],
+        "timeline": {
+          "steps": [],
+          "animations": []
+        }
+      }
+    ]
+  },
+  "activeSlideId": "slide-c53a1100-d9b4-43cf-9197-c21a12f73013",
+  "selection": {
+    "slideId": "slide-c53a1100-d9b4-43cf-9197-c21a12f73013",
+    "nodeIds": []
+  },
+  "playback": {
+    "slideId": "slide-c53a1100-d9b4-43cf-9197-c21a12f73013",
+    "stepIndex": 0,
+    "status": "idle"
+  }
+}

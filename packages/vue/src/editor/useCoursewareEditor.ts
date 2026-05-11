@@ -8,6 +8,8 @@ import {
   EditorController,
   type CoursewareDocument,
   type EditorSnapshot,
+  isCoursewareRemoteImageSource,
+  type Slide,
 } from "@canvas-courseware/core";
 import {
   FabricEditorAdapter,
@@ -45,6 +47,21 @@ export interface UseCoursewareEditorOptions {
   onContextMenuRequest?: (payload: FabricEditorContextMenuRequest) => void;
   /** 外部注入的统一诊断 logger。 */
   diagnosticLogger?: DiagnosticLogger | null;
+}
+
+/** 汇总当前页面中的远程图片来源数量，帮助缩略图失败时快速判断是否受浏览器安全策略影响。 */
+function resolveSlideRemoteSourceSummary(slide: Slide | undefined) {
+  const remoteNodeImageCount =
+    slide?.nodes.filter(
+      (node) => node.type === "image" && isCoursewareRemoteImageSource(node.props.src),
+    ).length ?? 0;
+  const hasRemoteBackgroundImage = isCoursewareRemoteImageSource(slide?.background.image?.src);
+
+  return {
+    remoteNodeImageCount,
+    hasRemoteBackgroundImage,
+    remoteSourceCount: remoteNodeImageCount + Number(hasRemoteBackgroundImage),
+  };
 }
 
 /**
@@ -97,6 +114,7 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
       event: string;
       message: string;
       context?: DiagnosticLogContext;
+      error?: unknown;
     },
   ) => {
     if (!options.diagnosticLogger) {
@@ -300,11 +318,26 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
       return null;
     }
 
-    return canvas.toDataURL({
-      format: "jpeg",
-      quality: THUMBNAIL_CAPTURE_QUALITY,
-      multiplier: THUMBNAIL_CAPTURE_SCALE,
-    });
+    try {
+      return canvas.toDataURL({
+        format: "jpeg",
+        quality: THUMBNAIL_CAPTURE_QUALITY,
+        multiplier: THUMBNAIL_CAPTURE_SCALE,
+      });
+    } catch (error) {
+      const remoteSourceSummary = resolveSlideRemoteSourceSummary(activeSlide.value);
+
+      writeDiagnosticLog("warn", {
+        event: "editor.thumbnail.capture.failed",
+        message:
+          remoteSourceSummary.remoteSourceCount > 0
+            ? "当前页包含远程图片资源，缩略图导出失败，已跳过封面更新"
+            : "当前页缩略图导出失败，已跳过封面更新",
+        context: buildDiagnosticContext(snapshot.value, remoteSourceSummary),
+        error,
+      });
+      return null;
+    }
   };
 
   /** 读取当前仍需暂缓自动保存的编辑态原因，供应用层统一调度保存时机。 */

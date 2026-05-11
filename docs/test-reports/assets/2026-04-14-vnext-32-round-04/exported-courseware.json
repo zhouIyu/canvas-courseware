@@ -1,12 +1,14 @@
 {
   "version": "1.0.0",
   "meta": {
-    "id": "document-446a30bd-069e-4acf-83d7-4ffb8dcde812",
-    "title": "VNext-32-D 资产回归课件"
+    "id": "document-923d99bf-8984-4ec2-8e12-5e8bdc169bd0",
+    "title": "VNext-32-D 资产回归课件",
+    "createdAt": "2026-05-11T03:20:36.469Z",
+    "updatedAt": "2026-05-11T03:20:45.983Z"
   },
   "slides": [
     {
-      "id": "slide-59481310-5dd1-4e6d-84d6-b2d2736a7698",
+      "id": "slide-b1cd4e6b-a1d1-4f18-9eb4-e8265a35ad09",
       "name": "第1页",
       "size": {
         "width": 1280,
@@ -18,7 +20,7 @@
       },
       "nodes": [
         {
-          "id": "node-c0b6d435-0de4-47f2-a820-2ca03435861f",
+          "id": "node-2f0f49a4-a2f7-4ecb-88d0-44e9e054f6f9",
           "type": "image",
           "name": "vnext09-bg-portrait",
           "x": 480,

@@ -18,6 +18,16 @@ export interface WorkspacePersistenceAssetDiagnostics {
   diagnosticLogger: DiagnosticLogger;
 }
 
+/** 项目加载阶段的资源恢复结果，供工作台同时刷新文档与用户提示。 */
+export interface WorkspaceProjectHydrationResult {
+  /** 已恢复为当前运行态可直接消费的文档。 */
+  document: CoursewareDocument;
+  /** 当前文档里引用但仓库中已经缺失的本地资产 id。 */
+  missingAssetIds: string[];
+  /** 本轮成功恢复的本地资产来源数量。 */
+  restoredAssetCount: number;
+}
+
 /** 计算一次保存后已经不再被项目引用的旧资产 id，供后台异步清理使用。 */
 export function resolveRemovedWorkspaceAssetIds(
   previousDocument: CoursewareDocument | null | undefined,
@@ -60,7 +70,7 @@ export async function cleanupRemovedWorkspaceAssets(
 export async function hydrateWorkspaceProjectDocument(
   projectRecord: ProjectRecord,
   diagnostics: WorkspacePersistenceAssetDiagnostics,
-): Promise<CoursewareDocument> {
+): Promise<WorkspaceProjectHydrationResult> {
   try {
     const hydrationResult = await hydrateProjectDocumentAssetSources(
       projectRecord.document,
@@ -78,7 +88,7 @@ export async function hydrateWorkspaceProjectDocument(
       });
     }
 
-    return hydrationResult.document;
+    return hydrationResult;
   } catch (error) {
     diagnostics.diagnosticLogger.error({
       event: "project.asset.hydrate.failed",
@@ -87,7 +97,11 @@ export async function hydrateWorkspaceProjectDocument(
       error,
     });
 
-    return projectRecord.document;
+    return {
+      document: projectRecord.document,
+      missingAssetIds: [],
+      restoredAssetCount: 0,
+    };
   }
 }
 

@@ -1,0 +1,83 @@
+[
+  {
+    "id": "diag-1778469558953-2",
+    "scope": "workspace",
+    "event": "project.autosave.scheduled",
+    "message": "已重新安排自动保存",
+    "level": "debug",
+    "timestamp": "2026-05-11T03:19:18.953Z",
+    "context": {
+      "projectId": "document-60864097-3253-4b07-8011-d5e79bfaecf8",
+      "activeSlideId": "slide-c53a1100-d9b4-43cf-9197-c21a12f73013",
+      "workspaceMode": "edit",
+      "delayMs": 800
+    }
+  },
+  {
+    "id": "diag-1778469559756-3",
+    "scope": "workspace",
+    "event": "editor.thumbnail.capture.failed",
+    "message": "当前页包含远程图片资源，缩略图导出失败，已跳过封面更新",
+    "level": "warn",
+    "timestamp": "2026-05-11T03:19:19.756Z",
+    "context": {
+      "projectId": "document-60864097-3253-4b07-8011-d5e79bfaecf8",
+      "activeSlideId": "slide-c53a1100-d9b4-43cf-9197-c21a12f73013",
+      "remoteNodeImageCount": 1,
+      "hasRemoteBackgroundImage": true,
+      "remoteSourceCount": 2
+    },
+    "error": {
+      "name": "SecurityError",
+      "message": "Failed to execute 'toDataURL' on 'HTMLCanvasElement': Tainted canvases may not be exported.",
+      "stack": "SecurityError: Failed to execute 'toDataURL' on 'HTMLCanvasElement': Tainted canvases may not be exported.\n    at yt (http://127.0.0.1:32174/node_modules/.vite/deps/fabric.js?v=4cb06920:574:29)\n    at In.toDataURL (http://127.0.0.1:32174/node_modules/.vite/deps/fabric.js?v=4cb06920:1050:12)\n    at Object.captureActiveSlideThumbnail [as captureActiveSlideThumbnailDataUrl] (http://127.0.0.1:32174/@fs/Users/admin/MyDemo/canvas-courseware/packages/vue/src/editor/useCoursewareEditor.ts:188:21)\n    at async Proxy.captureActiveSlideThumbnail (http://127.0.0.1:32174/@fs/Users/admin/MyDemo/canvas-courseware/packages/vue/src/editor/useCoursewareEditorShellActions.ts:33:23)\n    at async Object.captureActiveSlideThumbnail (http://127.0.0.1:32174/src/views/ProjectWorkspacePage.vue:60:48)\n    at async syncActiveSlideThumbnailBeforeSave (http://127.0.0.1:32174/src/workspace/useProjectWorkspacePersistence.ts:116:24)\n    at async persistProject (http://127.0.0.1:32174/src/workspace/useProjectWorkspacePersistence.ts:162:5)\n    at async flushAutoSave (http://127.0.0.1:32174/src/workspace/useProjectWorkspacePersistence.ts:159:5)"
+    }
+  },
+  {
+    "id": "diag-1778469559759-4",
+    "scope": "workspace",
+    "event": "project.thumbnail.capture.skipped",
+    "message": "保存前未能拿到当前页缩略图，已保留上一版封面继续保存项目",
+    "level": "warn",
+    "timestamp": "2026-05-11T03:19:19.759Z",
+    "context": {
+      "projectId": "document-60864097-3253-4b07-8011-d5e79bfaecf8",
+      "activeSlideId": "slide-c53a1100-d9b4-43cf-9197-c21a12f73013",
+      "workspaceMode": "edit",
+      "slideId": "slide-c53a1100-d9b4-43cf-9197-c21a12f73013"
+    }
+  },
+  {
+    "id": "diag-1778469559761-5",
+    "scope": "workspace",
+    "event": "project.save.started",
+    "message": "已触发自动保存",
+    "level": "info",
+    "timestamp": "2026-05-11T03:19:19.761Z",
+    "context": {
+      "projectId": "document-60864097-3253-4b07-8011-d5e79bfaecf8",
+      "activeSlideId": "slide-c53a1100-d9b4-43cf-9197-c21a12f73013",
+      "workspaceMode": "edit",
+      "trigger": "auto",
+      "slideCount": 1
+    }
+  },
+  {
+    "id": "diag-1778469559764-6",
+    "scope": "workspace",
+    "event": "project.save.completed",
+    "message": "自动保存成功",
+    "level": "info",
+    "timestamp": "2026-05-11T03:19:19.764Z",
+    "context": {
+      "projectId": "document-60864097-3253-4b07-8011-d5e79bfaecf8",
+      "activeSlideId": "slide-c53a1100-d9b4-43cf-9197-c21a12f73013",
+      "workspaceMode": "edit",
+      "trigger": "auto",
+      "updatedAt": "2026-05-11T03:19:19.763Z",
+      "assetCount": 0,
+      "rewrittenAssetCount": 0,
+      "slideCount": 1
+    }
+  }
+]

@@ -1,0 +1,51 @@
+{
+  "assetDir": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-05-11-vnext-36-d-round-01",
+  "baseUrl": "http://127.0.0.1:32174/projects",
+  "executedAt": "2026-05-11T03:19:06.146Z",
+  "exportedFilePath": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-05-11-vnext-36-d-round-01/exported-courseware.json",
+  "noCorsRemoteImageUrl": "http://127.0.0.1:56057/remote.png",
+  "projectTitle": "VNext-36-D 资源链路回归课件",
+  "sameOriginRemoteBackgroundUrl": "http://127.0.0.1:32174/test-assets/vnext-36-remote-grid.svg",
+  "checks": [
+    {
+      "id": "mixed-source-storage",
+      "backgroundSource": "http://127.0.0.1:32174/test-assets/vnext-36-remote-grid.svg",
+      "imageSource": "cw-asset://document-60864097-3253-4b07-8011-d5e79bfaecf8__c31ec27d5e09f89a10e926cf5c5a332e",
+      "usesRemoteBackgroundUrl": true,
+      "usesLocalAssetProtocol": true
+    },
+    {
+      "id": "mixed-source-export",
+      "backgroundSource": "http://127.0.0.1:32174/test-assets/vnext-36-remote-grid.svg",
+      "imageSource": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUAAAAC0CAIAAABqhmJGAAACM0lEQVR42u3TwQ0AEBBFQRU46k55ilMFTUiWNT/vLlmZ0vqS9GjFCSSAJQEsCWAJYEkASwJYEsASwJIAlgSwBLAkgCUBLAlgCWBJAEsCWBLAEsCSAJYEsASwJIAlASwJYAlgSQBLAlgSwBLAkgCWBLAEsCSAJQEsCWAJYEkASwJYAjjsbbM0A9gMYIDNAAbYDGCADWCAzQAG2AxggM0ABtgABtgMYIDNAAbYAAbYDGCAzQAG2AxggA1ggM0ABtgMYIDNADYDGGAzgAE2AxhgAxhgM4ABNgMYYDOAATaAATYDGGAzgAE2A9gMYIDNAAbYDGCADWCAzQAG2AxggM0ABtgABtgMYIDNAAbYAAbYDGCAzQAG2AxggA1ggM0ABtgMYIDNAAbYAD4AuI4ZlV+3NItCBLAZwAAbwACbAQywGcAAmwEMsAEMsBnAAJsBDLAZwAAbwACbAQywGcAAG8AAmwEMsBnAAJsBDLABDLAZwACbAQywGcBmAANsBjDAZgADbAADbAYwwGYAA2wGMMAGMMBmAANsBjDAZgCbAQywGcAAmwEMsAEMsBnAAJsBDLAZwAAbwACbAQywGcAAG8AAmwEMsBnAAJsBDLABDLAZwACbAQyw2feAJQEsASwJYEkASwJYAlgSwJIAlgSwBLAkgCUBLAEsCWBJAEsCWAJYEsCSAJYEsASwJIAlASwBLAlgSQBLAlgCWBLAkgCWAHYFCWBJAEsCWAJYEsCSAJYEsASwpBva6Uq2pjoG1kMAAAAASUVORK5CYII=",
+      "keepsRemoteBackgroundUrl": true,
+      "convertsLocalAssetToDataUrl": true
+    },
+    {
+      "id": "runtime-recovery-after-reload",
+      "runtimeBackgroundSource": "http://127.0.0.1:32174/test-assets/vnext-36-remote-grid.svg",
+      "runtimeImageSource": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUAAAAC0CAIAAABqhmJGAAACM0lEQVR42u3TwQ0AEBBFQRU46k55ilMFTUiWNT/vLlmZ0vqS9GjFCSSAJQEsCWAJYEkASwJYEsASwJIAlgSwBLAkgCUBLAlgCWBJAEsCWBLAEsCSAJYEsASwJIAlASwJYAlgSQBLAlgSwBLAkgCWBLAEsCSAJQEsCWAJYEkASwJYAjjsbbM0A9gMYIDNAAbYDGCADWCAzQAG2AxggM0ABtgABtgMYIDNAAbYAAbYDGCAzQAG2AxggA1ggM0ABtgMYIDNADYDGGAzgAE2AxhgAxhgM4ABNgMYYDOAATaAATYDGGAzgAE2A9gMYIDNAAbYDGCADWCAzQAG2AxggM0ABtgABtgMYIDNAAbYAAbYDGCAzQAG2AxggA1ggM0ABtgMYIDNAAbYAD4AuI4ZlV+3NItCBLAZwAAbwACbAQywGcAAmwEMsAEMsBnAAJsBDLAZwAAbwACbAQywGcAAG8AAmwEMsBnAAJsBDLABDLAZwACbAQywGcBmAANsBjDAZgADbAADbAYwwGYAA2wGMMAGMMBmAANsBjDAZgCbAQywGcAAmwEMsAEMsBnAAJsBDLAZwAAbwACbAQywGcAAG8AAmwEMsBnAAJsBDLABDLAZwACbAQyw2feAJQEsASwJYEkASwJYAlgSwJIAlgSwBLAkgCUBLAEsCWBJAEsCWAJYEsCSAJYEsASwJIAlASwBLAlgSQBLAlgCWBLAkgCWAHYFCWBJAEsCWAJYEsCSAJYEsASwpBva6Uq2pjoG1kMAAAAASUVORK5CYII=",
+      "keepsRemoteBackgroundUrl": true,
+      "hydratesLocalAssetToDataUrl": true
+    },
+    {
+      "id": "thumbnail-warning-feedback",
+      "warningText": "当前页面已保存，但本页资源暂时无法生成封面截图，项目列表中的缩略图可能不会立即更新。",
+      "savedImageSource": "http://127.0.0.1:56057/remote.png",
+      "diagnosticEvents": [
+        "project.autosave.scheduled",
+        "editor.thumbnail.capture.failed",
+        "project.thumbnail.capture.skipped",
+        "project.save.started",
+        "project.save.completed"
+      ],
+      "hasEditorThumbnailFailure": true,
+      "hasProjectThumbnailSkip": true
+    }
+  ],
+  "consoleErrors": [
+    "Access to image at 'http://127.0.0.1:56057/remote.png' from origin 'http://127.0.0.1:32174' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+    "Failed to load resource: net::ERR_FAILED"
+  ],
+  "pageErrors": []
+}
