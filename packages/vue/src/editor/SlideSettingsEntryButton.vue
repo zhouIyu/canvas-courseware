@@ -48,9 +48,12 @@ const handleOpen = () => {
 
 <style scoped>
 .slide-settings-entry {
-  width: 36px;
-  height: 36px;
-  border-radius: 999px;
+  width: 32px !important;
+  min-width: 32px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  padding: 0;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.94);
   box-shadow:
     0 10px 24px rgba(15, 23, 42, 0.08),
@@ -64,6 +67,6 @@ const handleOpen = () => {
 }
 
 .slide-settings-entry:deep(.arco-btn-icon) {
-  font-size: 18px;
+  font-size: 24px;
 }
 </style>

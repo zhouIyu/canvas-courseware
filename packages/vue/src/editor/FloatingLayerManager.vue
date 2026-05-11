@@ -522,7 +522,6 @@ watch(
     <a-button
       class="floating-layer-manager__trigger"
       :aria-label="isExpanded ? '收起图层管理' : '展开图层管理'"
-      shape="circle"
       size="small"
       type="outline"
       @click="toggleExpanded"

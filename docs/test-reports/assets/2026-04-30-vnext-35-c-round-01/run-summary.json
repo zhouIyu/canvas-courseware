@@ -1,6 +1,6 @@
 {
-  "baseUrl": "http://127.0.0.1:32174/projects",
-  "executedAt": "2026-05-09T10:38:17.132Z",
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-05-11T10:47:17.582Z",
   "desktopViewport": {
     "width": 1440,
     "height": 900
@@ -14,14 +14,14 @@
         "自动收口"
       ],
       "summaryTexts": [
-        "页面点击显示对象 · 标题文案 · 淡入",
-        "对象点击触发 插图卡片显示对象 · 备注气泡 · 上滑出现",
-        "自动触发延迟 900ms隐藏对象 · 插图卡片播放动画 · 标题文案 · 淡入"
+        "页面点击·1 个动作",
+        "点击 插图卡片·1 个动作",
+        "自动触发 · 900ms 后·2 个动作"
       ]
     },
     {
       "id": "collapse-expand",
-      "firstCollapsedSummary": "页面点击显示对象 · 标题文案 · 淡入"
+      "firstCollapsedSummary": "页面点击·1 个动作"
     },
     {
       "id": "quick-create-after",

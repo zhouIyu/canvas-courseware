@@ -309,6 +309,21 @@ async function readTimelineSummaryTexts(page) {
 }
 
 /**
+ * 打开某个步骤卡片的“更多操作”菜单并执行指定动作。
+ *
+ * @param {import("playwright").Page} page
+ * @param {import("playwright").Locator} stepCard
+ * @param {string} actionLabel
+ * @returns {Promise<void>}
+ */
+async function clickTimelineStepMenuAction(page, stepCard, actionLabel) {
+  await stepCard.getByRole("button", { name: "更多步骤操作" }).click();
+  const menuOption = page.locator(".arco-dropdown-option").filter({ hasText: actionLabel }).first();
+  await menuOption.waitFor();
+  await menuOption.click();
+}
+
+/**
  * 读取当前项目在本地存储里的完整 timeline 步骤列表。
  *
  * @param {import("playwright").Page} page
@@ -428,20 +443,18 @@ try {
   const initialSummaryTexts = await readTimelineSummaryTexts(page);
   assertOrThrow(
     initialSummaryTexts[0]?.includes("页面点击") &&
-      initialSummaryTexts[0]?.includes("显示对象 · 标题文案 · 淡入"),
+      initialSummaryTexts[0]?.includes("1 个动作"),
     `步骤 1 摘要异常：${initialSummaryTexts[0] ?? "缺失"}`,
   );
   assertOrThrow(
-    initialSummaryTexts[1]?.includes("对象点击") &&
-      initialSummaryTexts[1]?.includes("触发 插图卡片") &&
-      initialSummaryTexts[1]?.includes("显示对象 · 备注气泡 · 上滑出现"),
+    initialSummaryTexts[1]?.includes("点击 插图卡片") &&
+      initialSummaryTexts[1]?.includes("1 个动作"),
     `步骤 2 摘要异常：${initialSummaryTexts[1] ?? "缺失"}`,
   );
   assertOrThrow(
     initialSummaryTexts[2]?.includes("自动触发") &&
-      initialSummaryTexts[2]?.includes("延迟 900ms") &&
-      initialSummaryTexts[2]?.includes("隐藏对象 · 插图卡片") &&
-      initialSummaryTexts[2]?.includes("播放动画 · 标题文案 · 淡入"),
+      initialSummaryTexts[2]?.includes("900ms 后") &&
+      initialSummaryTexts[2]?.includes("2 个动作"),
     `步骤 3 摘要异常：${initialSummaryTexts[2] ?? "缺失"}`,
   );
 
@@ -468,7 +481,7 @@ try {
   );
   assertOrThrow(
     firstCollapsedSummary.includes("页面点击") &&
-      firstCollapsedSummary.includes("显示对象 · 标题文案 · 淡入"),
+      firstCollapsedSummary.includes("1 个动作"),
     `步骤折叠后摘要丢失：${firstCollapsedSummary}`,
   );
 
@@ -493,7 +506,7 @@ try {
 
   logStep("verify quick create after current step");
   const secondStepCard = page.locator(".timeline-panel .step-card").nth(1);
-  await secondStepCard.getByRole("button", { name: "后插一步" }).click();
+  await clickTimelineStepMenuAction(page, secondStepCard, "后插一步");
   await waitForSaved(page);
 
   const stepsAfterQuickCreate = await readPersistedTimelineSteps(page, projectId);
@@ -512,9 +525,8 @@ try {
 
   const summaryAfterQuickCreate = await readTimelineSummaryTexts(page);
   assertOrThrow(
-    summaryAfterQuickCreate[2]?.includes("对象点击") &&
-      summaryAfterQuickCreate[2]?.includes("触发 插图卡片") &&
-      summaryAfterQuickCreate[2]?.includes("显示对象 · 备注气泡 · 上滑出现"),
+    summaryAfterQuickCreate[2]?.includes("点击 插图卡片") &&
+      summaryAfterQuickCreate[2]?.includes("1 个动作"),
     `后插一步后的摘要异常：${summaryAfterQuickCreate[2] ?? "缺失"}`,
   );
 
@@ -526,7 +538,7 @@ try {
 
   logStep("verify duplicate step remains available");
   const duplicateSourceCard = page.locator(".timeline-panel .step-card").first();
-  await duplicateSourceCard.getByRole("button", { name: "复制" }).click();
+  await clickTimelineStepMenuAction(page, duplicateSourceCard, "复制");
   await waitForSaved(page);
 
   const stepsAfterDuplicate = await readPersistedTimelineSteps(page, projectId);

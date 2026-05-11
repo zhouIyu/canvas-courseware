@@ -1,0 +1,63 @@
+{
+  "assetDir": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-05-11-vnext-37-round-03",
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-05-11T10:49:53.393Z",
+  "checks": [
+    {
+      "id": "edit-toolbar-metrics",
+      "metrics": {
+        "slideSettingsButtonRect": {
+          "width": 32,
+          "height": 32
+        },
+        "layerTriggerButtonRect": {
+          "width": 32,
+          "height": 32
+        },
+        "slideSettingsIconSize": 24,
+        "layerTriggerIconSize": 24,
+        "viewportControlsRect": {
+          "width": 271.64,
+          "height": 46
+        },
+        "zoomButtons": [
+          "",
+          "",
+          "100%",
+          ""
+        ],
+        "zoomButtonCount": 4,
+        "zoomTagText": "适配 92%",
+        "statusTags": [
+          "编辑模式",
+          "第 1/1 页"
+        ]
+      }
+    },
+    {
+      "id": "preview-toolbar-metrics",
+      "metrics": {
+        "toolbarExists": true,
+        "toolbarRect": {
+          "width": 484.34,
+          "height": 46
+        },
+        "zoomButtons": [
+          "",
+          "",
+          "100%",
+          ""
+        ],
+        "zoomButtonCount": 4,
+        "zoomTagText": "适配 100%",
+        "statusTags": [
+          "已完成",
+          "第 1 / 1 页",
+          "无"
+        ]
+      }
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

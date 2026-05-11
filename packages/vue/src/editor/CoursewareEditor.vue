@@ -664,6 +664,7 @@ defineExpose({
           :selected-node-ids="snapshot.selection.nodeIds"
           :set-canvas-element="handleEditorCanvasElementChange"
           :slide-index="activeSlideIndex"
+          :slide-count="slideCount"
           @add-rect="addRect"
           @add-text="addText"
           @align-layers="handleLayerAlign"

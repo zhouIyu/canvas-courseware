@@ -101,6 +101,8 @@ const props = withDefaults(
     selectedNodeIds?: string[];
     /** 当前激活页的 1-based 页序。 */
     slideIndex?: number | null;
+    /** 当前文档的页面总数，用于回显编辑态位置信息。 */
+    slideCount?: number | null;
   }>(),
   {
     activeSlide: null,
@@ -109,6 +111,7 @@ const props = withDefaults(
     nodeTimelineSummaryMap: () => ({}),
     selectedNodeIds: () => [],
     slideIndex: null,
+    slideCount: null,
   },
 );
 
@@ -257,6 +260,15 @@ const {
 const stageZoomLabel = computed(() =>
   isFitZoom.value ? `适配 ${scalePercent.value}%` : `${scalePercent.value}%`,
 );
+
+/** 当前编辑态工具区里展示的页面位置信息。 */
+const stageSlidePositionLabel = computed(() => {
+  if (!props.slideIndex || !props.slideCount) {
+    return "未选择页面";
+  }
+
+  return `第 ${props.slideIndex}/${props.slideCount} 页`;
+});
 
 /** 把视口坐标换算成工作区内的绝对定位，供文本浮层直接挂载。 */
 const textToolStyle = computed<CSSProperties>(() => {
@@ -503,25 +515,27 @@ defineExpose({
 <template>
   <section ref="workspaceShellRef" class="workspace-shell panel-shell">
     <div class="stage-floating-tools">
-      <SlideSettingsEntryButton
-        :slide-index="slideIndex"
-        @open="emit('open-slide-settings')"
-      />
+      <div class="stage-floating-tools__group stage-floating-tools__group--tools">
+        <SlideSettingsEntryButton
+          :slide-index="slideIndex"
+          @open="emit('open-slide-settings')"
+        />
 
-      <FloatingLayerManager
-        :nodes="activeSlide?.nodes ?? []"
-        :node-timeline-summary-map="nodeTimelineSummaryMap"
-        :selected-node-ids="selectedNodeIds"
-        @select="emit('select-layer', $event)"
-        @update-node="handleFloatingLayerNodeUpdate"
-        @reorder="handleFloatingLayerReorder"
-        @reorder-to-index="emit('reorder-layer-to-index', $event)"
-        @align="emit('align-layers', $event)"
-        @copy-selection="emit('copy-selection')"
-        @delete-selection="emit('delete-selection')"
-        @distribute="emit('distribute-layers', $event)"
-        @duplicate-selection="emit('duplicate-selection')"
-      />
+        <FloatingLayerManager
+          :nodes="activeSlide?.nodes ?? []"
+          :node-timeline-summary-map="nodeTimelineSummaryMap"
+          :selected-node-ids="selectedNodeIds"
+          @select="emit('select-layer', $event)"
+          @update-node="handleFloatingLayerNodeUpdate"
+          @reorder="handleFloatingLayerReorder"
+          @reorder-to-index="emit('reorder-layer-to-index', $event)"
+          @align="emit('align-layers', $event)"
+          @copy-selection="emit('copy-selection')"
+          @delete-selection="emit('delete-selection')"
+          @distribute="emit('distribute-layers', $event)"
+          @duplicate-selection="emit('duplicate-selection')"
+        />
+      </div>
 
       <StageViewportControls
         :can-zoom-in="canZoomIn"
@@ -534,6 +548,15 @@ defineExpose({
         @zoom-to-actual-size="zoomToActualSize"
         @zoom-to-fit="zoomToFit"
       />
+
+      <div v-if="activeSlide" class="stage-status-badges">
+        <a-tag class="stage-status-badge" color="blue" bordered size="small">
+          编辑模式
+        </a-tag>
+        <a-tag class="stage-status-badge" bordered size="small">
+          {{ stageSlidePositionLabel }}
+        </a-tag>
+      </div>
     </div>
 
     <TextTool

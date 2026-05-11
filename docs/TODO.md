@@ -207,13 +207,13 @@
 - [x] VNext-36-F 自动保存与恢复韧性优化：已为项目打开阶段补齐“完整恢复 / 资源缺失 / 仓库不可用 / 恢复失败”四类恢复摘要，并在资产仓库不可用时为自动保存补齐显式降级提示；所有异常继续复用统一诊断日志链路，新增 `assetHydrationStatus` 与 `assetStorageStatus` 上下文字段；已通过 `pnpm typecheck`、`pnpm build`、`pnpm test:vnext-36-f`，并联动回归 `pnpm test:vnext-36-d` 与 `pnpm test:vnext-32-d`
 - [x] VNext-37-A 压缩顶部状态反馈的视觉权重：已移除工作台顶部横幅式反馈，改为右上角轻量保存状态指示器与顶部 `Message` 提示；保存成功会在 3 秒后收起文字仅保留图标，资源恢复 / 导入导出 / 降级保存反馈改为不占布局的轻量提示，同时保留隐藏桥接节点兼容既有自动化回归；已通过 `pnpm typecheck`、`pnpm build`、`pnpm test:vnext-37-a`，并联动回归 `pnpm test:vnext-33` 与 `pnpm test:vnext-36-f`
 - [x] VNext-37-B 强化中央画布区域占比：已同步压缩编辑态 / 预览态三栏宽度、中心画布外围留白与左侧页面卡片密度；在 `1440 x 900` 视口下，编辑态中央区域占比达 `72.03%`、预览态达 `73.33%`，并通过 `pnpm typecheck`、`pnpm build` 与 `pnpm test:vnext-37-b` 验证
+- [x] VNext-37-C 重构右侧工具区的视觉层级：已将编辑态右上角的图层 / 页面设置入口放大到 `24px` 图标和 `32 x 32` 热区，并把编辑态 / 预览态共享缩放控件统一重构为 `[−] [缩放标签] [+] [100%] [适配]` 按钮组；同时补齐编辑态页序标签与预览态状态标签的统一胶囊样式；已通过 `pnpm typecheck`、`pnpm build` 与 `pnpm test:vnext-37-c` 验证
+- [x] VNext-37-D 简化时间轴面板的信息密度：已将时间轴步骤卡片抽离为独立组件，头部收敛为“步骤序号 + 名称 + 折叠/预览/更多菜单”两行结构，第二行仅保留触发方式摘要与动作数量；同时把上移 / 下移 / 后插一步 / 复制 / 删除收口到下拉菜单，并为删除项补齐危险色；已通过 `pnpm typecheck`、`pnpm build`、`pnpm test:vnext-35-c`、`pnpm test:vnext-36-b` 与 `node test/vnext-37/round-04.mjs` 验证
 
 ## 待完成
 
 ### VNext-37 UI/UX 优化（简洁、大气、方便使用）
 
-- [ ] VNext-37-C 重构右侧工具区的视觉层级
-- [ ] VNext-37-D 简化时间轴面板的信息密度
 - [ ] VNext-37-E 统一按钮样式与操作层级
 - [ ] VNext-37-F 收紧预览页中央区域的辅助信息
 - [ ] VNext-37-G 优化左侧页面卡片的信息组织
@@ -227,8 +227,8 @@
 
 - `VNext-36` 的 `A / B / C / D / E / F` 已全部完成。
 - `VNext-37` 已完成版本规划，并已同步进入当前执行池。
-- `VNext-37-A / VNext-37-B` 已完成开发、自测与回归，当前可先等待用户 review。
-- 下一步按 `VNext-37-C` 继续推进右侧工具区视觉层级优化。
+- `VNext-37-A / VNext-37-B / VNext-37-C / VNext-37-D` 已完成开发、自测与回归，当前可先等待用户 review。
+- 下一步按 `VNext-37-E` 继续推进按钮样式与操作层级统一。
 - 详细设计文档见 `docs/vnext-37/` 目录。
 
 ## 相关文档

@@ -284,15 +284,48 @@
 
 .stage-floating-tools {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 14px;
+  right: 14px;
   z-index: 4;
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  align-items: flex-start;
-  gap: 10px;
-  max-width: calc(100% - 24px);
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100% - 28px);
+}
+
+.stage-floating-tools__group,
+.stage-status-badges {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid color-mix(in srgb, var(--cw-color-border) 88%, #ffffff);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow:
+    0 12px 28px rgba(15, 23, 42, 0.08),
+    0 2px 6px rgba(15, 23, 42, 0.04);
+  backdrop-filter: blur(14px);
+}
+
+.stage-floating-tools__group--tools {
+  gap: 6px;
+}
+
+.stage-status-badges {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  padding-inline: 8px;
+}
+
+.stage-status-badges :deep(.arco-tag) {
+  min-height: 32px;
+  padding-inline: 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .stage-context-menu {

@@ -227,6 +227,14 @@
   gap: var(--cw-space-2);
 }
 
+.preview-stage-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .embedded-preview-actions {
   display: flex;
   justify-content: flex-end;
@@ -340,6 +348,18 @@
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: var(--cw-space-2);
+}
+
+.preview-stage-status-badges {
+  gap: 6px;
+  padding: 6px 8px;
+  border: 1px solid color-mix(in srgb, var(--cw-color-border) 88%, #ffffff);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow:
+    0 12px 28px rgba(15, 23, 42, 0.08),
+    0 2px 6px rgba(15, 23, 42, 0.04);
+  backdrop-filter: blur(14px);
 }
 
 .immersive-playback-hint {
@@ -729,18 +749,25 @@
   color: #e2e8f0;
 }
 
-.preview-shell.is-immersive .stage-viewport-controls {
+.preview-shell.is-immersive :deep(.stage-viewport-controls) {
   border-color: rgba(148, 163, 184, 0.22);
   background: rgba(15, 23, 42, 0.52);
 }
 
-.preview-shell.is-immersive .stage-viewport-controls__caption {
-  color: rgba(203, 213, 225, 0.78);
+.preview-shell.is-immersive :deep(.stage-viewport-controls__zoom-tag) {
+  background: rgba(8, 15, 28, 0.74);
 }
 
-.preview-shell.is-immersive .stage-viewport-controls__indicator {
-  color: #f8fafc;
-  background: rgba(15, 23, 42, 0.82);
+.preview-shell.is-immersive :deep(.stage-viewport-controls__icon-button),
+.preview-shell.is-immersive :deep(.stage-viewport-controls__preset-button) {
+  border-color: rgba(148, 163, 184, 0.18);
+  color: #e2e8f0;
+  background: rgba(15, 23, 42, 0.42);
+}
+
+.preview-shell.is-immersive .preview-stage-status-badges {
+  border-color: rgba(148, 163, 184, 0.18);
+  background: rgba(15, 23, 42, 0.46);
 }
 
 @container (max-width: 920px) {

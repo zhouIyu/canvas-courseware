@@ -565,23 +565,25 @@ const immersivePlaybackHint = computed(
                 @toggle-immersive-playback="toggleImmersivePlayback"
               />
             </div>
-            <StageViewportControls
-              :can-zoom-in="canZoomIn"
-              :can-zoom-out="canZoomOut"
-              :is-actual-size-zoom="isActualSizeZoom"
-              :is-fit-zoom="isFitZoom"
-              :zoom-label="previewZoomLabel"
-              @zoom-in="zoomIn"
-              @zoom-out="zoomOut"
-              @zoom-to-actual-size="zoomToActualSize"
-              @zoom-to-fit="zoomToFit"
-            />
-            <div v-if="!isImmersivePlayback" class="status-badges">
-              <a-tag class="playback-status-tag" :color="playbackStatusTagColor" bordered>
-                {{ playbackStatusLabel }}
-              </a-tag>
-              <a-tag class="preview-slide-position-tag" bordered>{{ slidePositionLabel }}</a-tag>
-              <a-tag class="preview-next-trigger-tag" bordered>{{ nextTriggerLabel }}</a-tag>
+            <div class="preview-stage-toolbar">
+              <StageViewportControls
+                :can-zoom-in="canZoomIn"
+                :can-zoom-out="canZoomOut"
+                :is-actual-size-zoom="isActualSizeZoom"
+                :is-fit-zoom="isFitZoom"
+                :zoom-label="previewZoomLabel"
+                @zoom-in="zoomIn"
+                @zoom-out="zoomOut"
+                @zoom-to-actual-size="zoomToActualSize"
+                @zoom-to-fit="zoomToFit"
+              />
+              <div v-if="!isImmersivePlayback" class="status-badges preview-stage-status-badges">
+                <a-tag class="playback-status-tag" :color="playbackStatusTagColor" bordered>
+                  {{ playbackStatusLabel }}
+                </a-tag>
+                <a-tag class="preview-slide-position-tag" bordered>{{ slidePositionLabel }}</a-tag>
+                <a-tag class="preview-next-trigger-tag" bordered>{{ nextTriggerLabel }}</a-tag>
+              </div>
             </div>
             <div
               v-if="!shouldShowInsightStrip && !isImmersivePlayback"

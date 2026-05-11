@@ -37,106 +37,111 @@ const emit = defineEmits<{
 
 <template>
   <div class="stage-viewport-controls" role="group" aria-label="画布视图控制">
-    <span class="stage-viewport-controls__caption">视图</span>
-    <span
-      class="stage-viewport-controls__indicator"
-      :class="{ 'is-fit': props.isFitZoom }"
-      :title="props.isFitZoom ? '当前为适配画布视图' : '当前为手动缩放视图'"
-    >
-      {{ props.zoomLabel }}
-    </span>
     <a-button
-      class="stage-viewport-controls__button"
-      type="text"
+      class="stage-viewport-controls__icon-button"
+      aria-label="缩小画布"
       :disabled="!props.canZoomOut"
+      size="mini"
+      type="outline"
       @click="emit('zoom-out')"
     >
-      缩小
+      <template #icon>
+        <icon-minus />
+      </template>
     </a-button>
+    <a-tag
+      class="stage-viewport-controls__zoom-tag"
+      color="arcoblue"
+      :title="props.isFitZoom ? '当前为适配画布视图' : '当前为手动缩放视图'"
+      bordered
+    >
+      {{ props.zoomLabel }}
+    </a-tag>
     <a-button
-      class="stage-viewport-controls__button"
-      type="text"
+      class="stage-viewport-controls__icon-button"
+      aria-label="放大画布"
       :disabled="!props.canZoomIn"
+      size="mini"
+      type="outline"
       @click="emit('zoom-in')"
     >
-      放大
+      <template #icon>
+        <icon-plus />
+      </template>
     </a-button>
     <a-button
-      class="stage-viewport-controls__button"
-      type="text"
-      :class="{ 'is-active': props.isFitZoom }"
-      @click="emit('zoom-to-fit')"
-    >
-      适配
-    </a-button>
-    <a-button
-      class="stage-viewport-controls__button"
-      type="text"
-      :class="{ 'is-active': props.isActualSizeZoom }"
+      class="stage-viewport-controls__preset-button"
+      aria-label="恢复 100% 视图"
+      :type="props.isActualSizeZoom ? 'primary' : 'outline'"
+      size="mini"
       @click="emit('zoom-to-actual-size')"
     >
       100%
+    </a-button>
+    <a-button
+      class="stage-viewport-controls__icon-button"
+      aria-label="适配画布"
+      :type="props.isFitZoom ? 'primary' : 'outline'"
+      size="mini"
+      @click="emit('zoom-to-fit')"
+    >
+      <template #icon>
+        <icon-fullscreen />
+      </template>
     </a-button>
   </div>
 </template>
 
 <style scoped>
 .stage-viewport-controls {
-  display: flex;
-  flex-wrap: wrap;
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 6px;
+  gap: 6px;
+  padding: 6px;
   border: 1px solid color-mix(in srgb, var(--cw-color-border) 88%, #ffffff);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.72);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow:
+    0 12px 28px rgba(15, 23, 42, 0.08),
+    0 2px 6px rgba(15, 23, 42, 0.04);
+  backdrop-filter: blur(14px);
 }
 
-.stage-viewport-controls__caption {
-  flex-shrink: 0;
-  padding: 0 6px 0 2px;
+.stage-viewport-controls__icon-button,
+.stage-viewport-controls__preset-button {
+  min-width: 32px;
+  height: 32px;
+  border-radius: 10px;
+}
+
+.stage-viewport-controls__icon-button:deep(.arco-btn-icon) {
+  font-size: 14px;
+}
+
+.stage-viewport-controls__preset-button {
+  min-width: 54px;
+  padding-inline: 12px;
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--cw-color-muted);
 }
 
-.stage-viewport-controls__indicator {
+.stage-viewport-controls__zoom-tag {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 58px;
-  min-height: 30px;
-  padding: 0 10px;
+  min-width: 76px;
+  min-height: 32px;
+  padding-inline: 12px;
   border-radius: 10px;
   font-size: 12px;
   font-weight: 700;
-  color: var(--cw-color-text);
-  background: rgba(255, 255, 255, 0.92);
+  font-variant-numeric: tabular-nums;
+  cursor: default;
+  user-select: none;
 }
 
-.stage-viewport-controls__indicator.is-fit {
-  color: var(--cw-color-primary);
-  background: color-mix(in srgb, var(--cw-color-primary-soft) 76%, #ffffff);
-}
-
-.stage-viewport-controls__button {
-  min-height: 30px;
-  padding: 0 10px;
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--cw-color-primary);
-}
-
-.stage-viewport-controls__button.is-active {
-  color: #0f6bff;
-  background: rgba(22, 93, 255, 0.08);
-}
-
-.stage-viewport-controls__button:hover {
-  color: #0f6bff;
-  background: rgba(22, 93, 255, 0.08);
+.stage-viewport-controls__zoom-tag:deep(.arco-tag-content) {
+  min-width: 100%;
+  text-align: center;
 }
 </style>
