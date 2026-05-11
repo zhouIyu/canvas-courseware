@@ -42,6 +42,10 @@ export interface ProjectDocumentAssetNormalizationResult {
   assetIds: string[];
   /** 本轮被替换为本地资产引用的来源数量。 */
   rewrittenAssetCount: number;
+  /** 当前运行环境下的资产仓库可用性。 */
+  storageStatus: "available" | "unavailable";
+  /** 本轮因仓库不可用而未能写入资产仓库的本地 data URL 数量。 */
+  skippedLocalDataUrlCount: number;
 }
 
 /** 从仓库恢复文档时的图片资产还原结果。 */
@@ -52,4 +56,6 @@ export interface ProjectDocumentAssetHydrationResult {
   restoredAssetCount: number;
   /** 当前文档中引用但仓库里已缺失的资产 id 列表。 */
   missingAssetIds: string[];
+  /** 当前运行环境下的资产仓库可用性。 */
+  storageStatus: "available" | "unavailable";
 }

@@ -202,12 +202,13 @@
 - [x] VNext-36-A 多选批量操作增强：已为浮层图层面板补齐右对齐 / 底部对齐、水平分布 / 垂直分布、批量复制 / 粘贴 / 重复 / 删除入口，并在命令层新增 `NODE_BATCH_CREATE`，确保多选复制类动作与批量删除 / 分布一样只落 1 条历史记录；已通过 `pnpm typecheck`、`pnpm build`、`pnpm test:vnext-36-a`，并联动回归 `pnpm test:vnext-35-b` 与 `pnpm test:vnext-33-c`
 - [x] VNext-36-B 时间轴编排二次提效：已为时间轴步骤列表补齐拖拽排序，并把折叠态从页面本地状态提升为项目级 `workspaceState` 持久化，确保多 slide 切换与刷新恢复后仍能回显各自折叠状态；同时抽离编辑器视口与时间轴状态相关组合式函数，继续保持 UI 层与文档模型解耦；已通过 `pnpm typecheck`、`pnpm build`、`pnpm test:vnext-36-b`，并联动回归 `pnpm test:vnext-35-c` 与 `pnpm test:vnext-36-a`
 - [x] VNext-36-C 项目列表管理升级：已为项目列表补齐创建时间升序 / 降序、页面数量升序 / 降序与排序偏好本地持久化；同时扩展项目卡片的页数 / 尺寸 / 创建时间 / 最近编辑状态摘要，提升打开前的恢复判断效率；已通过 `pnpm typecheck`、`pnpm build`、`CW_BASE_URL=http://127.0.0.1:32174/projects pnpm test:vnext-36-c`，并联动回归 `CW_BASE_URL=http://127.0.0.1:32174/projects pnpm test:vnext-35-e`
+- [x] VNext-36-D 图片与背景资源链路健壮性补齐：已补齐远程图片 URL 与本地 `cw-asset://` 资产混用下的加载、保存、导出与恢复链路；远程资源优先尝试 CORS 安全加载，失败后回退到普通加载以保证编辑与预览可继续显示；同时为本地资产缺失与缩略图导出失败补齐顶部警告和诊断日志，并新增 `pnpm test:vnext-36-d` 覆盖混合资源保存、导出、刷新恢复与无 CORS 远程图片失败反馈，联动回归 `pnpm test:vnext-32-d`
+- [x] VNext-36-E 预览态播放体验增强：已为预览态补齐页级 / 课件级播放进度提示、整份课件播放完成状态与“重新开始课件”入口；内嵌预览与宽屏提示卡都会同步回显多页进度，且支持 `Shift + R` 从第一页重启整份课件；已通过 `pnpm typecheck`、`pnpm build`、`pnpm test:vnext-36-e`，并联动回归 `pnpm test:vnext-35-d`
+- [x] VNext-36-F 自动保存与恢复韧性优化：已为项目打开阶段补齐“完整恢复 / 资源缺失 / 仓库不可用 / 恢复失败”四类恢复摘要，并在资产仓库不可用时为自动保存补齐显式降级提示；所有异常继续复用统一诊断日志链路，新增 `assetHydrationStatus` 与 `assetStorageStatus` 上下文字段；已通过 `pnpm typecheck`、`pnpm build`、`pnpm test:vnext-36-f`，并联动回归 `pnpm test:vnext-36-d` 与 `pnpm test:vnext-32-d`
 
 ## 待完成
 
-- [x] VNext-36-D 图片与背景资源链路健壮性补齐：已补齐远程图片 URL 与本地 `cw-asset://` 资产混用下的加载、保存、导出与恢复链路；远程资源优先尝试 CORS 安全加载，失败后回退到普通加载以保证编辑与预览可继续显示；同时为本地资产缺失与缩略图导出失败补齐顶部警告和诊断日志，并新增 `CW_BASE_URL=http://127.0.0.1:32174/projects pnpm test:vnext-36-d` 覆盖混合资源保存、导出、刷新恢复与无 CORS 远程图片失败反馈，联动回归 `CW_BASE_URL=http://127.0.0.1:32174/projects pnpm test:vnext-32-d`
-- [x] VNext-36-E 预览态播放体验增强：已为预览态补齐页级 / 课件级播放进度提示、整份课件播放完成状态与“重新开始课件”入口；内嵌预览与宽屏提示卡都会同步回显多页进度，且支持 `Shift + R` 从第一页重启整份课件；已通过 `pnpm typecheck`、`pnpm build`、`pnpm test:vnext-36-e`，并联动回归 `pnpm test:vnext-35-d`
-- [ ] VNext-36-F 自动保存与恢复韧性优化：在资产仓库不可用、资源缺失或恢复失败时提供明确状态反馈与恢复摘要，并复用统一诊断日志链路
+- 当前无待完成任务。
 
 ## 进行中
 
@@ -215,8 +216,8 @@
 
 ## 当前下一步
 
-- `VNext-36` 已完成版本规划，并已同步进入当前执行池。
-- 下一步按 `VNext-36-F` 继续推进开发与测试；当前已完成 `VNext-36-E`，先暂停等待用户 review，再继续后续事项。
+- `VNext-36` 的 `A / B / C / D / E / F` 已全部完成，并已在当前执行池收口。
+- 当前暂停等待用户 review；如继续推进，需要先确认下一轮版本规划或新的执行项。
 
 ## 相关文档
 

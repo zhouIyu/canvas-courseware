@@ -22,6 +22,26 @@ import type {
   ProjectDocumentAssetNormalizationResult,
 } from "./project-assets/types";
 
+/** 统计当前文档中仍为本地 data URL 的图片来源数量。 */
+function countLocalImageDataUrlSources(document: CoursewareDocument): number {
+  return document.slides.reduce((total, slide) => {
+    const backgroundCount = isLocalImageDataUrl(
+      normalizeProjectAssetSource(slide.background.image?.src),
+    )
+      ? 1
+      : 0;
+    const nodeCount = slide.nodes.reduce((nodeTotal, node) => {
+      if (node.type !== "image") {
+        return nodeTotal;
+      }
+
+      return nodeTotal + (isLocalImageDataUrl(normalizeProjectAssetSource(node.props.src)) ? 1 : 0);
+    }, 0);
+
+    return total + backgroundCount + nodeCount;
+  }, 0);
+}
+
 /** 复用同一轮转换中的进行中任务，避免重复读写相同资源。 */
 async function resolvePendingProjectAssetTask<TKey extends string>(
   pendingTasks: Map<TKey, Promise<string>>,
@@ -53,6 +73,8 @@ export async function normalizeProjectDocumentAssetSources(
       document,
       assetIds: collectProjectAssetIdsFromDocument(document),
       rewrittenAssetCount: 0,
+      storageStatus: "unavailable",
+      skippedLocalDataUrlCount: countLocalImageDataUrlSources(document),
     };
   }
 
@@ -75,6 +97,8 @@ export async function normalizeProjectDocumentAssetSources(
     document: transformResult.document,
     assetIds: collectProjectAssetIdsFromDocument(transformResult.document),
     rewrittenAssetCount: transformResult.rewrittenAssetCount,
+    storageStatus: "available",
+    skippedLocalDataUrlCount: 0,
   };
 }
 
@@ -88,6 +112,7 @@ export async function hydrateProjectDocumentAssetSources(
       document,
       restoredAssetCount: 0,
       missingAssetIds: [],
+      storageStatus: "unavailable",
     };
   }
 
@@ -116,6 +141,7 @@ export async function hydrateProjectDocumentAssetSources(
     document: transformResult.document,
     restoredAssetCount: transformResult.rewrittenAssetCount,
     missingAssetIds: Array.from(missingAssetIds).sort(),
+    storageStatus: "available",
   };
 }
 
@@ -134,4 +160,8 @@ export async function removeProjectAssets(assetIds: string[]): Promise<void> {
   invalidateProjectAssetSourceCache(uniqueAssetIds);
 }
 
-export { clearProjectAssetSourceCache, collectProjectAssetIdsFromDocument };
+export {
+  canUseProjectAssetStorage,
+  clearProjectAssetSourceCache,
+  collectProjectAssetIdsFromDocument,
+};

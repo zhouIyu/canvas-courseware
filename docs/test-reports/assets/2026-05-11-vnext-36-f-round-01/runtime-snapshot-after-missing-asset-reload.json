@@ -1,0 +1,59 @@
+{
+  "document": {
+    "version": "1.0.0",
+    "meta": {
+      "id": "document-20c05f9a-6fca-4acd-875b-a2414faa3b35",
+      "title": "VNext-36-F 自动保存韧性回归课件",
+      "createdAt": "2026-05-11T07:13:33.368Z",
+      "updatedAt": "2026-05-11T07:13:37.745Z"
+    },
+    "slides": [
+      {
+        "id": "slide-4ce34004-4869-4a8a-b0c3-6cb674828260",
+        "name": "第1页",
+        "size": {
+          "width": 1280,
+          "height": 720
+        },
+        "background": {
+          "fill": "#FFFFFF",
+          "image": null
+        },
+        "nodes": [
+          {
+            "id": "node-b3cb05ab-5280-4781-91b7-b491bdd79cdb",
+            "type": "image",
+            "name": "vnext08-sample",
+            "x": 480,
+            "y": 270,
+            "width": 320,
+            "height": 180,
+            "rotation": 0,
+            "opacity": 1,
+            "visible": true,
+            "locked": false,
+            "props": {
+              "src": "cw-asset://document-20c05f9a-6fca-4acd-875b-a2414faa3b35__c31ec27d5e09f89a10e926cf5c5a332e",
+              "objectFit": "contain",
+              "alt": "vnext08-sample.png"
+            }
+          }
+        ],
+        "timeline": {
+          "steps": [],
+          "animations": []
+        }
+      }
+    ]
+  },
+  "activeSlideId": "slide-4ce34004-4869-4a8a-b0c3-6cb674828260",
+  "selection": {
+    "slideId": "slide-4ce34004-4869-4a8a-b0c3-6cb674828260",
+    "nodeIds": []
+  },
+  "playback": {
+    "slideId": "slide-4ce34004-4869-4a8a-b0c3-6cb674828260",
+    "stepIndex": 0,
+    "status": "idle"
+  }
+}

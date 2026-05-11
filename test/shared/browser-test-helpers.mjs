@@ -90,6 +90,16 @@ export async function readStoredProjects(page, storageKey) {
 }
 
 /**
+ * 读取浏览器最近保留的结构化诊断日志。
+ *
+ * @param {import("playwright").Page} page
+ * @returns {Promise<any[]>}
+ */
+export async function readDiagnosticEntries(page) {
+  return page.evaluate(() => window.__CW_DIAGNOSTICS__?.getEntries?.() ?? []);
+}
+
+/**
  * 删除一个 IndexedDB 数据库，供图片资产等浏览器持久化测试做隔离。
  *
  * @param {import("playwright").Page} page
@@ -150,6 +160,53 @@ export async function readIndexedDbStoreRecords(page, databaseName, storeName) {
         request.onerror = () => {
           database.close();
           reject(request.error ?? new Error(`读取 IndexedDB 仓库 ${targetStoreName} 失败`));
+        };
+      };
+
+      openRequest.onerror = () =>
+        reject(openRequest.error ?? new Error(`打开 IndexedDB 数据库 ${dbName} 失败`));
+    });
+  }, {
+    dbName: databaseName,
+    targetStoreName: storeName,
+  });
+}
+
+/**
+ * 清空 IndexedDB 指定对象仓库中的全部记录，供资源恢复场景制造“仓库被清空”状态。
+ *
+ * @param {import("playwright").Page} page
+ * @param {string} databaseName
+ * @param {string} storeName
+ * @returns {Promise<boolean>}
+ */
+export async function clearIndexedDbStore(page, databaseName, storeName) {
+  return page.evaluate(({ dbName, targetStoreName }) => {
+    return new Promise((resolve, reject) => {
+      const openRequest = window.indexedDB.open(dbName);
+
+      openRequest.onsuccess = () => {
+        const database = openRequest.result;
+        if (!database.objectStoreNames.contains(targetStoreName)) {
+          database.close();
+          resolve(false);
+          return;
+        }
+
+        const transaction = database.transaction(targetStoreName, "readwrite");
+        const request = transaction.objectStore(targetStoreName).clear();
+
+        transaction.oncomplete = () => {
+          database.close();
+          resolve(true);
+        };
+        transaction.onerror = () => {
+          database.close();
+          reject(transaction.error ?? new Error(`清空 IndexedDB 仓库 ${targetStoreName} 失败`));
+        };
+        request.onerror = () => {
+          database.close();
+          reject(request.error ?? new Error(`清空 IndexedDB 仓库 ${targetStoreName} 失败`));
         };
       };
 

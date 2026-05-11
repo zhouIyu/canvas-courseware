@@ -4,6 +4,7 @@ import type {
   DiagnosticLogger,
 } from "@canvas-courseware/core";
 import {
+  canUseProjectAssetStorage,
   collectProjectAssetIdsFromDocument,
   hydrateProjectDocumentAssetSources,
   removeProjectAssets,
@@ -22,10 +23,40 @@ export interface WorkspacePersistenceAssetDiagnostics {
 export interface WorkspaceProjectHydrationResult {
   /** 已恢复为当前运行态可直接消费的文档。 */
   document: CoursewareDocument;
+  /** 当前项目中引用到的本地资产数量。 */
+  referencedLocalAssetCount: number;
   /** 当前文档里引用但仓库中已经缺失的本地资产 id。 */
   missingAssetIds: string[];
   /** 本轮成功恢复的本地资产来源数量。 */
   restoredAssetCount: number;
+  /** 资产仓库当前是否可用。 */
+  storageStatus: "available" | "unavailable";
+  /** 本轮恢复结果分类，供工作台生成明确的用户反馈。 */
+  status: "complete" | "partial-missing" | "storage-unavailable" | "failed";
+}
+
+/** 统一组装项目加载阶段的资源恢复结果，避免各分支漏填字段。 */
+function buildWorkspaceProjectHydrationResult(
+  result: Omit<WorkspaceProjectHydrationResult, "status">,
+): WorkspaceProjectHydrationResult {
+  if (result.missingAssetIds.length > 0) {
+    return {
+      ...result,
+      status: "partial-missing",
+    };
+  }
+
+  if (result.storageStatus === "unavailable") {
+    return {
+      ...result,
+      status: "storage-unavailable",
+    };
+  }
+
+  return {
+    ...result,
+    status: "complete",
+  };
 }
 
 /** 计算一次保存后已经不再被项目引用的旧资产 id，供后台异步清理使用。 */
@@ -71,6 +102,27 @@ export async function hydrateWorkspaceProjectDocument(
   projectRecord: ProjectRecord,
   diagnostics: WorkspacePersistenceAssetDiagnostics,
 ): Promise<WorkspaceProjectHydrationResult> {
+  const localAssetIds = collectProjectAssetIdsFromDocument(projectRecord.document);
+  if (!canUseProjectAssetStorage()) {
+    if (localAssetIds.length > 0) {
+      diagnostics.diagnosticLogger.warn({
+        event: "project.asset.storage.unavailable",
+        message: "当前环境不支持本地图片资产仓库，已按原始引用恢复项目",
+        context: diagnostics.buildDiagnosticContext({
+          localAssetCount: localAssetIds.length,
+        }),
+      });
+    }
+
+    return buildWorkspaceProjectHydrationResult({
+      document: projectRecord.document,
+      referencedLocalAssetCount: localAssetIds.length,
+      missingAssetIds: [],
+      restoredAssetCount: 0,
+      storageStatus: "unavailable",
+    });
+  }
+
   try {
     const hydrationResult = await hydrateProjectDocumentAssetSources(
       projectRecord.document,
@@ -88,7 +140,10 @@ export async function hydrateWorkspaceProjectDocument(
       });
     }
 
-    return hydrationResult;
+    return buildWorkspaceProjectHydrationResult({
+      ...hydrationResult,
+      referencedLocalAssetCount: localAssetIds.length,
+    });
   } catch (error) {
     diagnostics.diagnosticLogger.error({
       event: "project.asset.hydrate.failed",
@@ -98,9 +153,12 @@ export async function hydrateWorkspaceProjectDocument(
     });
 
     return {
+      referencedLocalAssetCount: localAssetIds.length,
       document: projectRecord.document,
       missingAssetIds: [],
       restoredAssetCount: 0,
+      storageStatus: "available",
+      status: "failed",
     };
   }
 }

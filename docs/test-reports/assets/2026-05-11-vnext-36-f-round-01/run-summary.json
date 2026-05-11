@@ -1,0 +1,44 @@
+{
+  "assetDir": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-05-11-vnext-36-f-round-01",
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-05-11T07:13:31.252Z",
+  "projectTitle": "VNext-36-F 自动保存韧性回归课件",
+  "checks": [
+    {
+      "id": "initial-asset-storage",
+      "assetRecordCount": 1,
+      "savedImageSource": "cw-asset://document-20c05f9a-6fca-4acd-875b-a2414faa3b35__c31ec27d5e09f89a10e926cf5c5a332e"
+    },
+    {
+      "id": "missing-asset-feedback",
+      "feedback": "项目已恢复，但有 1 个本地图片资源缺失，相关位置仍保留原始引用。",
+      "diagnosticEvents": [
+        "project.asset.hydrate.partial",
+        "project.load.completed"
+      ],
+      "runtimeImageSource": "cw-asset://document-20c05f9a-6fca-4acd-875b-a2414faa3b35__c31ec27d5e09f89a10e926cf5c5a332e"
+    },
+    {
+      "id": "degraded-autosave-feedback",
+      "feedback": "当前环境无法访问本地图片仓库，项目已保存，但本地图片将继续以原始 data URL 形式保留。",
+      "diagnosticEvents": [
+        "node.create",
+        "image.import.completed",
+        "project.autosave.scheduled",
+        "project.save.started",
+        "project.save.completed"
+      ],
+      "assetStorageStatus": "unavailable",
+      "savedImageSources": [
+        "cw-asset://document-20c05f9a-6fca-4acd-875b-a2414faa3b35__c31ec27d5e09f89a10e926cf5c5a332e",
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUAAAAC0CAIAAABqhmJGAAACM0lEQVR42u3TwQ0AEBBFQRU46k55ilMFTUiWNT/vLlmZ0vqS9GjFCSSAJQEsCWAJYEkASwJYEsASwJIAlgSwBLAkgCUBLAlgCWBJAEsCWBLAEsCSAJYEsASwJIAlASwJYAlgSQBLAlgSwBLAkgCWBLAEsCSAJQEsCWAJYEkASwJYAjjsbbM0A9gMYIDNAAbYDGCADWCAzQAG2AxggM0ABtgABtgMYIDNAAbYAAbYDGCAzQAG2AxggA1ggM0ABtgMYIDNADYDGGAzgAE2AxhgAxhgM4ABNgMYYDOAATaAATYDGGAzgAE2A9gMYIDNAAbYDGCADWCAzQAG2AxggM0ABtgABtgMYIDNAAbYAAbYDGCAzQAG2AxggA1ggM0ABtgMYIDNAAbYAD4AuI4ZlV+3NItCBLAZwAAbwACbAQywGcAAmwEMsAEMsBnAAJsBDLAZwAAbwACbAQywGcAAG8AAmwEMsBnAAJsBDLABDLAZwACbAQywGcBmAANsBjDAZgADbAADbAYwwGYAA2wGMMAGMMBmAANsBjDAZgCbAQywGcAAmwEMsAEMsBnAAJsBDLAZwAAbwACbAQywGcAAG8AAmwEMsBnAAJsBDLABDLAZwACbAQyw2feAJQEsASwJYEkASwJYAlgSwJIAlgSwBLAkgCUBLAEsCWBJAEsCWAJYEsCSAJYEsASwJIAlASwBLAlgSQBLAlgCWBLAkgCWAHYFCWBJAEsCWAJYEsCSAJYEsASwpBva6Uq2pjoG1kMAAAAASUVORK5CYII="
+      ]
+    }
+  ],
+  "consoleErrors": [
+    "Failed to load resource: net::ERR_UNKNOWN_URL_SCHEME",
+    "Failed to load resource: net::ERR_UNKNOWN_URL_SCHEME",
+    "Failed to load resource: net::ERR_UNKNOWN_URL_SCHEME"
+  ],
+  "pageErrors": []
+}

@@ -7,7 +7,13 @@ import { projectRepository } from "../projects/project-repository";
 import { workspaceDiagnosticLogger } from "../diagnostics/workspace-diagnostics";
 import type { ProjectSlideThumbnailMap, ProjectWorkspaceMode } from "../projects/types";
 import type { TimelineCollapsedStepIdsChangePayload } from "../projects/project-workspace-state";
-import { cleanupRemovedWorkspaceAssets, hydrateWorkspaceProjectDocument, resolveRemovedWorkspaceAssetIds, resolveWorkspaceExportDocument } from "./project-workspace-persistence/asset-helpers";
+import {
+  cleanupRemovedWorkspaceAssets,
+  hydrateWorkspaceProjectDocument,
+  resolveRemovedWorkspaceAssetIds,
+  resolveWorkspaceExportDocument,
+  type WorkspaceProjectHydrationResult,
+} from "./project-workspace-persistence/asset-helpers";
 import { buildProjectWorkspaceRecord, mergeCapturedSlideThumbnail, type SlideThumbnailCapturedPayload } from "./project-workspace-persistence/record-helpers";
 import { useProjectWorkspaceTimelineState } from "./useProjectWorkspaceTimelineState";
 import { type WorkspaceSaveStatus, useWorkspaceSaveStatus } from "./useWorkspaceSaveStatus";
@@ -25,7 +31,7 @@ type AutoSaveBlockReason = "inline-text-editing" | "canvas-transform";
 type WorkspaceFeedbackTone = "success" | "error" | "warning";
 
 /** 工作台顶部反馈的来源类型。 */
-type WorkspaceFeedbackKind = "operation" | "asset-hydration" | "thumbnail";
+type WorkspaceFeedbackKind = "operation" | "asset-hydration" | "thumbnail" | "save-resilience";
 
 /** 顶部反馈条内部维护的一条结构化消息。 */
 interface WorkspaceFeedbackEntry {
@@ -35,6 +41,18 @@ interface WorkspaceFeedbackEntry {
   tone: WorkspaceFeedbackTone;
   /** 当前反馈文案。 */
   message: string;
+}
+
+/** 保存阶段归一化后的资源链路状态，供用户提示与日志上下文复用。 */
+interface PersistAssetResilienceSummary {
+  /** 当前环境下资源仓库是否可用。 */
+  storageStatus: "available" | "unavailable";
+  /** 当前文档仍引用的本地资产数量。 */
+  assetCount: number;
+  /** 本轮被改写成稳定资产引用的来源数量。 */
+  rewrittenAssetCount: number;
+  /** 本轮因仓库不可用而未能迁移的本地 data URL 数量。 */
+  skippedLocalDataUrlCount: number;
 }
 
 /** 当前保存动作的触发来源。 */
@@ -180,6 +198,72 @@ export function useProjectWorkspacePersistence(
   const resolveCurrentSlideId = () =>
     editorSnapshot.value?.activeSlideId ?? documentModel.value?.slides[0]?.id ?? null;
 
+  /** 生成项目打开阶段的恢复摘要，避免用户只能从诊断日志理解当前状态。 */
+  const resolveHydrationFeedback = (
+    hydrationResult: WorkspaceProjectHydrationResult,
+  ): WorkspaceFeedbackEntry | null => {
+    switch (hydrationResult.status) {
+      case "failed":
+        return {
+          kind: "asset-hydration",
+          tone: "warning",
+          message: "项目已打开，但本地图片资源恢复失败；当前先按原始引用展示，建议重新检查相关图片资源。",
+        };
+      case "partial-missing":
+        return {
+          kind: "asset-hydration",
+          tone: "warning",
+          message:
+            hydrationResult.missingAssetIds.length === 1
+              ? "项目已恢复，但有 1 个本地图片资源缺失，相关位置仍保留原始引用。"
+              : `项目已恢复，但有 ${hydrationResult.missingAssetIds.length} 个本地图片资源缺失，相关位置仍保留原始引用。`,
+        };
+      case "storage-unavailable":
+        if (
+          hydrationResult.restoredAssetCount === 0
+          && hydrationResult.missingAssetIds.length === 0
+          && hydrationResult.referencedLocalAssetCount === 0
+        ) {
+          return null;
+        }
+
+        return {
+          kind: "asset-hydration",
+          tone: "warning",
+          message: "当前环境无法访问本地图片仓库，项目已按原始引用恢复；若图片未显示，需在支持 IndexedDB 的环境中重新打开。",
+        };
+      case "complete":
+      default:
+        if (hydrationResult.restoredAssetCount === 0) {
+          return null;
+        }
+
+        return {
+          kind: "asset-hydration",
+          tone: "success",
+          message:
+            hydrationResult.restoredAssetCount === 1
+              ? "项目已恢复，1 个本地图片资源已从本地仓库加载。"
+              : `项目已恢复，${hydrationResult.restoredAssetCount} 个本地图片资源已从本地仓库加载。`,
+        };
+    }
+  };
+
+  /** 生成保存阶段的韧性反馈，补齐资源仓库不可用时的显式提示。 */
+  const resolvePersistResilienceFeedback = (
+    summary: PersistAssetResilienceSummary,
+  ): WorkspaceFeedbackEntry | null => {
+    if (summary.storageStatus !== "unavailable" || summary.skippedLocalDataUrlCount === 0) {
+      return null;
+    }
+
+    return {
+      kind: "save-resilience",
+      tone: "warning",
+      message: "当前环境无法访问本地图片仓库，项目已保存，但本地图片将继续以原始 data URL 形式保留。",
+    };
+  };
+
   /** 写入一条操作类反馈，供导入、导出等显式动作复用。 */
   const setOperationFeedback = (
     tone: WorkspaceFeedbackTone,
@@ -195,11 +279,12 @@ export function useProjectWorkspacePersistence(
   /** 写入一条资源类反馈，避免缺失资产或缩略图失败时继续静默。 */
   const setResourceFeedback = (
     kind: Exclude<WorkspaceFeedbackKind, "operation">,
+    tone: WorkspaceFeedbackTone,
     message: string,
   ) => {
     resourceFeedback.value = {
       kind,
-      tone: "warning",
+      tone,
       message,
     };
   };
@@ -234,6 +319,7 @@ export function useProjectWorkspacePersistence(
         if (resolveCurrentSlideId()) {
           setResourceFeedback(
             "thumbnail",
+            "warning",
             "当前页面已保存，但本页资源暂时无法生成封面截图，项目列表中的缩略图可能不会立即更新。",
           );
           workspaceDiagnosticLogger.warn({
@@ -252,6 +338,7 @@ export function useProjectWorkspacePersistence(
     } catch (error) {
       setResourceFeedback(
         "thumbnail",
+        "warning",
         "当前页面已保存，但封面截图更新失败，项目列表中的缩略图可能不会立即更新。",
       );
       workspaceDiagnosticLogger.warn({
@@ -314,6 +401,15 @@ export function useProjectWorkspacePersistence(
         projectRecord.document,
         projectRecord.id,
       );
+      const persistAssetResilienceSummary: PersistAssetResilienceSummary = {
+        storageStatus: normalizedAssets.storageStatus,
+        assetCount: normalizedAssets.assetIds.length,
+        rewrittenAssetCount: normalizedAssets.rewrittenAssetCount,
+        skippedLocalDataUrlCount: normalizedAssets.skippedLocalDataUrlCount,
+      };
+      const persistResilienceFeedback = resolvePersistResilienceFeedback(
+        persistAssetResilienceSummary,
+      );
       const savedRecord = projectRepository.save({
         ...projectRecord,
         document: normalizedAssets.document,
@@ -321,6 +417,12 @@ export function useProjectWorkspacePersistence(
       projectTitle.value = savedRecord.title;
       lastSavedAt.value = savedRecord.updatedAt;
       saveStatus.value = "saved";
+      operationFeedback.value = null;
+      if (persistResilienceFeedback) {
+        resourceFeedback.value = persistResilienceFeedback;
+      } else {
+        clearResourceFeedback("save-resilience");
+      }
       void cleanupRemovedWorkspaceAssets(
         resolveRemovedWorkspaceAssetIds(
           previousProjectRecord?.document,
@@ -339,6 +441,7 @@ export function useProjectWorkspacePersistence(
           trigger,
           updatedAt: savedRecord.updatedAt,
           assetCount: normalizedAssets.assetIds.length,
+          assetStorageStatus: persistAssetResilienceSummary.storageStatus,
           rewrittenAssetCount: normalizedAssets.rewrittenAssetCount,
           slideCount: savedRecord.document.slides.length,
         }),
@@ -347,6 +450,12 @@ export function useProjectWorkspacePersistence(
       return true;
     } catch (error) {
       saveStatus.value = "error";
+      setOperationFeedback(
+        "error",
+        trigger === "auto"
+          ? "自动保存失败，请稍后重试；当前修改仍保留在页面中。"
+          : "项目保存失败，请稍后重试；当前修改仍保留在页面中。",
+      );
       workspaceDiagnosticLogger.error({
         event: "project.save.failed",
         message: trigger === "auto" ? "自动保存失败" : "项目保存失败",
@@ -421,11 +530,9 @@ export function useProjectWorkspacePersistence(
       buildDiagnosticContext: buildWorkspaceDiagnosticContext,
       diagnosticLogger: workspaceDiagnosticLogger,
     });
-    if (hydrationResult.missingAssetIds.length > 0) {
-      setResourceFeedback(
-        "asset-hydration",
-        `项目已恢复，但有 ${hydrationResult.missingAssetIds.length} 个本地图片资源缺失，相关资源已保留原始引用。`,
-      );
+    const hydrationFeedback = resolveHydrationFeedback(hydrationResult);
+    if (hydrationFeedback) {
+      resourceFeedback.value = hydrationFeedback;
     } else {
       clearResourceFeedback("asset-hydration");
     }
@@ -444,6 +551,9 @@ export function useProjectWorkspacePersistence(
       message: "已加载本地项目",
       context: buildWorkspaceDiagnosticContext({
         slideCount: projectRecord.document.slides.length,
+        assetHydrationStatus: hydrationResult.status,
+        restoredAssetCount: hydrationResult.restoredAssetCount,
+        missingAssetCount: hydrationResult.missingAssetIds.length,
       }),
     });
 
