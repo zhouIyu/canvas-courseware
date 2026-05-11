@@ -1,0 +1,72 @@
+{
+  "baseUrl": "http://127.0.0.1:32174/projects",
+  "executedAt": "2026-05-10T08:53:18.284Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "default-sort-and-summary",
+      "titles": [
+        "几何练习课",
+        "化学实验复盘",
+        "古诗讲解示例",
+        "英语晨读计划"
+      ],
+      "countLabel": "共 4 个项目，按最近编辑优先排序",
+      "firstCardSummary": {
+        "title": "几何练习课",
+        "updatedLabel": "最后编辑",
+        "updatedSummary": "今天 13:00",
+        "createdLabel": "创建时间",
+        "createdSummary": "05/03 16:30",
+        "description": "可直接恢复最近一次工作区内容，继续在正式工作台中编辑与预览。",
+        "metaTexts": [
+          "5 页",
+          "1024 × 768",
+          "今天更新"
+        ]
+      }
+    },
+    {
+      "id": "created-desc-sort",
+      "titles": [
+        "化学实验复盘",
+        "几何练习课",
+        "古诗讲解示例",
+        "英语晨读计划"
+      ],
+      "persistedSortMode": "created-desc"
+    },
+    {
+      "id": "slide-count-desc-sort",
+      "titles": [
+        "几何练习课",
+        "化学实验复盘",
+        "古诗讲解示例",
+        "英语晨读计划"
+      ],
+      "persistedSortMode": "slide-count-desc"
+    },
+    {
+      "id": "sort-preference-restored",
+      "titles": [
+        "几何练习课",
+        "化学实验复盘",
+        "古诗讲解示例",
+        "英语晨读计划"
+      ],
+      "countLabel": "共 4 个项目，按页数最多优先排序"
+    },
+    {
+      "id": "search-with-new-sort-modes",
+      "titles": [
+        "化学实验复盘"
+      ],
+      "countLabel": "共 4 个项目，匹配 1 个，按页数最多优先排序"
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

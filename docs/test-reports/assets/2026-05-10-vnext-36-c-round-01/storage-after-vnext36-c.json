@@ -1,0 +1,277 @@
+[
+  {
+    "id": "project-ancient-poem",
+    "title": "古诗讲解示例",
+    "createdAt": "2026-05-02T09:00:00.000Z",
+    "updatedAt": "2026-05-09T06:00:00.000Z",
+    "thumbnail": null,
+    "slideThumbnails": {},
+    "workspaceState": {
+      "timelineCollapsedStepIdsBySlideId": {}
+    },
+    "document": {
+      "version": "1.0.0",
+      "meta": {
+        "id": "project-ancient-poem",
+        "title": "古诗讲解示例",
+        "createdAt": "2026-05-02T09:00:00.000Z",
+        "updatedAt": "2026-05-09T06:00:00.000Z"
+      },
+      "slides": [
+        {
+          "id": "slide-1",
+          "name": "第1页",
+          "size": {
+            "width": 1280,
+            "height": 720
+          },
+          "background": {
+            "fill": "#FFFFFF",
+            "image": null
+          },
+          "nodes": [],
+          "timeline": {
+            "steps": [],
+            "animations": []
+          }
+        },
+        {
+          "id": "slide-2",
+          "name": "第2页",
+          "size": {
+            "width": 1280,
+            "height": 720
+          },
+          "background": {
+            "fill": "#FFFFFF",
+            "image": null
+          },
+          "nodes": [],
+          "timeline": {
+            "steps": [],
+            "animations": []
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "project-geometry",
+    "title": "几何练习课",
+    "createdAt": "2026-05-03T08:30:00.000Z",
+    "updatedAt": "2026-05-10T05:00:00.000Z",
+    "thumbnail": null,
+    "slideThumbnails": {},
+    "workspaceState": {
+      "timelineCollapsedStepIdsBySlideId": {}
+    },
+    "document": {
+      "version": "1.0.0",
+      "meta": {
+        "id": "project-geometry",
+        "title": "几何练习课",
+        "createdAt": "2026-05-03T08:30:00.000Z",
+        "updatedAt": "2026-05-10T05:00:00.000Z"
+      },
+      "slides": [
+        {
+          "id": "slide-1",
+          "name": "第1页",
+          "size": {
+            "width": 1024,
+            "height": 768
+          },
+          "background": {
+            "fill": "#FFFFFF",
+            "image": null
+          },
+          "nodes": [],
+          "timeline": {
+            "steps": [],
+            "animations": []
+          }
+        },
+        {
+          "id": "slide-2",
+          "name": "第2页",
+          "size": {
+            "width": 1024,
+            "height": 768
+          },
+          "background": {
+            "fill": "#FFFFFF",
+            "image": null
+          },
+          "nodes": [],
+          "timeline": {
+            "steps": [],
+            "animations": []
+          }
+        },
+        {
+          "id": "slide-3",
+          "name": "第3页",
+          "size": {
+            "width": 1024,
+            "height": 768
+          },
+          "background": {
+            "fill": "#FFFFFF",
+            "image": null
+          },
+          "nodes": [],
+          "timeline": {
+            "steps": [],
+            "animations": []
+          }
+        },
+        {
+          "id": "slide-4",
+          "name": "第4页",
+          "size": {
+            "width": 1024,
+            "height": 768
+          },
+          "background": {
+            "fill": "#FFFFFF",
+            "image": null
+          },
+          "nodes": [],
+          "timeline": {
+            "steps": [],
+            "animations": []
+          }
+        },
+        {
+          "id": "slide-5",
+          "name": "第5页",
+          "size": {
+            "width": 1024,
+            "height": 768
+          },
+          "background": {
+            "fill": "#FFFFFF",
+            "image": null
+          },
+          "nodes": [],
+          "timeline": {
+            "steps": [],
+            "animations": []
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "project-chemistry",
+    "title": "化学实验复盘",
+    "createdAt": "2026-05-10T02:00:00.000Z",
+    "updatedAt": "2026-05-10T04:30:00.000Z",
+    "thumbnail": null,
+    "slideThumbnails": {},
+    "workspaceState": {
+      "timelineCollapsedStepIdsBySlideId": {}
+    },
+    "document": {
+      "version": "1.0.0",
+      "meta": {
+        "id": "project-chemistry",
+        "title": "化学实验复盘",
+        "createdAt": "2026-05-10T02:00:00.000Z",
+        "updatedAt": "2026-05-10T04:30:00.000Z"
+      },
+      "slides": [
+        {
+          "id": "slide-1",
+          "name": "第1页",
+          "size": {
+            "width": 1080,
+            "height": 1920
+          },
+          "background": {
+            "fill": "#FFFFFF",
+            "image": null
+          },
+          "nodes": [],
+          "timeline": {
+            "steps": [],
+            "animations": []
+          }
+        },
+        {
+          "id": "slide-2",
+          "name": "第2页",
+          "size": {
+            "width": 1080,
+            "height": 1920
+          },
+          "background": {
+            "fill": "#FFFFFF",
+            "image": null
+          },
+          "nodes": [],
+          "timeline": {
+            "steps": [],
+            "animations": []
+          }
+        },
+        {
+          "id": "slide-3",
+          "name": "第3页",
+          "size": {
+            "width": 1080,
+            "height": 1920
+          },
+          "background": {
+            "fill": "#FFFFFF",
+            "image": null
+          },
+          "nodes": [],
+          "timeline": {
+            "steps": [],
+            "animations": []
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "project-english",
+    "title": "英语晨读计划",
+    "createdAt": "2026-05-01T01:00:00.000Z",
+    "updatedAt": "2026-05-05T02:00:00.000Z",
+    "thumbnail": null,
+    "slideThumbnails": {},
+    "workspaceState": {
+      "timelineCollapsedStepIdsBySlideId": {}
+    },
+    "document": {
+      "version": "1.0.0",
+      "meta": {
+        "id": "project-english",
+        "title": "英语晨读计划",
+        "createdAt": "2026-05-01T01:00:00.000Z",
+        "updatedAt": "2026-05-05T02:00:00.000Z"
+      },
+      "slides": [
+        {
+          "id": "slide-1",
+          "name": "第1页",
+          "size": {
+            "width": 1280,
+            "height": 720
+          },
+          "background": {
+            "fill": "#FFFFFF",
+            "image": null
+          },
+          "nodes": [],
+          "timeline": {
+            "steps": [],
+            "animations": []
+          }
+        }
+      ]
+    }
+  }
+]

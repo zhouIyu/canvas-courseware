@@ -11,6 +11,8 @@ export interface ProjectSummary {
   id: string;
   /** 项目标题。 */
   title: string;
+  /** 项目创建时间。 */
+  createdAt: string;
   /** 最近更新时间。 */
   updatedAt: string;
   /** 项目封面图，可为截图 data URL 或回退色值。 */
@@ -27,6 +29,8 @@ export interface ProjectRecord {
   id: string;
   /** 项目标题。 */
   title: string;
+  /** 项目创建时间。 */
+  createdAt: string;
   /** 最近更新时间。 */
   updatedAt: string;
   /** 项目封面图，可为首页截图 data URL 或回退色值。 */

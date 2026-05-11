@@ -37,11 +37,28 @@ function resolveProjectCanvasSize(document: CoursewareDocument): ProjectCanvasSi
   return normalizeProjectSlideSize(document.slides[0]?.size);
 }
 
+/** 解析一条记录的创建时间，缺失时尽量回退到旧数据中的可用时间。 */
+function resolveProjectCreatedAt(record: ProjectRecord): string {
+  return record.createdAt
+    || record.document?.meta?.createdAt
+    || record.updatedAt
+    || record.document?.meta?.updatedAt
+    || new Date().toISOString();
+}
+
+/** 解析一条记录的更新时间，缺失时尽量沿用创建时间兜底。 */
+function resolveProjectUpdatedAt(record: ProjectRecord, createdAt: string): string {
+  return record.updatedAt
+    || record.document?.meta?.updatedAt
+    || createdAt;
+}
+
 /** 把完整项目记录转成列表页使用的摘要。 */
 function toProjectSummary(record: ProjectRecord): ProjectSummary {
   return {
     id: record.id,
     title: record.title,
+    createdAt: record.createdAt,
     updatedAt: record.updatedAt,
     thumbnail: record.thumbnail,
     slideCount: record.document.slides.length,
@@ -53,6 +70,10 @@ function toProjectSummary(record: ProjectRecord): ProjectSummary {
 function sanitizeStoredProjectRecord(record: ProjectRecord): ProjectRecord {
   /** 读取阶段只修正缺失字段，不主动改写更新时间。 */
   const normalizedTitle = record.title?.trim() || record.document?.meta?.title || "未命名课件";
+  /** 旧项目记录可能还没有创建时间，优先用已有时间戳做兼容回填。 */
+  const createdAt = resolveProjectCreatedAt(record);
+  /** 更新时间优先使用已有存储值，避免纯读取阶段误伤排序。 */
+  const updatedAt = resolveProjectUpdatedAt(record, createdAt);
   /** 先标准化一份文档快照，后续缩略图与工作区状态都会依赖它做过滤。 */
   const normalizedDocument = {
     ...clonePlainData(record.document),
@@ -60,6 +81,8 @@ function sanitizeStoredProjectRecord(record: ProjectRecord): ProjectRecord {
       ...clonePlainData(record.document.meta),
       id: record.id,
       title: normalizedTitle,
+      createdAt,
+      updatedAt,
     },
   };
   /** 先清洗 slide 级缩略图，再反推项目首页封面。 */
@@ -76,7 +99,8 @@ function sanitizeStoredProjectRecord(record: ProjectRecord): ProjectRecord {
   return {
     ...clonePlainData(record),
     title: normalizedTitle,
-    updatedAt: record.updatedAt || new Date().toISOString(),
+    createdAt,
+    updatedAt,
     thumbnail: resolveProjectPrimaryThumbnail(normalizedDocument, slideThumbnails),
     slideThumbnails,
     workspaceState,
@@ -88,6 +112,8 @@ function sanitizeStoredProjectRecord(record: ProjectRecord): ProjectRecord {
 function normalizeProjectRecord(record: ProjectRecord): ProjectRecord {
   /** 保存前统一整理标题，避免出现空标题项目。 */
   const normalizedRecord = sanitizeStoredProjectRecord(record);
+  /** 保存成功后需要生成新的更新时间，同时保留原创建时间。 */
+  const updatedAt = new Date().toISOString();
   /** 保存时再次按当前文档过滤一遍缩略图缓存，避免遗留被删除页面的截图。 */
   const slideThumbnails = sanitizeProjectSlideThumbnails(
     normalizedRecord.document,
@@ -96,13 +122,22 @@ function normalizeProjectRecord(record: ProjectRecord): ProjectRecord {
 
   return {
     ...normalizedRecord,
-    updatedAt: new Date().toISOString(),
+    createdAt: normalizedRecord.createdAt,
+    updatedAt,
     thumbnail: resolveProjectPrimaryThumbnail(normalizedRecord.document, slideThumbnails),
     slideThumbnails,
     workspaceState: sanitizeProjectWorkspaceState(
       normalizedRecord.document,
       normalizedRecord.workspaceState,
     ),
+    document: {
+      ...normalizedRecord.document,
+      meta: {
+        ...normalizedRecord.document.meta,
+        createdAt: normalizedRecord.createdAt,
+        updatedAt,
+      },
+    },
   };
 }
 

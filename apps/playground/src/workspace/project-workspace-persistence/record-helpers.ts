@@ -34,6 +34,10 @@ export function buildProjectWorkspaceRecord(
   }
 
   const normalizedTitle = options.projectTitle.trim() || "未命名课件";
+  /** 编辑态保存时必须保留项目首次创建时间，避免后续排序被更新时间覆盖。 */
+  const createdAt = options.documentModel.meta.createdAt ?? new Date().toISOString();
+  /** 当前草稿记录先沿用同一时刻生成更新时间，最终以仓储标准化结果为准。 */
+  const updatedAt = new Date().toISOString();
   const normalizedSlideThumbnails = sanitizeProjectSlideThumbnails(
     options.documentModel,
     options.slideThumbnails,
@@ -42,7 +46,8 @@ export function buildProjectWorkspaceRecord(
   return {
     id: options.projectId,
     title: normalizedTitle,
-    updatedAt: new Date().toISOString(),
+    createdAt,
+    updatedAt,
     thumbnail: resolveProjectPrimaryThumbnail(
       options.documentModel,
       normalizedSlideThumbnails,
@@ -58,6 +63,8 @@ export function buildProjectWorkspaceRecord(
         ...options.documentModel.meta,
         id: options.projectId,
         title: normalizedTitle,
+        createdAt,
+        updatedAt,
       },
     },
   };

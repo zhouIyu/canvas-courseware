@@ -29,11 +29,14 @@ export function createProjectRecordFromDocument(
 ): ProjectRecord {
   /** 新建项目初始时还没有真实截图，先留空等待后续保存链路自动补齐。 */
   const slideThumbnails = {};
+  /** 创建记录时为项目与文档统一初始化创建 / 更新时间。 */
+  const createdAt = createUpdatedAt();
 
   return {
     id,
     title,
-    updatedAt: createUpdatedAt(),
+    createdAt,
+    updatedAt: createdAt,
     thumbnail: resolveProjectPrimaryThumbnail(document, slideThumbnails),
     slideThumbnails,
     workspaceState: createDefaultProjectWorkspaceState(),
@@ -43,6 +46,8 @@ export function createProjectRecordFromDocument(
         ...document.meta,
         id,
         title,
+        createdAt,
+        updatedAt: createdAt,
       },
     },
   };
