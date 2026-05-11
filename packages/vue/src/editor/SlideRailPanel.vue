@@ -633,7 +633,7 @@ onBeforeUnmount(() => {
   gap: 0;
   height: 100%;
   min-height: 0;
-  padding: 10px 8px 12px;
+  padding: 8px 6px 10px;
   border: 1px solid color-mix(in srgb, var(--cw-color-border) 90%, #ffffff);
   border-radius: 16px;
   background: linear-gradient(180deg, #fbfcfe 0%, #f5f7fa 100%);
@@ -641,41 +641,41 @@ onBeforeUnmount(() => {
 
 .rail-toolbar {
   display: grid;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
 .rail-copy {
   display: grid;
-  gap: 4px;
+  gap: 2px;
 }
 
 .rail-copy h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--cw-color-text);
 }
 
 .rail-copy p {
   margin: 0;
-  font-size: 12px;
-  line-height: 1.5;
+  font-size: 11px;
+  line-height: 1.45;
   color: var(--cw-color-muted);
 }
 
 .rail-create-button {
   width: 100%;
-  min-height: 34px;
+  min-height: 32px;
   border-radius: 10px;
 }
 
 .slide-list {
   display: grid;
-  gap: var(--cw-slide-list-gap, 10px);
+  gap: var(--cw-slide-list-gap, 8px);
   align-content: start;
   min-height: 0;
-  padding-right: 4px;
+  padding-right: 2px;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
@@ -684,10 +684,10 @@ onBeforeUnmount(() => {
 .slide-card-shell {
   position: relative;
   display: grid;
-  gap: 8px;
-  padding: var(--cw-slide-card-shell-padding, 8px);
+  gap: 6px;
+  padding: var(--cw-slide-card-shell-padding, 6px);
   border: 1px solid transparent;
-  border-radius: 14px;
+  border-radius: 12px;
   background: transparent;
   transition:
     border-color var(--cw-duration-fast) var(--cw-ease-standard),
@@ -752,7 +752,7 @@ onBeforeUnmount(() => {
 
 .slide-card {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
   cursor: pointer;
   outline: none;
@@ -767,20 +767,20 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
 }
 
 .slide-card-flags {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 4px;
   min-width: 0;
 }
 
 .slide-index {
   margin: 0;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   line-height: 1.4;
   letter-spacing: 0.14em;
@@ -791,10 +791,10 @@ onBeforeUnmount(() => {
 .slide-state-pill {
   display: inline-flex;
   align-items: center;
-  min-height: 22px;
-  padding: 0 8px;
+  min-height: 20px;
+  padding: 0 6px;
   border-radius: var(--cw-radius-pill);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   line-height: 1;
   color: var(--cw-color-muted);
@@ -812,19 +812,19 @@ onBeforeUnmount(() => {
 }
 
 .slide-drag-caption {
-  font-size: 11px;
+  font-size: 10px;
   line-height: 1.4;
   color: var(--cw-color-muted);
 }
 
 .slide-thumbnail {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   justify-items: center;
-  min-height: var(--cw-slide-thumbnail-min-height, 78px);
-  padding: 12px;
+  min-height: var(--cw-slide-thumbnail-min-height, 64px);
+  padding: 10px 8px;
   border: 1px solid #dfe6ee;
-  border-radius: 12px;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.98);
   box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
 }
@@ -837,30 +837,30 @@ onBeforeUnmount(() => {
 }
 
 .thumb-line.long {
-  width: 76px;
+  width: 58px;
 }
 
 .thumb-line.short {
-  width: 52px;
+  width: 40px;
   opacity: 0.64;
 }
 
 .thumb-dots {
   display: flex;
-  gap: 6px;
+  gap: 5px;
 }
 
 .thumb-dots i {
   display: inline-block;
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: color-mix(in srgb, var(--cw-color-primary) 70%, #ffffff);
 }
 
 .slide-card-copy {
   display: grid;
-  gap: 6px;
+  gap: 4px;
   min-width: 0;
 }
 
@@ -871,9 +871,9 @@ onBeforeUnmount(() => {
 .slide-name {
   display: block;
   overflow: hidden;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
-  line-height: 1.45;
+  line-height: 1.35;
   color: var(--cw-color-text);
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -886,9 +886,9 @@ onBeforeUnmount(() => {
 .slide-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 8px;
-  font-size: 12px;
-  line-height: 1.5;
+  gap: 4px 6px;
+  font-size: 11px;
+  line-height: 1.4;
   color: var(--cw-color-muted);
 }
 
@@ -896,8 +896,8 @@ onBeforeUnmount(() => {
   display: var(--cw-slide-card-hint-display, flex);
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  font-size: 11px;
+  gap: 6px;
+  font-size: 10px;
   line-height: 1.4;
   color: color-mix(in srgb, var(--cw-color-muted) 78%, #ffffff);
   transition: color var(--cw-duration-fast) var(--cw-ease-standard);

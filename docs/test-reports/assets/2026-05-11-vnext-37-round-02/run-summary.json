@@ -1,0 +1,35 @@
+{
+  "assetDir": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-05-11-vnext-37-round-02",
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-05-11T09:59:09.752Z",
+  "checks": [
+    {
+      "id": "edit-layout-metrics",
+      "metrics": {
+        "viewportWidth": 1440,
+        "rootWidth": 1382,
+        "layoutWidth": 1380,
+        "railWidth": 144,
+        "stageWidth": 994,
+        "sideWidth": 208,
+        "thumbnailHeight": 60,
+        "stageRatioToLayout": 0.7203
+      }
+    },
+    {
+      "id": "preview-layout-metrics",
+      "metrics": {
+        "viewportWidth": 1440,
+        "rootWidth": 1382,
+        "layoutWidth": 1380,
+        "railWidth": 136,
+        "stageWidth": 1012,
+        "sideWidth": 200,
+        "thumbnailHeight": 44,
+        "stageRatioToLayout": 0.7333
+      }
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

@@ -273,51 +273,51 @@ const resolvePreviewLayoutVariables = (
 ): Record<string, string> => {
   if (density === "dense") {
     return {
-      "--cw-preview-rail-width": "148px",
-      "--cw-preview-side-width": "224px",
-      "--cw-preview-layout-gap": "10px",
-      "--cw-preview-layout-padding": "10px",
+      "--cw-preview-rail-width": "128px",
+      "--cw-preview-side-width": "188px",
+      "--cw-preview-layout-gap": "8px",
+      "--cw-preview-layout-padding": "8px",
       "--cw-preview-stage-padding-block-start": "8px",
-      "--cw-preview-stage-padding-inline": "10px",
-      "--cw-preview-stage-padding-block-end": "12px",
+      "--cw-preview-stage-padding-inline": "8px",
+      "--cw-preview-stage-padding-block-end": "10px",
       "--cw-preview-fit-padding-block-start": "4px",
-      "--cw-preview-fit-padding-inline": "8px",
-      "--cw-preview-fit-padding-block-end": "10px",
+      "--cw-preview-fit-padding-inline": "4px",
+      "--cw-preview-fit-padding-block-end": "6px",
       "--cw-preview-step-card-height": "68px",
-      "--cw-preview-slide-thumbnail-height": "44px",
+      "--cw-preview-slide-thumbnail-height": "40px",
     };
   }
 
   if (density === "compact") {
     return {
-      "--cw-preview-rail-width": "160px",
-      "--cw-preview-side-width": "240px",
-      "--cw-preview-layout-gap": "10px",
-      "--cw-preview-layout-padding": "10px",
+      "--cw-preview-rail-width": "136px",
+      "--cw-preview-side-width": "200px",
+      "--cw-preview-layout-gap": "8px",
+      "--cw-preview-layout-padding": "8px",
       "--cw-preview-stage-padding-block-start": "10px",
-      "--cw-preview-stage-padding-inline": "12px",
-      "--cw-preview-stage-padding-block-end": "14px",
+      "--cw-preview-stage-padding-inline": "8px",
+      "--cw-preview-stage-padding-block-end": "10px",
       "--cw-preview-fit-padding-block-start": "6px",
-      "--cw-preview-fit-padding-inline": "12px",
-      "--cw-preview-fit-padding-block-end": "12px",
+      "--cw-preview-fit-padding-inline": "6px",
+      "--cw-preview-fit-padding-block-end": "8px",
       "--cw-preview-step-card-height": "74px",
-      "--cw-preview-slide-thumbnail-height": "48px",
+      "--cw-preview-slide-thumbnail-height": "44px",
     };
   }
 
   return {
-    "--cw-preview-rail-width": "176px",
-    "--cw-preview-side-width": "264px",
-    "--cw-preview-layout-gap": "12px",
-    "--cw-preview-layout-padding": "12px",
-    "--cw-preview-stage-padding-block-start": "14px",
-    "--cw-preview-stage-padding-inline": "16px",
-    "--cw-preview-stage-padding-block-end": "20px",
-    "--cw-preview-fit-padding-block-start": "10px",
-    "--cw-preview-fit-padding-inline": "20px",
-    "--cw-preview-fit-padding-block-end": "22px",
+    "--cw-preview-rail-width": "140px",
+    "--cw-preview-side-width": "204px",
+    "--cw-preview-layout-gap": "8px",
+    "--cw-preview-layout-padding": "8px",
+    "--cw-preview-stage-padding-block-start": "10px",
+    "--cw-preview-stage-padding-inline": "8px",
+    "--cw-preview-stage-padding-block-end": "10px",
+    "--cw-preview-fit-padding-block-start": "8px",
+    "--cw-preview-fit-padding-inline": "6px",
+    "--cw-preview-fit-padding-block-end": "10px",
     "--cw-preview-step-card-height": "84px",
-    "--cw-preview-slide-thumbnail-height": "52px",
+    "--cw-preview-slide-thumbnail-height": "48px",
   };
 };
 

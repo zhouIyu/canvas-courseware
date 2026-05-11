@@ -206,12 +206,12 @@
 - [x] VNext-36-E 预览态播放体验增强：已为预览态补齐页级 / 课件级播放进度提示、整份课件播放完成状态与“重新开始课件”入口；内嵌预览与宽屏提示卡都会同步回显多页进度，且支持 `Shift + R` 从第一页重启整份课件；已通过 `pnpm typecheck`、`pnpm build`、`pnpm test:vnext-36-e`，并联动回归 `pnpm test:vnext-35-d`
 - [x] VNext-36-F 自动保存与恢复韧性优化：已为项目打开阶段补齐“完整恢复 / 资源缺失 / 仓库不可用 / 恢复失败”四类恢复摘要，并在资产仓库不可用时为自动保存补齐显式降级提示；所有异常继续复用统一诊断日志链路，新增 `assetHydrationStatus` 与 `assetStorageStatus` 上下文字段；已通过 `pnpm typecheck`、`pnpm build`、`pnpm test:vnext-36-f`，并联动回归 `pnpm test:vnext-36-d` 与 `pnpm test:vnext-32-d`
 - [x] VNext-37-A 压缩顶部状态反馈的视觉权重：已移除工作台顶部横幅式反馈，改为右上角轻量保存状态指示器与顶部 `Message` 提示；保存成功会在 3 秒后收起文字仅保留图标，资源恢复 / 导入导出 / 降级保存反馈改为不占布局的轻量提示，同时保留隐藏桥接节点兼容既有自动化回归；已通过 `pnpm typecheck`、`pnpm build`、`pnpm test:vnext-37-a`，并联动回归 `pnpm test:vnext-33` 与 `pnpm test:vnext-36-f`
+- [x] VNext-37-B 强化中央画布区域占比：已同步压缩编辑态 / 预览态三栏宽度、中心画布外围留白与左侧页面卡片密度；在 `1440 x 900` 视口下，编辑态中央区域占比达 `72.03%`、预览态达 `73.33%`，并通过 `pnpm typecheck`、`pnpm build` 与 `pnpm test:vnext-37-b` 验证
 
 ## 待完成
 
 ### VNext-37 UI/UX 优化（简洁、大气、方便使用）
 
-- [ ] VNext-37-B 强化中央画布区域占比
 - [ ] VNext-37-C 重构右侧工具区的视觉层级
 - [ ] VNext-37-D 简化时间轴面板的信息密度
 - [ ] VNext-37-E 统一按钮样式与操作层级
@@ -227,8 +227,8 @@
 
 - `VNext-36` 的 `A / B / C / D / E / F` 已全部完成。
 - `VNext-37` 已完成版本规划，并已同步进入当前执行池。
-- `VNext-37-A` 已完成开发、自测与回归，当前可先等待用户 review。
-- 下一步按 `VNext-37-B` 继续推进三栏宽度与中央画布占比优化。
+- `VNext-37-A / VNext-37-B` 已完成开发、自测与回归，当前可先等待用户 review。
+- 下一步按 `VNext-37-C` 继续推进右侧工具区视觉层级优化。
 - 详细设计文档见 `docs/vnext-37/` 目录。
 
 ## 相关文档
