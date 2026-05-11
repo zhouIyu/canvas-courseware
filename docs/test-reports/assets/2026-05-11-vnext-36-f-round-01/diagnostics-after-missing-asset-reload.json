@@ -1,13 +1,13 @@
 [
   {
-    "id": "diag-1778483618697-1",
+    "id": "diag-1778490544209-1",
     "scope": "workspace",
     "event": "project.asset.hydrate.partial",
     "message": "部分本地图片资产缺失，已保留原始引用等待后续处理",
     "level": "warn",
-    "timestamp": "2026-05-11T07:13:38.697Z",
+    "timestamp": "2026-05-11T09:09:04.209Z",
     "context": {
-      "projectId": "document-20c05f9a-6fca-4acd-875b-a2414faa3b35",
+      "projectId": "document-fbaff4cc-e740-4ca8-bb2f-54acb39a3906",
       "activeSlideId": null,
       "workspaceMode": "edit",
       "missingAssetCount": 1,
@@ -15,15 +15,15 @@
     }
   },
   {
-    "id": "diag-1778483618697-2",
+    "id": "diag-1778490544209-2",
     "scope": "workspace",
     "event": "project.load.completed",
     "message": "已加载本地项目",
     "level": "info",
-    "timestamp": "2026-05-11T07:13:38.697Z",
+    "timestamp": "2026-05-11T09:09:04.209Z",
     "context": {
-      "projectId": "document-20c05f9a-6fca-4acd-875b-a2414faa3b35",
-      "activeSlideId": "slide-4ce34004-4869-4a8a-b0c3-6cb674828260",
+      "projectId": "document-fbaff4cc-e740-4ca8-bb2f-54acb39a3906",
+      "activeSlideId": "slide-c9240401-804e-4ac2-9a08-f21f26f69bea",
       "workspaceMode": "edit",
       "slideCount": 1,
       "assetHydrationStatus": "partial-missing",

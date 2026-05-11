@@ -5,6 +5,7 @@ import {
   ensureDirectory,
   findProjectById,
   launchBrowserSession,
+  readWorkspaceSaveStatusLabel,
   readStoredProjects,
   waitForSaved,
   writeJsonFile,
@@ -78,7 +79,7 @@ function readNodesByType(project, type) {
  * @returns {Promise<string>}
  */
 async function readSaveStatusLabel(page) {
-  return page.locator(".save-inline-meta .arco-tag").innerText();
+  return readWorkspaceSaveStatusLabel(page);
 }
 
 /**

@@ -1,0 +1,28 @@
+{
+  "version": "1.0.0",
+  "meta": {
+    "id": "document-7489b1a8-ac9a-45ce-960e-d71305293910",
+    "title": "VNext-37-A 顶栏反馈优化回归",
+    "createdAt": "2026-05-11T09:33:30.917Z",
+    "updatedAt": "2026-05-11T09:33:37.816Z"
+  },
+  "slides": [
+    {
+      "id": "slide-a6681ebb-60e5-4d4b-a570-3597360dffc2",
+      "name": "第1页",
+      "size": {
+        "width": 1280,
+        "height": 720
+      },
+      "background": {
+        "fill": "#FFFFFF",
+        "image": null
+      },
+      "nodes": [],
+      "timeline": {
+        "steps": [],
+        "animations": []
+      }
+    }
+  ]
+}

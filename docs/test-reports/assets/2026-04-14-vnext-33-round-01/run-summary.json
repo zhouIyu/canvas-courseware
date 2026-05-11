@@ -1,7 +1,7 @@
 {
   "baseUrl": "http://127.0.0.1:32173/projects",
   "appendedText": " 自动保存暂缓后继续输入",
-  "executedAt": "2026-04-14T14:27:42.200Z",
+  "executedAt": "2026-05-11T09:08:59.090Z",
   "desktopViewport": {
     "width": 1440,
     "height": 900
@@ -9,7 +9,7 @@
   "checks": [
     {
       "id": "insert-text",
-      "nodeId": "node-7a79c395-6a28-4a69-bdc5-e5a86d4d25db",
+      "nodeId": "node-13b8f046-8a6e-4046-afc2-c346085337a7",
       "fontSize": 32
     },
     {

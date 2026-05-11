@@ -1,5 +1,5 @@
 import type { CoursewareDocument, DiagnosticLogContext, EditorSnapshot } from "@canvas-courseware/core";
-import type { RequestOption } from "@arco-design/web-vue";
+import { Message, type RequestOption } from "@arco-design/web-vue";
 import { computed, onBeforeUnmount, ref, watch, type ComputedRef } from "vue";
 import { downloadCoursewareJson, formatCoursewareJsonError, readCoursewareJsonFile } from "../projects/courseware-json";
 import { clearProjectAssetSourceCache, normalizeProjectDocumentAssetSources } from "../projects/project-assets";
@@ -35,6 +35,8 @@ type WorkspaceFeedbackKind = "operation" | "asset-hydration" | "thumbnail" | "sa
 
 /** 顶部反馈条内部维护的一条结构化消息。 */
 interface WorkspaceFeedbackEntry {
+  /** 当前反馈的唯一序号，供轻量提示去重。 */
+  id: number;
   /** 当前反馈属于哪一类能力。 */
   kind: WorkspaceFeedbackKind;
   /** 当前反馈语义。 */
@@ -114,24 +116,20 @@ export function useProjectWorkspacePersistence(
   /** 最近一次保存时间。 */
   const lastSavedAt = ref<string | null>(null);
 
+  /** 最近一次保存失败的详情，供顶栏状态详情复用。 */
+  const lastSaveErrorMessage = ref<string | null>(null);
+
   /** 最近一次导入导出类反馈。 */
   const operationFeedback = ref<WorkspaceFeedbackEntry | null>(null);
 
   /** 最近一次需要保留的资源类反馈。 */
   const resourceFeedback = ref<WorkspaceFeedbackEntry | null>(null);
 
-  /** 顶部统一展示的反馈，优先展示最新的显式操作结果。 */
-  const ioFeedback = computed(() => {
-    const feedback = operationFeedback.value ?? resourceFeedback.value;
-    if (!feedback) {
-      return null;
-    }
+  /** 顶部反馈桥接层，优先复用显式操作的结果文案。 */
+  const displayedFeedback = computed(() => operationFeedback.value ?? resourceFeedback.value);
 
-    return {
-      tone: feedback.tone,
-      message: feedback.message,
-    };
-  });
+  /** 顶部统一桥接给测试和辅助朗读区域的反馈。 */
+  const ioFeedback = computed(() => displayedFeedback.value);
 
   /** 自动保存计时器。 */
   let saveTimer: ReturnType<typeof setTimeout> | null = null;
@@ -139,10 +137,17 @@ export function useProjectWorkspacePersistence(
   /** 当前这一轮自动保存是否已经记录过“因连续编辑而暂缓”的日志。 */
   let hasLoggedAutoSaveBlock = false;
 
+  /** 反馈序号生成器，避免同一条持久反馈在重新显现时重复弹 Toast。 */
+  let feedbackSequence = 0;
+
+  /** 已经弹出过的反馈序号集合。 */
+  const shownFeedbackIds = new Set<number>();
+
   /** 组合顶部保存状态文案与颜色。 */
-  const { saveStatusHint, saveStatusLabel, saveStatusTagColor } = useWorkspaceSaveStatus(
+  const { saveStatusDetail, saveStatusLabel } = useWorkspaceSaveStatus(
     saveStatus,
     lastSavedAt,
+    lastSaveErrorMessage,
   );
 
   /** 清理自动保存计时器。 */
@@ -157,6 +162,37 @@ export function useProjectWorkspacePersistence(
 
   /** 读取当前自动保存是否需要暂缓，以及暂缓原因。 */
   const resolveAutoSaveBlockReason = () => options.resolveAutoSaveBlockReason?.() ?? null;
+
+  /** 生成一条新的结构化反馈 id。 */
+  const createFeedbackId = () => {
+    feedbackSequence += 1;
+    return feedbackSequence;
+  };
+
+  /** 把结构化反馈收敛成右上角轻量 Toast。 */
+  const showWorkspaceFeedbackToast = (feedback: WorkspaceFeedbackEntry) => {
+    Message.clear("top");
+    const config = {
+      closable: feedback.tone !== "success",
+      content: feedback.message,
+      duration: feedback.tone === "success" ? 3000 : 5000,
+      position: "top" as const,
+      showIcon: true,
+    };
+
+    switch (feedback.tone) {
+      case "error":
+        Message.error(config);
+        break;
+      case "warning":
+        Message.warning(config);
+        break;
+      case "success":
+      default:
+        Message.success(config);
+        break;
+    }
+  };
 
   /** 安排下一次自动保存执行时机，供首次调度和短间隔重试复用。 */
   const queueAutoSave = (delayMs: number) => {
@@ -205,12 +241,14 @@ export function useProjectWorkspacePersistence(
     switch (hydrationResult.status) {
       case "failed":
         return {
+          id: createFeedbackId(),
           kind: "asset-hydration",
           tone: "warning",
           message: "项目已打开，但本地图片资源恢复失败；当前先按原始引用展示，建议重新检查相关图片资源。",
         };
       case "partial-missing":
         return {
+          id: createFeedbackId(),
           kind: "asset-hydration",
           tone: "warning",
           message:
@@ -228,6 +266,7 @@ export function useProjectWorkspacePersistence(
         }
 
         return {
+          id: createFeedbackId(),
           kind: "asset-hydration",
           tone: "warning",
           message: "当前环境无法访问本地图片仓库，项目已按原始引用恢复；若图片未显示，需在支持 IndexedDB 的环境中重新打开。",
@@ -239,6 +278,7 @@ export function useProjectWorkspacePersistence(
         }
 
         return {
+          id: createFeedbackId(),
           kind: "asset-hydration",
           tone: "success",
           message:
@@ -258,6 +298,7 @@ export function useProjectWorkspacePersistence(
     }
 
     return {
+      id: createFeedbackId(),
       kind: "save-resilience",
       tone: "warning",
       message: "当前环境无法访问本地图片仓库，项目已保存，但本地图片将继续以原始 data URL 形式保留。",
@@ -270,6 +311,7 @@ export function useProjectWorkspacePersistence(
     message: string,
   ) => {
     operationFeedback.value = {
+      id: createFeedbackId(),
       kind: "operation",
       tone,
       message,
@@ -283,6 +325,7 @@ export function useProjectWorkspacePersistence(
     message: string,
   ) => {
     resourceFeedback.value = {
+      id: createFeedbackId(),
       kind,
       tone,
       message,
@@ -385,6 +428,7 @@ export function useProjectWorkspacePersistence(
     hasLoggedAutoSaveBlock = false;
     clearSaveTimer();
     saveStatus.value = "saving";
+    lastSaveErrorMessage.value = null;
 
     workspaceDiagnosticLogger.info({
       event: "project.save.started",
@@ -417,6 +461,7 @@ export function useProjectWorkspacePersistence(
       projectTitle.value = savedRecord.title;
       lastSavedAt.value = savedRecord.updatedAt;
       saveStatus.value = "saved";
+      lastSaveErrorMessage.value = null;
       operationFeedback.value = null;
       if (persistResilienceFeedback) {
         resourceFeedback.value = persistResilienceFeedback;
@@ -450,12 +495,11 @@ export function useProjectWorkspacePersistence(
       return true;
     } catch (error) {
       saveStatus.value = "error";
-      setOperationFeedback(
-        "error",
+      lastSaveErrorMessage.value =
         trigger === "auto"
           ? "自动保存失败，请稍后重试；当前修改仍保留在页面中。"
-          : "项目保存失败，请稍后重试；当前修改仍保留在页面中。",
-      );
+          : "项目保存失败，请稍后重试；当前修改仍保留在页面中。";
+      setOperationFeedback("error", lastSaveErrorMessage.value);
       workspaceDiagnosticLogger.error({
         event: "project.save.failed",
         message: trigger === "auto" ? "自动保存失败" : "项目保存失败",
@@ -544,6 +588,7 @@ export function useProjectWorkspacePersistence(
     editorSnapshot.value = null;
     lastSavedAt.value = projectRecord.updatedAt;
     saveStatus.value = "saved";
+    lastSaveErrorMessage.value = null;
     isLoading.value = false;
 
     workspaceDiagnosticLogger.info({
@@ -758,6 +803,29 @@ export function useProjectWorkspacePersistence(
     { immediate: true },
   );
 
+  /** 当顶层反馈变化时，补充一条不占布局的轻量提示。 */
+  watch(
+    () => displayedFeedback.value?.id ?? null,
+    (feedbackId) => {
+      if (!feedbackId || shownFeedbackIds.has(feedbackId)) {
+        return;
+      }
+
+      const feedback = displayedFeedback.value;
+      if (!feedback) {
+        return;
+      }
+
+      if (feedback.kind === "asset-hydration" && feedback.tone === "success") {
+        shownFeedbackIds.add(feedbackId);
+        return;
+      }
+
+      shownFeedbackIds.add(feedbackId);
+      showWorkspaceFeedbackToast(feedback);
+    },
+  );
+
   /** 页面销毁时清理自动保存计时器。 */
   onBeforeUnmount(() => {
     clearSaveTimer();
@@ -780,9 +848,9 @@ export function useProjectWorkspacePersistence(
     isLoading,
     isProjectMissing,
     projectTitle,
-    saveStatusHint,
+    saveStatus,
+    saveStatusDetail,
     saveStatusLabel,
-    saveStatusTagColor,
     slideThumbnails,
     workspaceState,
   };

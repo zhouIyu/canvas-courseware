@@ -92,9 +92,9 @@ const workspaceContentHeight = computed(() =>
     isLoading,
     isProjectMissing,
   projectTitle,
-  saveStatusHint,
+  saveStatus,
+  saveStatusDetail,
     saveStatusLabel,
-    saveStatusTagColor,
     slideThumbnails,
     workspaceState,
   } = useProjectWorkspacePersistence({
@@ -229,9 +229,9 @@ onMounted(() => {
         :io-feedback="ioFeedback"
         :json-import-request="handleJsonImportRequest"
         :project-title="projectTitle"
-        :save-status-hint="saveStatusHint"
+        :save-status="saveStatus"
+        :save-status-detail="saveStatusDetail"
         :save-status-label="saveStatusLabel"
-        :save-status-tag-color="saveStatusTagColor"
         :workspace-mode="workspaceMode"
         @back="goBackToProjects"
         @change:mode="switchWorkspaceMode"

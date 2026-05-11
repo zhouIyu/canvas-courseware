@@ -270,8 +270,63 @@ export async function writeJsonFile(filePath, value) {
  */
 export async function waitForSaved(page) {
   await page.waitForTimeout(1500);
-  await page.locator(".save-inline-meta .arco-tag").filter({ hasText: "已保存" }).waitFor();
+  await page.waitForFunction(() => {
+    const indicator = document.querySelector("[data-save-status-label]");
+    if (indicator instanceof HTMLElement) {
+      return indicator.dataset.saveStatusLabel === "已保存";
+    }
+
+    const legacyTag = document.querySelector(".save-inline-meta .arco-tag");
+    return legacyTag?.textContent?.includes("已保存") ?? false;
+  });
   await page.waitForTimeout(200);
+}
+
+/**
+ * 读取当前顶部保存状态文案，兼容新旧两套 DOM 结构。
+ *
+ * @param {import("playwright").Page} page
+ * @returns {Promise<string>}
+ */
+export async function readWorkspaceSaveStatusLabel(page) {
+  return page.evaluate(() => {
+    const indicator = document.querySelector("[data-save-status-label]");
+    if (indicator instanceof HTMLElement) {
+      return indicator.dataset.saveStatusLabel?.trim() ?? "";
+    }
+
+    const legacyTag = document.querySelector(".save-inline-meta .arco-tag");
+    return legacyTag?.textContent?.trim() ?? "";
+  });
+}
+
+/**
+ * 读取顶部反馈桥接区文案，兼容轻量 Toast 改造后的隐藏辅助节点。
+ *
+ * @param {import("playwright").Page} page
+ * @returns {Promise<string>}
+ */
+export async function readWorkspaceIoFeedbackText(page) {
+  return page.evaluate(() => {
+    const feedbackElement = document.querySelector(".io-feedback");
+    return feedbackElement?.textContent?.replace(/\s+/g, " ").trim() ?? "";
+  });
+}
+
+/**
+ * 等待顶部反馈桥接区更新为指定关键字。
+ *
+ * @param {import("playwright").Page} page
+ * @param {string} expectedText
+ * @returns {Promise<string>}
+ */
+export async function waitForWorkspaceIoFeedbackText(page, expectedText) {
+  await page.waitForFunction((text) => {
+    const feedbackElement = document.querySelector(".io-feedback");
+    return Boolean(feedbackElement?.textContent?.includes(text));
+  }, expectedText);
+
+  return readWorkspaceIoFeedbackText(page);
 }
 
 /**

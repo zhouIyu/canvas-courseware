@@ -7,6 +7,7 @@ export type WorkspaceSaveStatus = "saved" | "saving" | "dirty" | "error";
 export function useWorkspaceSaveStatus(
   saveStatus: Ref<WorkspaceSaveStatus>,
   lastSavedAt: Ref<string | null>,
+  lastSaveErrorMessage: Ref<string | null>,
 ) {
   /** 当前保存状态的用户可读标签。 */
   const saveStatusLabel = computed(() => {
@@ -20,26 +21,15 @@ export function useWorkspaceSaveStatus(
       case "saved":
       default:
         return "已保存";
-    }
+      }
   });
 
-  /** 保存状态对应的标签色值。 */
-  const saveStatusTagColor = computed(() => {
-    switch (saveStatus.value) {
-      case "saving":
-        return "#165dff";
-      case "dirty":
-        return "#ff7d00";
-      case "error":
-        return "#f53f3f";
-      case "saved":
-      default:
-        return "#00b42a";
+  /** 保存状态指示器展开时的辅助说明。 */
+  const saveStatusDetail = computed(() => {
+    if (saveStatus.value === "error" && lastSaveErrorMessage.value) {
+      return lastSaveErrorMessage.value;
     }
-  });
 
-  /** 最近保存时间的辅助文案。 */
-  const saveStatusHint = computed(() => {
     if (!lastSavedAt.value) {
       return "本地项目会自动持久化";
     }
@@ -53,8 +43,7 @@ export function useWorkspaceSaveStatus(
   });
 
   return {
-    saveStatusHint,
+    saveStatusDetail,
     saveStatusLabel,
-    saveStatusTagColor,
   };
 }

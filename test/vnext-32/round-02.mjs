@@ -6,6 +6,7 @@ import {
   ensureDirectory,
   findProjectById,
   normalizeInlineText,
+  readWorkspaceIoFeedbackText,
   readStoredProjects,
   waitForSaved,
   writeJsonFile,
@@ -139,8 +140,7 @@ async function readStoredProject(page, projectId) {
  * @returns {Promise<string>}
  */
 async function readIoFeedbackText(page) {
-  const rawText = await page.locator(".io-feedback").innerText();
-  return normalizeInlineText(rawText);
+  return normalizeInlineText(await readWorkspaceIoFeedbackText(page));
 }
 
 /**

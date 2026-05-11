@@ -69,3 +69,10 @@ textarea,
 select {
   font: inherit;
 }
+
+.arco-message-list-top {
+  top: 68px;
+  align-items: flex-end;
+  padding-right: 16px;
+  padding-left: 16px;
+}

@@ -35,13 +35,13 @@
 }
 
 .workspace-topbar {
-  display: grid;
-  gap: 8px;
-  align-items: start;
+  display: flex;
+  align-items: center;
   position: sticky;
   top: 0;
   z-index: 8;
-  padding: 8px 14px 10px;
+  height: 56px;
+  padding: 0 14px;
   border-bottom: 1px solid color-mix(in srgb, var(--cw-color-border) 90%, #ffffff);
   background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(14px);
@@ -49,24 +49,24 @@
 
 .topbar-main-row {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   min-width: 0;
-  gap: var(--cw-space-2);
+  width: 100%;
+  height: 100%;
 }
 
 .topbar-primary-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
-  flex: 1 1 560px;
+  width: 100%;
 }
 
 .back-button {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: 10px;
   flex-shrink: 0;
 }
@@ -84,7 +84,7 @@
 }
 
 .title-input :deep(.arco-input-wrapper) {
-  min-height: 36px;
+  min-height: 34px;
   border-radius: 10px;
   border-color: transparent;
   background: #f7f8fa;
@@ -102,50 +102,121 @@
 }
 
 .workspace-mode-switch :deep(.arco-radio) {
-  min-height: 30px;
+  min-height: 28px;
 }
 
 .workspace-actions {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  flex: 1 1 480px;
+  flex: 1 0 auto;
   gap: 8px;
   min-width: 0;
+  margin-left: auto;
 }
 
 .utility-button {
-  min-height: 34px;
-  padding: 0 12px;
+  min-height: 32px;
+  padding: 0 11px;
   font-size: 12px;
   border-radius: 10px;
 }
 
-.save-inline-meta {
+.workspace-upload {
+  display: inline-flex;
+}
+
+.save-status-indicator {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  margin-left: 4px;
-  padding-left: 10px;
-  border-left: 1px solid color-mix(in srgb, var(--cw-color-border) 92%, #ffffff);
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: #f7f8fa;
+  color: var(--cw-color-text);
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease,
+    padding 220ms ease;
+}
+
+.save-status-indicator.is-saved {
+  background: color-mix(in srgb, #00b42a 8%, #ffffff);
+  color: #087c2a;
+}
+
+.save-status-indicator.is-saving {
+  background: color-mix(in srgb, #165dff 8%, #ffffff);
+  color: #165dff;
+}
+
+.save-status-indicator.is-dirty {
+  background: color-mix(in srgb, #ff7d00 10%, #ffffff);
+  color: #ad4e00;
+}
+
+.save-status-indicator.is-error {
+  background: color-mix(in srgb, #f53f3f 10%, #ffffff);
+  color: #c91f37;
+}
+
+.save-status-indicator.is-clickable {
+  cursor: pointer;
+}
+
+.save-status-indicator.is-clickable:hover {
+  border-color: color-mix(in srgb, currentColor 16%, #ffffff);
+}
+
+.save-status-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.save-status-text {
+  max-width: 88px;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  opacity: 1;
+  transition:
+    max-width 220ms ease,
+    opacity 220ms ease,
+    margin 220ms ease;
+}
+
+.save-status-indicator.is-collapsed {
+  padding-right: 9px;
+  padding-left: 9px;
+}
+
+.save-status-indicator.is-collapsed .save-status-text {
+  max-width: 0;
+  margin-left: -4px;
+  opacity: 0;
+}
+
+.save-inline-meta,
+.io-feedback {
+  position: fixed;
+  top: -9999px;
+  left: -9999px;
+  min-width: 1px;
+  min-height: 1px;
+  pointer-events: none;
+  white-space: nowrap;
 }
 
 .save-inline-meta small {
   font-size: 12px;
   color: var(--cw-color-muted);
-  white-space: nowrap;
   line-height: 1;
-}
-
-.io-feedback {
-  max-width: min(640px, 100%);
-  margin-left: auto;
-}
-
-.io-feedback :deep(.arco-alert-content) {
-  font-size: 12px;
-  line-height: 1.5;
 }
 
 .visually-hidden-input {

@@ -10,6 +10,7 @@ import {
   readDiagnosticEntries,
   readIndexedDbStoreRecords,
   readStoredProjects,
+  readWorkspaceIoFeedbackText,
   waitForSaved,
   writeJsonFile,
 } from "../shared/browser-test-helpers.mjs";
@@ -67,7 +68,7 @@ function assertOrThrow(condition, message) {
  * @returns {Promise<string>}
  */
 async function readIoFeedback(page) {
-  return normalizeInlineText(await page.locator(".io-feedback").textContent());
+  return normalizeInlineText(await readWorkspaceIoFeedbackText(page));
 }
 
 /**

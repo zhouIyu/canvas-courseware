@@ -1,0 +1,36 @@
+{
+  "assetDir": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-05-11-vnext-37-round-01",
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-05-11T09:33:28.809Z",
+  "checks": [
+    {
+      "id": "initial-topbar",
+      "topbarMetrics": {
+        "height": 56,
+        "width": 1410
+      },
+      "initialSaveLabel": "已保存"
+    },
+    {
+      "id": "autosave-status-cycle",
+      "dirtySaveLabel": "未保存",
+      "savedSaveLabel": "已保存"
+    },
+    {
+      "id": "saved-text-collapse",
+      "collapsedState": {
+        "label": "已保存",
+        "textWidth": "0px",
+        "className": "save-status-indicator is-saved is-collapsed"
+      }
+    },
+    {
+      "id": "io-feedback-bridge",
+      "ioFeedbackText": "已导出 VNext-37-A-顶栏反馈优化回归-2026-05-11.json",
+      "hasVisibleAlert": 0,
+      "downloadPath": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-05-11-vnext-37-round-01/VNext-37-A-顶栏反馈优化回归-2026-05-11.json"
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}
