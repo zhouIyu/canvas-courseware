@@ -77,10 +77,10 @@
 
 .preview-topbar {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 400px);
+  grid-template-columns: minmax(0, 1fr) minmax(520px, auto);
   gap: var(--cw-space-3);
-  align-items: end;
-  padding: 14px 18px;
+  align-items: center;
+  padding: 12px 18px;
   border-bottom: 1px solid color-mix(in srgb, var(--cw-color-border) 92%, #ffffff);
   background: rgba(255, 255, 255, 0.96);
 }
@@ -109,30 +109,27 @@
 .preview-topbar-actions {
   display: grid;
   justify-items: end;
-  gap: 6px;
+  align-items: center;
+  gap: 10px;
+}
+
+.preview-topbar-action-group {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  min-width: 0;
+}
+
+.preview-topbar-action-group::after {
+  content: "";
+  width: 1px;
+  align-self: stretch;
+  background: color-mix(in srgb, var(--cw-color-border) 90%, #ffffff);
 }
 
 .preview-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  padding: 4px 6px;
-  border: 1px solid color-mix(in srgb, var(--cw-color-border) 88%, #ffffff);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.72);
-}
-
-.preview-actions :deep(.arco-btn) {
-  min-height: 32px;
-  padding: 0 10px;
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 600;
-  transition: transform var(--cw-duration-fast) var(--cw-ease-standard);
-}
-
-.preview-actions :deep(.arco-btn:hover) {
-  transform: translateY(-1px);
+  min-width: 0;
 }
 
 .preview-actions-compact {
@@ -232,7 +229,7 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 10px;
 }
 
 .embedded-preview-actions {
@@ -384,6 +381,11 @@
 
 .topbar-badges {
   justify-content: flex-end;
+}
+
+.topbar-badges,
+.preview-stage-status-badges {
+  flex-wrap: nowrap;
 }
 
 .section-head h3 {
@@ -777,6 +779,24 @@
     grid-template-columns: 1fr;
   }
 
+  .preview-topbar-actions {
+    justify-items: start;
+  }
+
+  .preview-topbar-action-group {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .preview-topbar-action-group::after {
+    display: none;
+  }
+
+  .topbar-badges,
+  .preview-stage-status-badges {
+    flex-wrap: wrap;
+  }
+
   .preview-layout .preview-side-badge-left,
   .preview-layout.is-left-collapsed .preview-side-badge-left,
   .preview-layout.is-left-collapsed.is-right-collapsed .preview-side-badge-left {
@@ -819,6 +839,10 @@
   .status-badges {
     justify-items: start;
     justify-content: flex-start;
+  }
+
+  .preview-topbar-action-group {
+    width: 100%;
   }
 
   .preview-actions-compact,

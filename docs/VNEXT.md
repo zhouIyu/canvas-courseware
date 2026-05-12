@@ -262,7 +262,7 @@
   - 引入 Arco Design 的 `<a-dropdown>` 组件承载更多操作
   - 保持现有时间轴数据模型不变，只改变 UI 展示方式
 
-- [ ] VNext-37-E 统一按钮样式与操作层级
+- [x] VNext-37-E 统一按钮样式与操作层级
   说明：
   统一编辑态与预览态的核心操作样式与层级，其中编辑态优先优化时间轴步骤设置入口与重表单承载方式，预览态继续重构顶部操作分组。
   来源：
@@ -278,6 +278,8 @@
   - 预览态修改 `packages/vue/src/preview/PreviewPlaybackControls.vue` 的按钮布局
   - 统一复用 Arco Design 的 `<a-button>`、`<a-dropdown>` 与 `<a-drawer>` 组件
   - 保持现有时间轴数据模型与播放控制逻辑不变，只改变 UI 承载与组织方式
+  当前结果：
+  已完成。预览页主操作保留为蓝色填充按钮，上一页 / 上一步 / 重播 / 下一页收敛为 Ghost 按钮组，“重新开始课件 / 沉浸播放”收口到“更多”菜单，缩放视图控制与播放控制已压缩到同一行；已通过 `pnpm typecheck`、`pnpm build`、`pnpm test:vnext-35-d`、`pnpm test:vnext-36-e` 与 `pnpm test:vnext-37-e` 验证。
 
 - [ ] VNext-37-F 收紧预览页中央区域的辅助信息
   说明：

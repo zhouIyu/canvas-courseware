@@ -1,0 +1,44 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-05-12T09:58:29.819Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "topbar-layout",
+      "hasSingleRow": true,
+      "controlRowHeight": 38,
+      "topbarActionsHeight": 190,
+      "actionGroupWidth": 539,
+      "playbackControlsWidth": 539,
+      "navigationTop": 90,
+      "primaryTop": 88,
+      "primaryHeight": 38,
+      "primaryText": "播放下一步",
+      "moreText": "更多",
+      "secondaryButtons": [
+        "上一页",
+        "上一步",
+        "重播",
+        "下一页"
+      ]
+    },
+    {
+      "id": "more-menu-options",
+      "options": [
+        "重新开始课件",
+        "沉浸播放"
+      ]
+    },
+    {
+      "id": "more-menu-actions",
+      "restartedSlidePosition": "第 1 / 2 页",
+      "restartedFirstStepStatus": "播放中",
+      "restartedPrimaryText": "播放下一步"
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

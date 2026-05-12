@@ -41,6 +41,24 @@ function assertOrThrow(condition, message) {
 }
 
 /**
+ * 打开预览播放控制区的“更多”菜单并点击指定动作。
+ *
+ * @param {import("playwright").Page} page
+ * @param {string} optionText
+ * @returns {Promise<void>}
+ */
+async function selectPreviewMoreAction(page, optionText) {
+  const moreButton = page.getByRole("button", { name: "更多" }).first();
+  await moreButton.click();
+  const option = page
+    .locator(".arco-trigger-popup:visible .arco-dropdown-option")
+    .filter({ hasText: optionText })
+    .first();
+  await option.waitFor();
+  await option.click({ force: true });
+}
+
+/**
  * 读取目标元素的文本并统一规整空白字符。
  *
  * @param {import("playwright").Page} page
@@ -124,9 +142,7 @@ try {
 
   const previousSlideButton = page.getByRole("button", { name: "上一页" }).first();
   const previousStepButton = page.getByRole("button", { name: "上一步" }).first();
-  const replaySlideButton = page.getByRole("button", { name: "重播当前页" }).first();
-  const immersiveButton = page.getByRole("button", { name: "沉浸播放" }).first();
-
+  const replaySlideButton = page.getByRole("button", { name: "重播" }).first();
   logStep("verify initial preview state");
   const initialNextTrigger = await readNormalizedText(page, ".preview-next-trigger-tag");
   const initialSlidePosition = await readNormalizedText(page, ".preview-slide-position-tag");
@@ -240,7 +256,7 @@ try {
   assertOrThrow(replayedSecondStepStatus.includes("待执行"), `重播后第 2 步状态异常：${replayedSecondStepStatus}`);
 
   logStep("verify immersive playback UI degradation");
-  await immersiveButton.click();
+  await selectPreviewMoreAction(page, "沉浸播放");
   await page.waitForFunction(() => {
     const shell = document.querySelector(".preview-shell");
     return shell?.classList.contains("is-immersive") ?? false;

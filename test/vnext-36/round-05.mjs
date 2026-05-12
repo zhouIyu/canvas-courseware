@@ -41,6 +41,24 @@ function assertOrThrow(condition, message) {
 }
 
 /**
+ * 打开预览播放控制区的“更多”菜单并点击指定动作。
+ *
+ * @param {import("playwright").Page} page
+ * @param {string} optionText
+ * @returns {Promise<void>}
+ */
+async function selectPreviewMoreAction(page, optionText) {
+  const moreButton = page.getByRole("button", { name: "更多" }).first();
+  await moreButton.click();
+  const option = page
+    .locator(".arco-trigger-popup:visible .arco-dropdown-option")
+    .filter({ hasText: optionText })
+    .first();
+  await option.waitFor();
+  await option.click({ force: true });
+}
+
+/**
  * 读取目标元素的文本并统一规整空白字符。
  *
  * @param {import("playwright").Page} page
@@ -99,8 +117,7 @@ try {
 
   const previousSlideButton = page.getByRole("button", { name: "上一页" }).first();
   const nextSlideButton = page.getByRole("button", { name: "下一页" }).first();
-  const playNextStepButton = page.getByRole("button", { name: "播放下一步" }).first();
-  const restartCoursewareButton = page.getByRole("button", { name: "重新开始课件" }).first();
+  const playNextStepButton = page.locator(".preview-primary-button").first();
 
   logStep("verify initial courseware progress");
   const initialCoursewareProgress = await readNormalizedText(page, ".courseware-progress-value");
@@ -298,7 +315,7 @@ try {
     const slidePosition = document.querySelector(".preview-slide-position-tag");
     return slidePosition?.textContent?.includes("第 2 / 2 页") ?? false;
   });
-  await restartCoursewareButton.click();
+  await selectPreviewMoreAction(page, "重新开始课件");
   await page.waitForFunction(() => {
     const slidePosition = document.querySelector(".preview-slide-position-tag");
     return slidePosition?.textContent?.includes("第 1 / 2 页") ?? false;
