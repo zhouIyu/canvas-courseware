@@ -1,10 +1,10 @@
 .step-card {
   position: relative;
   display: grid;
-  gap: 12px;
+  gap: 8px;
   min-width: 0;
   width: 100%;
-  padding: 12px;
+  padding: 10px 12px;
   border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: var(--cw-radius-md);
   background: rgba(255, 255, 255, 0.96);
@@ -22,7 +22,7 @@
 }
 
 .step-card.is-collapsed {
-  gap: 8px;
+  gap: 6px;
 }
 
 .step-card.is-dragging {
@@ -59,14 +59,14 @@
 
 .timeline-step-card__header {
   display: grid;
-  gap: 6px;
+  gap: 4px;
   min-width: 0;
 }
 
 .timeline-step-card__headline-row {
   align-items: flex-start;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
 }
 
 .card-head {
@@ -78,19 +78,24 @@
 }
 
 .card-title-topline {
-  align-items: center;
-  gap: 8px;
+  align-items: flex-start;
+  gap: 6px;
   min-width: 0;
 }
 
 .card-index {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   min-height: 20px;
-  min-width: 0;
+  min-width: 24px;
+  padding: 0 6px;
+  border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
-  color: var(--cw-color-muted);
+  line-height: 1;
+  color: #165dff;
+  background: rgba(22, 93, 255, 0.08);
   flex-shrink: 0;
 }
 
@@ -108,27 +113,31 @@
 
 .step-summary-row {
   align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
+  flex-wrap: nowrap;
+  gap: 4px;
   min-width: 0;
   font-size: 12px;
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 .summary-copy {
   min-width: 0;
   color: var(--cw-color-muted);
-  word-break: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .summary-copy--trigger {
   font-weight: 600;
   color: #165dff;
+  flex: 1 1 auto;
 }
 
 .summary-copy--separator,
 .summary-copy--count {
   color: var(--cw-color-muted);
+  flex-shrink: 0;
 }
 
 .step-card-actions {
@@ -139,15 +148,15 @@
 }
 
 .step-action-button {
-  min-width: 28px;
-  width: 28px;
-  height: 28px;
+  min-width: 24px;
+  width: 24px;
+  height: 24px;
   padding: 0;
-  border-radius: 10px;
+  border-radius: 8px;
 }
 
 .step-action-button:deep(.arco-btn-icon) {
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .step-action-button.is-preview {
@@ -165,49 +174,17 @@
 
 .step-card-body {
   display: grid;
-  gap: 10px;
+  gap: 0;
   min-width: 0;
-  padding-top: 10px;
+  padding-top: 8px;
   border-top: 1px solid rgba(226, 232, 240, 0.88);
 }
 
-.step-detail-copy,
-.step-action-overview__text {
+.step-detail-copy {
   margin: 0;
-  font-size: 13px;
-  line-height: 1.6;
-  color: var(--cw-color-muted);
-}
-
-.step-action-overview {
-  display: grid;
-  gap: 8px;
-  min-width: 0;
-}
-
-.step-action-overview__item {
-  display: grid;
-  gap: 2px;
-  min-width: 0;
-  padding: 10px 12px;
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  border-radius: 12px;
-  background: rgba(248, 250, 252, 0.76);
-}
-
-.step-action-overview__index {
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 12px;
   line-height: 1.5;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: #165dff;
-}
-
-.step-settings-entry {
-  justify-self: flex-start;
-  min-height: 32px;
-  border-radius: 999px;
+  color: var(--cw-color-muted);
 }
 
 :deep(.timeline-step-card__menu-option.is-danger),
@@ -236,5 +213,4 @@
   .step-card-actions {
     justify-content: flex-start;
   }
-
 }

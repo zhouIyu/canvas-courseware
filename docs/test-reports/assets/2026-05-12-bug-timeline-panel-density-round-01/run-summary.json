@@ -1,0 +1,43 @@
+{
+  "assetDir": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-05-12-bug-timeline-panel-density-round-01",
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-05-12T09:14:56.810Z",
+  "checks": [
+    {
+      "id": "expanded-card-density",
+      "expandedMetrics": {
+        "editorSideWidth": 258,
+        "timelinePanelWidth": 209,
+        "firstCard": {
+          "width": 175,
+          "height": 109.8,
+          "actionOverviewCount": 0,
+          "settingsEntryCount": 0,
+          "toolbarButtonCount": 4,
+          "summaryText": "页面点击·1 个动作",
+          "summaryHeight": 16.8,
+          "detailText": "点击页面后继续。",
+          "detailHeight": 18
+        }
+      }
+    },
+    {
+      "id": "collapsed-card-density",
+      "collapsedMetrics": {
+        "height": 74.8,
+        "hasExpandedBody": false,
+        "summaryText": "页面点击·1 个动作",
+        "summaryHeight": 16.8
+      }
+    },
+    {
+      "id": "step-settings-drawer",
+      "drawerMetrics": {
+        "isVisible": true,
+        "title": "点击插图继续"
+      }
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

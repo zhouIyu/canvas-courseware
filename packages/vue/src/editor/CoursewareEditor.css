@@ -120,9 +120,9 @@
   box-sizing: border-box;
   display: grid;
   grid-template-columns:
-    var(--cw-slide-rail-width, 148px)
+    var(--cw-slide-rail-width, 198px)
     minmax(0, 1fr)
-    var(--cw-editor-side-width, 216px);
+    var(--cw-editor-side-width, 266px);
   grid-template-rows: minmax(0, 1fr);
   gap: var(--cw-editor-layout-gap, 8px);
   align-items: stretch;
@@ -139,11 +139,11 @@
 }
 
 .editor-layout.is-left-collapsed {
-  grid-template-columns: minmax(0, 1fr) var(--cw-editor-side-width, 216px);
+  grid-template-columns: minmax(0, 1fr) var(--cw-editor-side-width, 266px);
 }
 
 .editor-layout.is-right-collapsed {
-  grid-template-columns: var(--cw-slide-rail-width, 148px) minmax(0, 1fr);
+  grid-template-columns: var(--cw-slide-rail-width, 198px) minmax(0, 1fr);
 }
 
 .editor-layout.is-left-collapsed.is-right-collapsed {
@@ -477,13 +477,13 @@
 }
 
 .stage-side-badge-left {
-  left: calc(8px + var(--cw-slide-rail-width, 148px) - 1px);
+  left: calc(8px + var(--cw-slide-rail-width, 198px) - 1px);
   border-left: 0;
   border-radius: 0 16px 16px 0;
 }
 
 .stage-side-badge-right {
-  right: calc(8px + var(--cw-editor-side-width, 216px) - 1px);
+  right: calc(8px + var(--cw-editor-side-width, 266px) - 1px);
   border-right: 0;
   border-radius: 16px 0 0 16px;
 }
@@ -565,12 +565,12 @@
 }
 
 .editor-side-body :deep(.timeline-panel .step-list) {
-  gap: 16px !important;
+  gap: 12px !important;
 }
 
 .editor-side-body :deep(.timeline-panel .step-card) {
   min-width: 0;
-  padding: 16px !important;
+  padding: 12px !important;
   border: 1px solid rgba(15, 23, 42, 0.08) !important;
   border-radius: 12px !important;
   background: rgba(255, 255, 255, 0.98) !important;

@@ -1,0 +1,23 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "metrics": {
+    "shellVars": {
+      "slideRailWidth": "194px",
+      "editorSideWidth": "258px"
+    },
+    "slideRail": {
+      "width": 194,
+      "height": 758
+    },
+    "editorSide": {
+      "width": 258,
+      "height": 758
+    },
+    "workspaceShell": {
+      "width": 894,
+      "height": 758
+    }
+  },
+  "consoleErrors": [],
+  "pageErrors": []
+}

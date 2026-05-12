@@ -1,7 +1,7 @@
 {
   "assetDir": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-05-11-vnext-37-d-round-01",
   "baseUrl": "http://127.0.0.1:32173/projects",
-  "executedAt": "2026-05-12T03:13:17.153Z",
+  "executedAt": "2026-05-12T09:08:07.384Z",
   "checks": [
     {
       "id": "headline-density",
@@ -9,19 +9,19 @@
         "summaryText": "页面点击·1 个动作",
         "toolbarButtonCount": 4,
         "hasExpandedBody": true,
-        "height": 276.69
+        "height": 109.8
       },
       "secondCardMetrics": {
         "summaryText": "点击 插图卡片·1 个动作",
         "toolbarButtonCount": 4,
         "hasExpandedBody": true,
-        "height": 300.69
+        "height": 127.8
       },
       "thirdCardMetrics": {
         "summaryText": "自动触发 · 900ms 后·2 个动作",
         "toolbarButtonCount": 4,
         "hasExpandedBody": true,
-        "height": 450.38
+        "height": 145.8
       }
     },
     {
@@ -39,8 +39,8 @@
     },
     {
       "id": "collapsed-height",
-      "expandedHeight": 276.69,
-      "collapsedHeight": 78,
+      "expandedHeight": 109.8,
+      "collapsedHeight": 74.8,
       "collapsedSummary": "页面点击·1 个动作"
     },
     {

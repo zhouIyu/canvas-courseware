@@ -7,7 +7,6 @@ import type {
   TimelineStepMenuAction,
 } from "./timeline-panel-types";
 import type { TimelineStepReorderPayload } from "./useTimelineStepDragSort";
-import { formatAnimationKindLabel, formatTimelineActionLabel } from "../shared";
 
 /** 步骤卡片对外暴露的只读输入。 */
 const props = withDefaults(
@@ -67,8 +66,8 @@ const emit = defineEmits<{
 /** 当前步骤名为空时的安全兜底展示文案。 */
 const stepDisplayName = computed(() => props.step.name.trim() || "未命名步骤");
 
-/** 统一输出带前导零的步骤序号，方便列表快速扫描。 */
-const stepIndexLabel = computed(() => `步骤 ${String(props.stepIndex + 1).padStart(2, "0")}`);
+/** 统一输出两位步骤序号徽标，避免窄侧栏里标题区域继续挤压换行。 */
+const stepIndexLabel = computed(() => String(props.stepIndex + 1).padStart(2, "0"));
 
 /** 折叠按钮的可访问名称。 */
 const collapseButtonLabel = computed(() => (props.isCollapsed ? "展开" : "收起"));
@@ -84,51 +83,18 @@ const triggerDetailText = computed(() => {
 
   switch (trigger.type) {
     case "auto":
-      return `当前步骤会在上一动作完成后延迟 ${trigger.delayMs}ms 自动触发。`;
+      return `上一动作结束后 ${trigger.delayMs}ms 自动继续。`;
     case "node-click": {
       const targetNodeName =
         props.slide?.nodes.find((node) => node.id === trigger.targetId)?.name ??
         "已删除对象";
-      return `需要点击对象“${targetNodeName}”后才会继续。`;
+      return `点击“${targetNodeName}”后继续。`;
     }
     case "page-click":
     default:
-      return "当前步骤会在页面点击后继续执行。";
+      return "点击页面后继续。";
   }
 });
-
-/** 展开态下的动作摘要列表，方便快速浏览而不在卡片里堆满表单。 */
-const actionSummaryItems = computed(() =>
-  props.step.actions.map((action, actionIndex) => {
-    if (action.type === "play-animation") {
-      const matchedAnimation = props.slide?.timeline.animations.find(
-        (animation) => animation.id === action.animationId,
-      );
-      const targetNodeName =
-        matchedAnimation?.targetId
-          ? props.slide?.nodes.find((node) => node.id === matchedAnimation.targetId)?.name ??
-            "已删除对象"
-          : "未关联对象";
-      const animationLabel = matchedAnimation
-        ? `${formatAnimationKindLabel(matchedAnimation.kind)} · ${matchedAnimation.durationMs}ms`
-        : "动画已丢失";
-
-      return {
-        key: action.id,
-        indexLabel: `动作 ${actionIndex + 1}`,
-        text: `${formatTimelineActionLabel(action.type)} · ${targetNodeName} · ${animationLabel}`,
-      };
-    }
-
-    const targetNodeName =
-      props.slide?.nodes.find((node) => node.id === action.targetId)?.name ?? "已删除对象";
-    return {
-      key: action.id,
-      indexLabel: `动作 ${actionIndex + 1}`,
-      text: `${formatTimelineActionLabel(action.type)} · ${targetNodeName}`,
-    };
-  }),
-);
 
 /** 删除当前步骤。 */
 function handleRemoveStep(): void {
@@ -341,19 +307,6 @@ function handleDrop(event: DragEvent): void {
 
     <div v-if="!props.isCollapsed" class="step-card-body">
       <p class="step-detail-copy">{{ triggerDetailText }}</p>
-      <div class="step-action-overview">
-        <div
-          v-for="actionSummary in actionSummaryItems"
-          :key="actionSummary.key"
-          class="step-action-overview__item"
-        >
-          <span class="step-action-overview__index">{{ actionSummary.indexLabel }}</span>
-          <span class="step-action-overview__text">{{ actionSummary.text }}</span>
-        </div>
-      </div>
-      <a-button class="step-settings-entry" type="outline" size="small" @click="handleOpenSettings">
-        打开完整设置
-      </a-button>
     </div>
   </article>
 </template>

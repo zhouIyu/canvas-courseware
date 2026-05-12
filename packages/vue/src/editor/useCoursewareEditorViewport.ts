@@ -24,8 +24,8 @@ function resolveEditorViewportVariables(
 ): Record<string, string> {
   if (density === "dense") {
     return {
-      "--cw-slide-rail-width": "138px",
-      "--cw-editor-side-width": "200px",
+      "--cw-slide-rail-width": "188px",
+      "--cw-editor-side-width": "250px",
       "--cw-editor-layout-gap": "8px",
       "--cw-editor-layout-padding": "8px",
       "--cw-editor-stage-padding-block-start": "8px",
@@ -46,8 +46,8 @@ function resolveEditorViewportVariables(
 
   if (density === "compact") {
     return {
-      "--cw-slide-rail-width": "144px",
-      "--cw-editor-side-width": "208px",
+      "--cw-slide-rail-width": "194px",
+      "--cw-editor-side-width": "258px",
       "--cw-editor-layout-gap": "8px",
       "--cw-editor-layout-padding": "9px",
       "--cw-editor-stage-padding-block-start": "10px",
@@ -67,8 +67,8 @@ function resolveEditorViewportVariables(
   }
 
   return {
-    "--cw-slide-rail-width": "148px",
-    "--cw-editor-side-width": "216px",
+    "--cw-slide-rail-width": "198px",
+    "--cw-editor-side-width": "266px",
     "--cw-editor-layout-gap": "8px",
     "--cw-editor-layout-padding": "8px",
     "--cw-editor-stage-padding-block-start": "10px",
