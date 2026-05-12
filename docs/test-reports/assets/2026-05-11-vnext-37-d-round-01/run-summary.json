@@ -1,27 +1,27 @@
 {
   "assetDir": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-05-11-vnext-37-d-round-01",
   "baseUrl": "http://127.0.0.1:32173/projects",
-  "executedAt": "2026-05-11T10:46:54.777Z",
+  "executedAt": "2026-05-12T03:13:17.153Z",
   "checks": [
     {
       "id": "headline-density",
       "firstCardMetrics": {
         "summaryText": "页面点击·1 个动作",
-        "toolbarButtonCount": 3,
+        "toolbarButtonCount": 4,
         "hasExpandedBody": true,
-        "height": 531.45
+        "height": 276.69
       },
       "secondCardMetrics": {
         "summaryText": "点击 插图卡片·1 个动作",
-        "toolbarButtonCount": 3,
+        "toolbarButtonCount": 4,
         "hasExpandedBody": true,
-        "height": 555.45
+        "height": 300.69
       },
       "thirdCardMetrics": {
         "summaryText": "自动触发 · 900ms 后·2 个动作",
-        "toolbarButtonCount": 3,
+        "toolbarButtonCount": 4,
         "hasExpandedBody": true,
-        "height": 716.53
+        "height": 450.38
       }
     },
     {
@@ -39,9 +39,23 @@
     },
     {
       "id": "collapsed-height",
-      "expandedHeight": 531.45,
+      "expandedHeight": 276.69,
       "collapsedHeight": 78,
       "collapsedSummary": "页面点击·1 个动作"
+    },
+    {
+      "id": "step-settings-drawer",
+      "drawerMetricsBeforeUpdate": {
+        "title": "点击插图继续",
+        "triggerSummary": "点击 插图卡片",
+        "triggerSelect": "对象点击"
+      },
+      "drawerMetricsAfterUpdate": {
+        "title": "点击插图继续",
+        "triggerSummary": "自动触发 · 600ms 后",
+        "triggerSelect": "自动触发"
+      },
+      "secondCardSummaryAfterDrawerUpdate": "自动触发 · 600ms 后·1 个动作"
     }
   ],
   "consoleErrors": [],

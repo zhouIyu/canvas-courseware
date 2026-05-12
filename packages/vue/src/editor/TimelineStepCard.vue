@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { Slide, TimelineStep } from "@canvas-courseware/core";
-import TimelineStepActionsEditor from "./TimelineStepActionsEditor.vue";
 import { resolveTimelineStepHeadlineSummary } from "./timeline-step-summary";
 import type {
   TimelineStepDuplicatePayload,
   TimelineStepMenuAction,
 } from "./timeline-panel-types";
 import type { TimelineStepReorderPayload } from "./useTimelineStepDragSort";
-import { formatNodeTypeLabel } from "../shared";
+import { formatAnimationKindLabel, formatTimelineActionLabel } from "../shared";
 
 /** 步骤卡片对外暴露的只读输入。 */
 const props = withDefaults(
@@ -21,10 +20,6 @@ const props = withDefaults(
     stepIndex: number;
     /** 当前 slide 的总步骤数，用来控制移动边界。 */
     stepCount: number;
-    /** 当前首个选中的节点 id，用来补默认触发目标。 */
-    selectedNodeId?: string | null;
-    /** 当前页面是否已经存在可编排对象。 */
-    hasNodes: boolean;
     /** 当前步骤是否处于折叠态。 */
     isCollapsed: boolean;
     /** 当前步骤是否正被拖拽。 */
@@ -38,7 +33,6 @@ const props = withDefaults(
   }>(),
   {
     slide: null,
-    selectedNodeId: null,
     isDragging: false,
     dropPlacement: null,
     canMoveUp: false,
@@ -48,8 +42,6 @@ const props = withDefaults(
 
 /** 步骤卡片向外派发的标准化编辑意图。 */
 const emit = defineEmits<{
-  /** 用最新配置回写整个步骤。 */
-  "update-step": [step: TimelineStep];
   /** 删除当前步骤。 */
   "remove-step": [stepId: string];
   /** 调整当前步骤顺序。 */
@@ -58,6 +50,8 @@ const emit = defineEmits<{
   "duplicate-step": [payload: TimelineStepDuplicatePayload];
   /** 从当前步骤切入预览。 */
   "preview-step": [stepIndex: number];
+  /** 打开当前步骤的设置抽屉。 */
+  "open-settings": [stepId: string];
   /** 切换当前步骤的折叠状态。 */
   "toggle-collapsed": [];
   /** 开始拖拽当前步骤。 */
@@ -69,15 +63,6 @@ const emit = defineEmits<{
   /** 当前步骤拖拽结束。 */
   "drag-end": [];
 }>();
-
-/** 当前页面的节点选项，供触发对象下拉框复用。 */
-const nodeOptions = computed(() =>
-  (props.slide?.nodes ?? []).map((node) => ({
-    value: node.id,
-    label: node.name,
-    detail: formatNodeTypeLabel(node.type),
-  })),
-);
 
 /** 当前步骤名为空时的安全兜底展示文案。 */
 const stepDisplayName = computed(() => props.step.name.trim() || "未命名步骤");
@@ -93,66 +78,57 @@ const stepHeadlineSummary = computed(() =>
   resolveTimelineStepHeadlineSummary(props.step, props.slide ?? null),
 );
 
-/** 读取文本输入框和下拉框的字符串值。 */
-const readTextInputValue = (value: unknown, fallback = ""): string => {
-  if (typeof value === "string") {
-    return value;
-  }
+/** 当前步骤在展开态下需要展示的触发详情。 */
+const triggerDetailText = computed(() => {
+  const trigger = props.step.trigger;
 
-  if (typeof value === "number") {
-    return String(value);
-  }
-
-  const target = value instanceof Event ? value.target : null;
-  return target instanceof HTMLInputElement || target instanceof HTMLSelectElement
-    ? target.value
-    : fallback;
-};
-
-/** 读取数字输入框的值，并在非法输入时回退到当前值。 */
-const readNumberInputValue = (value: unknown, fallback: number, minimum = 0): number => {
-  const parsed =
-    typeof value === "number" || typeof value === "string"
-      ? Number(value)
-      : value instanceof Event && value.target instanceof HTMLInputElement
-        ? Number(value.target.value)
-        : Number.NaN;
-
-  if (Number.isNaN(parsed)) {
-    return fallback;
-  }
-
-  return Math.max(parsed, minimum);
-};
-
-/** 读取某个步骤中最适合作为对象点击触发兜底的节点 id。 */
-function resolvePrimaryActionTargetId(step: TimelineStep): string {
-  const directTargetAction = step.actions.find(
-    (action) => action.type === "show-node" || action.type === "hide-node",
-  );
-
-  if (directTargetAction && "targetId" in directTargetAction) {
-    return directTargetAction.targetId;
-  }
-
-  const firstAnimatedAction = step.actions.find((action) => action.type === "play-animation");
-  if (firstAnimatedAction?.animationId) {
-    const animation = props.slide?.timeline.animations.find(
-      (item) => item.id === firstAnimatedAction.animationId,
-    );
-
-    if (animation?.targetId) {
-      return animation.targetId;
+  switch (trigger.type) {
+    case "auto":
+      return `当前步骤会在上一动作完成后延迟 ${trigger.delayMs}ms 自动触发。`;
+    case "node-click": {
+      const targetNodeName =
+        props.slide?.nodes.find((node) => node.id === trigger.targetId)?.name ??
+        "已删除对象";
+      return `需要点击对象“${targetNodeName}”后才会继续。`;
     }
+    case "page-click":
+    default:
+      return "当前步骤会在页面点击后继续执行。";
   }
+});
 
-  return props.selectedNodeId ?? props.slide?.nodes[0]?.id ?? "";
-}
+/** 展开态下的动作摘要列表，方便快速浏览而不在卡片里堆满表单。 */
+const actionSummaryItems = computed(() =>
+  props.step.actions.map((action, actionIndex) => {
+    if (action.type === "play-animation") {
+      const matchedAnimation = props.slide?.timeline.animations.find(
+        (animation) => animation.id === action.animationId,
+      );
+      const targetNodeName =
+        matchedAnimation?.targetId
+          ? props.slide?.nodes.find((node) => node.id === matchedAnimation.targetId)?.name ??
+            "已删除对象"
+          : "未关联对象";
+      const animationLabel = matchedAnimation
+        ? `${formatAnimationKindLabel(matchedAnimation.kind)} · ${matchedAnimation.durationMs}ms`
+        : "动画已丢失";
 
-/** 用统一出口把当前步骤回写给父组件。 */
-function emitStep(step: TimelineStep): void {
-  emit("update-step", step);
-}
+      return {
+        key: action.id,
+        indexLabel: `动作 ${actionIndex + 1}`,
+        text: `${formatTimelineActionLabel(action.type)} · ${targetNodeName} · ${animationLabel}`,
+      };
+    }
+
+    const targetNodeName =
+      props.slide?.nodes.find((node) => node.id === action.targetId)?.name ?? "已删除对象";
+    return {
+      key: action.id,
+      indexLabel: `动作 ${actionIndex + 1}`,
+      text: `${formatTimelineActionLabel(action.type)} · ${targetNodeName}`,
+    };
+  }),
+);
 
 /** 删除当前步骤。 */
 function handleRemoveStep(): void {
@@ -203,80 +179,9 @@ function handlePreviewStep(): void {
   emit("preview-step", props.stepIndex);
 }
 
-/** 更新步骤名称。 */
-function handleStepNameInput(value: string | number | undefined): void {
-  emitStep({
-    ...props.step,
-    name: readTextInputValue(value, props.step.name),
-  });
-}
-
-/** 更新步骤触发方式，并在切换时补齐默认目标或默认延迟。 */
-function handleStepTriggerTypeChange(
-  value: string | number | boolean | undefined,
-): void {
-  const nextTriggerType = readTextInputValue(
-    value,
-    props.step.trigger.type,
-  ) as TimelineStep["trigger"]["type"];
-
-  emitStep({
-    ...props.step,
-    trigger:
-      nextTriggerType === "auto"
-        ? {
-            type: "auto",
-            delayMs: props.step.trigger.type === "auto" ? props.step.trigger.delayMs : 600,
-          }
-        : nextTriggerType === "node-click"
-          ? {
-              type: "node-click",
-              targetId:
-                props.step.trigger.type === "node-click"
-                  ? props.step.trigger.targetId
-                  : resolvePrimaryActionTargetId(props.step),
-            }
-        : {
-            type: "page-click",
-          },
-  });
-}
-
-/** 更新自动步骤的延迟时间。 */
-function handleStepDelayChange(value: number | string | undefined): void {
-  if (props.step.trigger.type !== "auto") {
-    return;
-  }
-
-  emitStep({
-    ...props.step,
-    trigger: {
-      type: "auto",
-      delayMs: readNumberInputValue(value, props.step.trigger.delayMs, 0),
-    },
-  });
-}
-
-/** 更新对象点击触发器的目标对象。 */
-function handleStepTriggerTargetChange(
-  value: string | number | boolean | undefined,
-): void {
-  if (props.step.trigger.type !== "node-click") {
-    return;
-  }
-
-  emitStep({
-    ...props.step,
-    trigger: {
-      type: "node-click",
-      targetId: readTextInputValue(value, props.step.trigger.targetId),
-    },
-  });
-}
-
-/** 透传动作编辑器回写的最新步骤，保持父层只处理步骤级命令。 */
-function handleActionsEditorStepUpdate(step: TimelineStep): void {
-  emitStep(step);
+/** 请求打开当前步骤设置抽屉。 */
+function handleOpenSettings(): void {
+  emit("open-settings", props.step.id);
 }
 
 /** 处理“更多操作”菜单中的快捷动作。 */
@@ -347,6 +252,17 @@ function handleDrop(event: DragEvent): void {
         </div>
 
         <div class="step-card-actions">
+          <a-button
+            class="text-button step-action-button is-settings"
+            type="text"
+            size="mini"
+            aria-label="打开步骤设置"
+            @click="handleOpenSettings"
+          >
+            <template #icon>
+              <icon-settings />
+            </template>
+          </a-button>
           <a-button
             class="text-button step-action-button"
             type="text"
@@ -424,58 +340,20 @@ function handleDrop(event: DragEvent): void {
     </header>
 
     <div v-if="!props.isCollapsed" class="step-card-body">
-      <div class="field-grid step-field-grid">
-        <div class="field field-span-2">
-          <span class="field-label">名称</span>
-          <a-input class="field-input" :model-value="props.step.name" @input="handleStepNameInput($event)" />
-        </div>
-
-        <div class="field">
-          <span class="field-label">触发</span>
-          <a-select
-            class="field-input"
-            :model-value="props.step.trigger.type"
-            popup-container="body"
-            @change="handleStepTriggerTypeChange($event)"
-          >
-            <a-option value="page-click">页面点击</a-option>
-            <a-option value="auto">自动触发</a-option>
-            <a-option value="node-click">对象点击</a-option>
-          </a-select>
-        </div>
-
-        <div v-if="props.step.trigger.type === 'node-click'" class="field">
-          <span class="field-label">对象</span>
-          <a-select
-            class="field-input"
-            :model-value="props.step.trigger.targetId"
-            popup-container="body"
-            @change="handleStepTriggerTargetChange($event)"
-          >
-            <a-option v-for="option in nodeOptions" :key="option.value" :value="option.value">
-              {{ option.label }} · {{ option.detail }}
-            </a-option>
-          </a-select>
-        </div>
-
-        <div v-if="props.step.trigger.type === 'auto'" class="field">
-          <span class="field-label">延迟(ms)</span>
-          <a-input-number
-            class="field-input"
-            min="0"
-            :model-value="props.step.trigger.delayMs"
-            @change="handleStepDelayChange($event)"
-          />
+      <p class="step-detail-copy">{{ triggerDetailText }}</p>
+      <div class="step-action-overview">
+        <div
+          v-for="actionSummary in actionSummaryItems"
+          :key="actionSummary.key"
+          class="step-action-overview__item"
+        >
+          <span class="step-action-overview__index">{{ actionSummary.indexLabel }}</span>
+          <span class="step-action-overview__text">{{ actionSummary.text }}</span>
         </div>
       </div>
-
-      <TimelineStepActionsEditor
-        :has-nodes="props.hasNodes"
-        :selected-node-id="props.selectedNodeId"
-        :slide="props.slide ?? null"
-        :step="props.step"
-        @update-step="handleActionsEditorStepUpdate"
-      />
+      <a-button class="step-settings-entry" type="outline" size="small" @click="handleOpenSettings">
+        打开完整设置
+      </a-button>
     </div>
   </article>
 </template>

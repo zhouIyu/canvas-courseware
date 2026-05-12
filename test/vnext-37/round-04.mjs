@@ -302,6 +302,29 @@ async function readStepCardMetrics(stepCard) {
 }
 
 /**
+ * 读取当前步骤设置抽屉的关键信息，确认是否已经正确打开到目标步骤。
+ *
+ * @param {import("playwright").Page} page
+ * @returns {Promise<Record<string, string | null>>}
+ */
+async function readStepDrawerMetrics(page) {
+  return page.evaluate(() => {
+    const drawer = document.querySelector(".step-settings-drawer");
+    const title = drawer?.querySelector(".step-settings-form__headline h3")?.textContent ?? null;
+    const triggerSummary =
+      drawer?.querySelector(".step-settings-form__summary-chip.accent")?.textContent ?? null;
+    const triggerSelect =
+      drawer?.querySelector(".step-settings-form .field .arco-select-view-value")?.textContent ?? null;
+
+    return {
+      title: title?.replace(/\s+/g, " ").trim() ?? null,
+      triggerSummary: triggerSummary?.replace(/\s+/g, " ").trim() ?? null,
+      triggerSelect: triggerSelect?.replace(/\s+/g, " ").trim() ?? null,
+    };
+  });
+}
+
+/**
  * 打开某个步骤卡片的“更多操作”菜单。
  *
  * @param {import("playwright").Locator} stepCard
@@ -408,7 +431,7 @@ try {
     `步骤 3 摘要异常：${thirdCardMetrics.summaryText}`,
   );
   assertOrThrow(
-    firstCardMetrics.toolbarButtonCount === 3,
+    firstCardMetrics.toolbarButtonCount === 4,
     `步骤卡片头部常驻按钮数量异常：${firstCardMetrics.toolbarButtonCount}`,
   );
   assertOrThrow(
@@ -474,6 +497,65 @@ try {
     expandedHeight,
     collapsedHeight: collapsedMetrics.height,
     collapsedSummary: collapsedMetrics.summaryText,
+  });
+
+  logStep("verify step settings drawer open update close flow");
+  await firstStepCard.getByRole("button", { name: "展开" }).click();
+  await page.waitForFunction(() => {
+    const stepCard = document.querySelector(".timeline-panel .step-card");
+    return stepCard instanceof HTMLElement && Boolean(stepCard.querySelector(".step-card-body"));
+  });
+  await secondStepCard.getByRole("button", { name: "打开步骤设置" }).click();
+  await page.locator(".step-settings-drawer").waitFor();
+
+  const drawerMetricsBeforeUpdate = await readStepDrawerMetrics(page);
+  assertOrThrow(
+    drawerMetricsBeforeUpdate.title === "点击插图继续",
+    `步骤设置抽屉标题异常：${drawerMetricsBeforeUpdate.title}`,
+  );
+  assertOrThrow(
+    drawerMetricsBeforeUpdate.triggerSummary?.includes("点击 插图卡片"),
+    `步骤设置抽屉触发摘要异常：${drawerMetricsBeforeUpdate.triggerSummary}`,
+  );
+
+  const drawerScope = page.locator(".step-settings-drawer");
+  const triggerSelect = drawerScope.locator(".step-settings-form .field").filter({
+    has: page.getByText("触发", { exact: true }),
+  }).locator(".arco-select");
+  await triggerSelect.click();
+  await page.locator(".arco-select-option").filter({ hasText: "自动触发" }).click();
+  await waitForSaved(page);
+
+  const drawerMetricsAfterUpdate = await readStepDrawerMetrics(page);
+  assertOrThrow(
+    drawerMetricsAfterUpdate.triggerSummary?.includes("自动触发"),
+    `切换后步骤设置摘要未更新：${drawerMetricsAfterUpdate.triggerSummary}`,
+  );
+
+  await page.keyboard.press("Escape");
+  await page.waitForFunction(() => {
+    const drawer = document.querySelector(".step-settings-drawer");
+    if (!(drawer instanceof HTMLElement)) {
+      return true;
+    }
+
+    return drawer.offsetParent === null || drawer.getAttribute("aria-hidden") === "true";
+  });
+
+  const secondCardSummaryAfterDrawerUpdate = normalizeInlineText(
+    await secondStepCard.locator(".step-summary-row").textContent(),
+  );
+  assertOrThrow(
+    secondCardSummaryAfterDrawerUpdate.includes("自动触发") &&
+      secondCardSummaryAfterDrawerUpdate.includes("600ms 后"),
+    `抽屉关闭后步骤卡片摘要未同步：${secondCardSummaryAfterDrawerUpdate}`,
+  );
+
+  summary.checks.push({
+    id: "step-settings-drawer",
+    drawerMetricsBeforeUpdate,
+    drawerMetricsAfterUpdate,
+    secondCardSummaryAfterDrawerUpdate,
   });
 
   await page.locator(".timeline-panel").screenshot({

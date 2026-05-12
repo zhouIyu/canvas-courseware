@@ -154,6 +154,10 @@
   color: #165dff;
 }
 
+.step-action-button.is-settings {
+  color: rgba(15, 23, 42, 0.72);
+}
+
 .text-button {
   min-height: 28px;
   font-size: 13px;
@@ -161,74 +165,49 @@
 
 .step-card-body {
   display: grid;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
   padding-top: 10px;
   border-top: 1px solid rgba(226, 232, 240, 0.88);
 }
 
-.field-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--cw-space-2);
-}
-
-.step-field-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.field {
-  display: grid;
-  gap: 6px;
-  min-width: 0;
-}
-
-.field-span-2 {
-  grid-column: span 2;
-}
-
-.field-label {
+.step-detail-copy,
+.step-action-overview__text {
   margin: 0;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.4;
+  font-size: 13px;
+  line-height: 1.6;
   color: var(--cw-color-muted);
 }
 
-.field-input {
-  width: 100%;
+.step-action-overview {
+  display: grid;
+  gap: 8px;
   min-width: 0;
 }
 
-.field-input:deep(.arco-input-wrapper),
-.field-input:deep(.arco-select-view),
-.field-input:deep(.arco-input-number) {
-  width: 100%;
+.step-action-overview__item {
+  display: grid;
+  gap: 2px;
   min-width: 0;
-  min-height: 40px;
-}
-
-.field-input:deep(.arco-select-view) {
-  padding-right: 8px;
-}
-
-.field-input:deep(.arco-select-view-value),
-.field-input:deep(.arco-select-view-single),
-.field-input:deep(.arco-input),
-.field-input:deep(.arco-input-number-input) {
-  min-width: 0;
-}
-
-.field-input:deep(.arco-select-view-value) {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.field-input:deep(.arco-select-view-inner),
-.field-input:deep(.arco-input-wrapper),
-.field-input:deep(.arco-input-number) {
+  padding: 10px 12px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
   border-radius: 12px;
+  background: rgba(248, 250, 252, 0.76);
+}
+
+.step-action-overview__index {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #165dff;
+}
+
+.step-settings-entry {
+  justify-self: flex-start;
+  min-height: 32px;
+  border-radius: 999px;
 }
 
 :deep(.timeline-step-card__menu-option.is-danger),
@@ -258,11 +237,4 @@
     justify-content: flex-start;
   }
 
-  .field-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .field-span-2 {
-    grid-column: span 1;
-  }
 }

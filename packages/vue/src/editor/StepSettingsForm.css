@@ -1,0 +1,167 @@
+.step-settings-form,
+.step-settings-form__header,
+.step-settings-form__section,
+.step-settings-form__summary,
+.step-settings-form__summary-chip,
+.step-settings-form__section-head,
+.field,
+.field-grid {
+  min-width: 0;
+}
+
+.step-settings-form {
+  display: grid;
+  gap: 16px;
+}
+
+.step-settings-form__header,
+.step-settings-form__section {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 250, 252, 0.96));
+  box-shadow:
+    0 10px 30px rgba(15, 23, 42, 0.06),
+    0 2px 8px rgba(15, 23, 42, 0.03);
+}
+
+.step-settings-form__eyebrow,
+.step-settings-form__summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.step-settings-form__index,
+.step-settings-form__count,
+.step-settings-form__summary-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.step-settings-form__index {
+  color: #165dff;
+  background: rgba(22, 93, 255, 0.08);
+}
+
+.step-settings-form__count,
+.step-settings-form__summary-chip {
+  color: var(--cw-color-muted);
+  background: rgba(15, 23, 42, 0.05);
+}
+
+.step-settings-form__summary-chip.accent {
+  color: #165dff;
+  background: rgba(22, 93, 255, 0.08);
+}
+
+.step-settings-form__headline {
+  display: grid;
+  gap: 4px;
+}
+
+.step-settings-form__headline h3 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.25;
+}
+
+.step-settings-form__headline p,
+.step-settings-form__section-head span {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--cw-color-muted);
+}
+
+.step-settings-form__section-head {
+  display: grid;
+  gap: 2px;
+}
+
+.step-settings-form__section-head strong {
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--cw-space-2);
+}
+
+.step-field-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.field-span-2 {
+  grid-column: span 2;
+}
+
+.field-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--cw-color-muted);
+}
+
+.field-input {
+  width: 100%;
+  min-width: 0;
+}
+
+.field-input:deep(.arco-input-wrapper),
+.field-input:deep(.arco-select-view),
+.field-input:deep(.arco-input-number) {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  border-radius: 12px;
+}
+
+.field-input:deep(.arco-select-view) {
+  padding-right: 8px;
+}
+
+.field-input:deep(.arco-select-view-value),
+.field-input:deep(.arco-select-view-single),
+.field-input:deep(.arco-input),
+.field-input:deep(.arco-input-number-input) {
+  min-width: 0;
+}
+
+.field-input:deep(.arco-select-view-value) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .step-settings-form__header,
+  .step-settings-form__section {
+    padding: 16px;
+  }
+
+  .step-field-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .field-span-2 {
+    grid-column: span 1;
+  }
+}

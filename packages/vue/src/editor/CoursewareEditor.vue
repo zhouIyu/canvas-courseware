@@ -25,6 +25,7 @@ import EditorToolbar from "./EditorToolbar.vue";
 import InspectorPanel from "./InspectorPanel.vue";
 import SlideRailPanel from "./SlideRailPanel.vue";
 import SlideSettingsDrawer from "./SlideSettingsDrawer.vue";
+import StepSettingsDrawer from "./StepSettingsDrawer.vue";
 import TimelinePanel from "./TimelinePanel.vue";
 import { provideCoursewareDiagnosticLogger } from "./diagnostics";
 import { useCoursewareEditorTimelineWorkspaceState, type TimelineCollapsedStepIdsChangePayload } from "./useCoursewareEditorTimelineWorkspaceState";
@@ -143,6 +144,12 @@ const isSlideRailCollapsed = ref(false);
 
 /** 当前右侧管理栏是否已收起。 */
 const isEditorSideCollapsed = ref(true);
+
+/** 当前时间轴步骤设置抽屉是否可见。 */
+const isStepSettingsDrawerVisible = ref(false);
+
+/** 当前时间轴步骤设置抽屉绑定的步骤 id。 */
+const activeStepSettingsStepId = ref<string | null>(null);
 
 /** 属性面板最近一次稳定选中的节点 id。 */
 const retainedInspectorNodeId = ref<string | null>(null);
@@ -291,6 +298,7 @@ watch(
     if (activeSlideId !== previousSlideId) {
       retainedInspectorNodeId.value = null;
       closeSlideSettingsDrawer();
+      closeStepSettingsDrawer();
       return;
     }
 
@@ -325,6 +333,7 @@ watch(
   () => snapshot.value.activeSlideId,
   () => {
     resetSlideSettingsContext();
+    closeStepSettingsDrawer();
   },
 );
 
@@ -398,6 +407,26 @@ const inspectorSelectedCount = computed(() =>
 const selectedNodeTimelineSummary = computed<NodeTimelineSummary | null>(() =>
   inspectorNode.value ? nodeTimelineSummaryMap.value[inspectorNode.value.id] ?? null : null,
 );
+
+/** 当前步骤设置抽屉绑定的真实步骤对象。 */
+const activeTimelineStep = computed(() => {
+  if (!activeSlide.value || !activeStepSettingsStepId.value) {
+    return null;
+  }
+
+  return (
+    activeSlide.value.timeline.steps.find((step) => step.id === activeStepSettingsStepId.value) ?? null
+  );
+});
+
+/** 当前步骤设置抽屉绑定的步骤索引。 */
+const activeTimelineStepIndex = computed(() => {
+  if (!activeSlide.value || !activeStepSettingsStepId.value) {
+    return -1;
+  }
+
+  return activeSlide.value.timeline.steps.findIndex((step) => step.id === activeStepSettingsStepId.value);
+});
 
 /** 当前文本浮动工具条绑定的文本节点。 */
 const editingTextToolNode = computed<TextNode | null>(() => {
@@ -512,6 +541,23 @@ const handleStageImageReplace = async (payload: {
   await handleImageReplace(payload.nodeId, payload.file);
 };
 
+/** 打开某个步骤的设置抽屉，并让时间轴面板保持可见。 */
+function openStepSettingsDrawer(payload: {
+  stepId: string;
+  stepIndex: number;
+}) {
+  activeStepSettingsStepId.value = payload.stepId;
+  isStepSettingsDrawerVisible.value = true;
+  activeSideTab.value = "timeline";
+  isEditorSideCollapsed.value = false;
+}
+
+/** 关闭步骤设置抽屉并清理当前绑定的步骤。 */
+function closeStepSettingsDrawer() {
+  isStepSettingsDrawerVisible.value = false;
+  activeStepSettingsStepId.value = null;
+}
+
 /** 切换右侧管理区标签。 */
 const activateSideTab = (tab: EditorSideTab) => {
   activeSideTab.value = tab;
@@ -539,6 +585,22 @@ const toggleEditorSide = () => {
   isEditorSideCollapsed.value = !isEditorSideCollapsed.value;
 };
 
+/** 统一响应 ESC 关闭页面设置或步骤设置抽屉。 */
+const handleWindowKeydown = (event: KeyboardEvent) => {
+  if (event.key !== "Escape") {
+    return;
+  }
+
+  if (isStepSettingsDrawerVisible.value) {
+    closeStepSettingsDrawer();
+    return;
+  }
+
+  if (isSlideSettingsDrawerVisible.value) {
+    closeSlideSettingsDrawer();
+  }
+};
+
 /** 读取当前工具条的真实高度。 */
 const updateToolbarHeight = () => {
   toolbarHeight.value = toolbarShellRef.value?.offsetHeight ?? 0;
@@ -549,6 +611,7 @@ let toolbarResizeObserver: ResizeObserver | null = null;
 
 onMounted(() => {
   updateToolbarHeight();
+  window.addEventListener("keydown", handleWindowKeydown);
 
   if (toolbarShellRef.value) {
     toolbarResizeObserver = new ResizeObserver(() => {
@@ -559,6 +622,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  window.removeEventListener("keydown", handleWindowKeydown);
   toolbarResizeObserver?.disconnect();
   toolbarResizeObserver = null;
 });
@@ -721,6 +785,7 @@ defineExpose({
               :slide="activeSlide ?? null"
               :selected-node-id="selectedNodeId"
               @duplicate-step="handleTimelineStepDuplicate"
+              @open-step-settings="openStepSettingsDrawer"
               @preview-step="handleTimelinePreviewRequest"
               @reorder-step="handleTimelineStepReorder"
               @upsert-step="handleTimelineStepUpsert"
@@ -742,6 +807,18 @@ defineExpose({
       :visible="isSlideSettingsDrawerVisible"
       @close="closeSlideSettingsDrawer"
       @update-slide="handleSlideUpdate"
+    />
+
+    <StepSettingsDrawer
+      :has-nodes="(activeSlide?.nodes.length ?? 0) > 0"
+      :selected-node-id="selectedNodeId"
+      :slide="activeSlide ?? null"
+      :step="activeTimelineStep"
+      :step-count="activeSlide?.timeline.steps.length ?? 0"
+      :step-index="activeTimelineStepIndex >= 0 ? activeTimelineStepIndex : 0"
+      :visible="isStepSettingsDrawerVisible"
+      @close="closeStepSettingsDrawer"
+      @update-step="handleTimelineStepUpsert"
     />
   </section>
 </template>

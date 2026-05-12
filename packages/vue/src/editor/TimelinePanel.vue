@@ -45,6 +45,8 @@ const emit = defineEmits<{
   "duplicate-step": [payload: TimelineStepDuplicatePayload];
   /** 从某个步骤开始切入预览。 */
   "preview-step": [stepIndex: number];
+  /** 打开某个步骤的设置抽屉。 */
+  "open-step-settings": [payload: { stepId: string; stepIndex: number }];
 }>();
 
 /** 当前是否已经有激活页面。 */
@@ -139,6 +141,14 @@ function handlePreviewStep(stepIndex: number): void {
   emit("preview-step", stepIndex);
 }
 
+/** 请求外层打开指定步骤的设置抽屉。 */
+function handleOpenStepSettings(stepId: string, stepIndex: number): void {
+  emit("open-step-settings", {
+    stepId,
+    stepIndex,
+  });
+}
+
 </script>
 
 <template>
@@ -184,10 +194,8 @@ function handlePreviewStep(stepIndex: number): void {
             :can-move-down="stepIndex < (slide?.timeline.steps.length ?? 1) - 1"
             :can-move-up="stepIndex > 0"
             :drop-placement="dropState?.stepId === step.id ? dropState.placement : null"
-            :has-nodes="hasNodes"
             :is-collapsed="isStepCollapsed(step.id)"
             :is-dragging="draggedStepId === step.id"
-            :selected-node-id="props.selectedNodeId"
             :slide="props.slide ?? null"
             :step="step"
             :step-count="stepCount"
@@ -197,11 +205,11 @@ function handlePreviewStep(stepIndex: number): void {
             @drag-start="handleDragStart(step.id, $event)"
             @drop="handleDrop(step.id, $event)"
             @duplicate-step="handleDuplicateStep"
+            @open-settings="handleOpenStepSettings(step.id, stepIndex)"
             @preview-step="handlePreviewStep"
             @remove-step="handleRemoveStep"
             @reorder-step="emit('reorder-step', $event)"
             @toggle-collapsed="handleToggleStepCollapsed(step.id)"
-            @update-step="emitStep"
           />
         </div>
         <p v-else class="panel-empty">暂无步骤。</p>
