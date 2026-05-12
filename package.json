@@ -51,11 +51,14 @@
     "test:vnext-37-c": "node test/vnext-37/round-03.mjs",
     "test:vnext-37-d": "node test/vnext-37/round-04.mjs",
     "test:bug-canvas-scale-on-select": "node test/bug-canvas-scale-on-select/round-01.mjs",
+    "test:bug-editor-bottom-clipped": "node test/bug-editor-bottom-clipped/round-01.mjs",
     "test:bug-sidebar-handle-offset-on-zoom": "node test/bug-sidebar-handle-offset-on-zoom/round-01.mjs"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@types/node": "^24.0.0",
     "@vitejs/plugin-vue": "^6.0.0",
+    "playwright": "^1.60.0",
     "tsup": "^8.4.0",
     "typescript": "^5.8.0",
     "vite": "^6.0.0",

@@ -1,0 +1,115 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-05-12T06:06:50.697Z",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "editor-bottom-visibility",
+      "pageOverflowY": "hidden",
+      "stageOverflowY": "visible",
+      "pageScrollHeight": 900,
+      "pageClientHeight": 900,
+      "bodyScrollHeight": 900,
+      "documentScrollHeight": 900,
+      "overflowBySelector": {
+        ".workspace-page": 0,
+        ".workspace-stage": 0,
+        ".editor-shell": -14,
+        ".editor-workbench": -15,
+        ".editor-layout": -13,
+        ".slide-rail-host": -4,
+        ".workspace-shell": -4,
+        ".editor-side": -4,
+        ".editor-side-body": -5
+      },
+      "snapshot": {
+        "viewportHeight": 900,
+        "bodyScrollHeight": 900,
+        "documentScrollHeight": 900,
+        "pageClientHeight": 900,
+        "pageScrollHeight": 900,
+        "pageOverflowY": "hidden",
+        "stageOverflowY": "visible",
+        "elements": {
+          ".workspace-page": {
+            "top": 0,
+            "bottom": 900,
+            "height": 900,
+            "clientHeight": 900,
+            "scrollHeight": 900,
+            "overflowY": "hidden"
+          },
+          ".workspace-stage": {
+            "top": 56,
+            "bottom": 900,
+            "height": 844,
+            "clientHeight": 844,
+            "scrollHeight": 844,
+            "overflowY": "visible"
+          },
+          ".editor-shell": {
+            "top": 68,
+            "bottom": 886,
+            "height": 818,
+            "clientHeight": 816,
+            "scrollHeight": 827,
+            "overflowY": "hidden"
+          },
+          ".editor-workbench": {
+            "top": 69,
+            "bottom": 885,
+            "height": 816,
+            "clientHeight": 816,
+            "scrollHeight": 827,
+            "overflowY": "visible"
+          },
+          ".editor-layout": {
+            "top": 129,
+            "bottom": 887,
+            "height": 758,
+            "clientHeight": 758,
+            "scrollHeight": 767,
+            "overflowY": "visible"
+          },
+          ".slide-rail-host": {
+            "top": 138,
+            "bottom": 896,
+            "height": 758,
+            "clientHeight": 758,
+            "scrollHeight": 758,
+            "overflowY": "hidden"
+          },
+          ".workspace-shell": {
+            "top": 138,
+            "bottom": 896,
+            "height": 758,
+            "clientHeight": 756,
+            "scrollHeight": 756,
+            "overflowY": "visible"
+          },
+          ".editor-side": {
+            "top": 138,
+            "bottom": 896,
+            "height": 758,
+            "clientHeight": 756,
+            "scrollHeight": 756,
+            "overflowY": "hidden"
+          },
+          ".editor-side-body": {
+            "top": 186.4219,
+            "bottom": 895,
+            "height": 708.5781,
+            "clientHeight": 709,
+            "scrollHeight": 820,
+            "overflowY": "auto"
+          }
+        }
+      }
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

@@ -7,6 +7,7 @@ import {
   watch,
   onBeforeUnmount,
   onMounted,
+  nextTick,
 } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
@@ -177,6 +178,29 @@ const updateWorkspaceViewportHeight = () => {
 /** 监听工作区高度变化，保证视口高度分配始终正确。 */
 let workspaceStageResizeObserver: ResizeObserver | null = null;
 
+/** 断开旧的工作区高度监听，避免重复绑定到失效 DOM。 */
+const disconnectWorkspaceStageResizeObserver = () => {
+  workspaceStageResizeObserver?.disconnect();
+  workspaceStageResizeObserver = null;
+};
+
+/** 重新绑定工作区高度监听，并立刻同步一次可用高度。 */
+const reconnectWorkspaceStageResizeObserver = () => {
+  const element = workspaceStageRef.value;
+  disconnectWorkspaceStageResizeObserver();
+
+  if (!element) {
+    workspaceViewportHeight.value = 0;
+    return;
+  }
+
+  updateWorkspaceViewportHeight();
+  workspaceStageResizeObserver = new ResizeObserver(() => {
+    updateWorkspaceViewportHeight();
+  });
+  workspaceStageResizeObserver.observe(element);
+};
+
 /** 项目 id 或模式变化时，刷新页面状态。 */
 watch(
   () => route.query.mode,
@@ -188,24 +212,38 @@ watch(
 
 /** 页面销毁时清理自动保存计时器。 */
 onBeforeUnmount(() => {
-  workspaceStageResizeObserver?.disconnect();
-  workspaceStageResizeObserver = null;
+  disconnectWorkspaceStageResizeObserver();
   detachWorkspaceDiagnosticsBridge();
 });
 
 onMounted(() => {
   attachWorkspaceDiagnosticsBridge();
-  updateWorkspaceViewportHeight();
-
-  if (!workspaceStageRef.value) {
-    return;
-  }
-
-  workspaceStageResizeObserver = new ResizeObserver(() => {
-    updateWorkspaceViewportHeight();
-  });
-  workspaceStageResizeObserver.observe(workspaceStageRef.value);
+  reconnectWorkspaceStageResizeObserver();
 });
+
+/** 工作区容器在加载态和正式态之间切换时，重新绑定高度监听。 */
+watch(
+  workspaceStageRef,
+  async () => {
+    await nextTick();
+    reconnectWorkspaceStageResizeObserver();
+  },
+  { flush: "post" },
+);
+
+/** 文档恢复完成后，确保正式工作区出现时能立即拿到正确高度。 */
+watch(
+  () => [isLoading.value, Boolean(documentModel.value), workspaceMode.value] as const,
+  async ([loading, hasDocument]) => {
+    if (loading || !hasDocument) {
+      return;
+    }
+
+    await nextTick();
+    reconnectWorkspaceStageResizeObserver();
+  },
+  { flush: "post" },
+);
 </script>
 
 <template>
