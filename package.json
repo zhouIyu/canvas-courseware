@@ -52,6 +52,7 @@
     "test:vnext-37-d": "node test/vnext-37/round-04.mjs",
     "test:vnext-37-e": "node test/vnext-37/round-05.mjs",
     "test:vnext-37-f": "node test/vnext-37/round-06.mjs",
+    "test:preview-right-sidebar": "node test/vnext-37/round-07.mjs",
     "test:bug-canvas-scale-on-select": "node test/bug-canvas-scale-on-select/round-01.mjs",
     "test:bug-timeline-panel-density": "node test/bug-timeline-panel-density/round-01.mjs",
     "test:bug-editor-bottom-clipped": "node test/bug-editor-bottom-clipped/round-01.mjs",

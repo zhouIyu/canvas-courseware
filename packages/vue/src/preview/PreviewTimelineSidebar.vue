@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { formatTriggerLabel } from "../shared";
 import type { PlaybackState, TimelineStep } from "@canvas-courseware/core";
 
@@ -40,13 +41,42 @@ const props = withDefaults(
   },
 );
 
+/** 当前步骤数量的紧凑摘要。 */
+const stepCountLabel = computed(() =>
+  props.steps.length === 0 ? "无步骤" : `${props.steps.length} 个步骤`,
+);
+
+/** 顶部概览卡片的补充说明，完成态优先给出下一动作提示。 */
+const timelineSummaryCopy = computed(() => {
+  if (props.steps.length === 0) {
+    return "当前页面还没有配置播放步骤。";
+  }
+
+  if (props.playbackStatus === "completed") {
+    return "当前页已播放完成，可切换页面或重新开始。";
+  }
+
+  if (props.playbackStatus === "playing") {
+    return "当前页正在自动推进。";
+  }
+
+  return "当前焦点页，按步骤推进预览。";
+});
+
+/** 判断某一步是否已经执行完成。 */
+const isStepCompleted = (stepIndex: number) => stepIndex < props.completedStepCount;
+
+/** 判断某一步是否是当前正在等待触发的焦点步骤。 */
+const isStepCurrent = (stepIndex: number) =>
+  stepIndex === props.completedStepCount && stepIndex < props.steps.length;
+
 /** 生成某一步当前对应的状态文案。 */
 const resolveStepStatusLabel = (stepIndex: number) => {
-  if (stepIndex < props.completedStepCount) {
+  if (isStepCompleted(stepIndex)) {
     return "已完成";
   }
 
-  if (stepIndex === props.stepIndex && stepIndex < props.steps.length) {
+  if (isStepCurrent(stepIndex)) {
     if (props.playbackStatus === "playing") {
       return "播放中";
     }
@@ -63,11 +93,11 @@ const resolveStepStatusLabel = (stepIndex: number) => {
 
 /** 生成某一步状态标签使用的色值，保证当前焦点更容易识别。 */
 const resolveStepStatusColor = (stepIndex: number) => {
-  if (stepIndex < props.completedStepCount) {
+  if (isStepCompleted(stepIndex)) {
     return "#00b42a";
   }
 
-  if (stepIndex === props.stepIndex && stepIndex < props.steps.length) {
+  if (isStepCurrent(stepIndex)) {
     return props.playbackStatus === "paused" ? "#ff7d00" : "#165dff";
   }
 
@@ -89,23 +119,19 @@ const resolveStepStatusColor = (stepIndex: number) => {
     </header>
 
     <div class="timeline-summary-card">
+      <div class="timeline-summary-card__meta">
+        <span>{{ props.slidePositionLabel }}</span>
+        <span>{{ stepCountLabel }}</span>
+      </div>
       <div class="timeline-summary-card__row">
         <span>当前页</span>
         <strong>{{ props.slideProgressLabel }}</strong>
       </div>
-      <small>{{ props.slidePositionLabel }}</small>
       <div class="timeline-summary-card__row">
         <span>课件进度</span>
         <span class="timeline-summary-card__value">{{ props.coursewareProgressLabel }}</span>
       </div>
-      <small>{{ props.coursewareProgressCopy }}</small>
-    </div>
-
-    <div v-if="props.steps.length > 0" class="timeline-steps-hint">
-      <strong>{{ props.slideProgressLabel }}</strong>
-      <small>
-        {{ props.playbackStatus === "completed" ? "当前页播放完成" : "按步骤推进当前页预览" }}
-      </small>
+      <p class="timeline-summary-card__copy">{{ timelineSummaryCopy }}</p>
     </div>
 
     <ol v-if="props.steps.length > 0" class="steps-list">
@@ -114,24 +140,22 @@ const resolveStepStatusColor = (stepIndex: number) => {
         :key="step.id"
         class="preview-step-card"
         :class="{
-          'is-done': index < props.stepIndex,
-          'is-current': index === props.stepIndex,
+          'is-done': isStepCompleted(index),
+          'is-current': isStepCurrent(index),
         }"
       >
-        <div class="preview-step-marker">
-          <div class="step-index">{{ String(index + 1).padStart(2, '0') }}</div>
-        </div>
-        <div class="step-copy">
-          <div class="step-row">
+        <div class="preview-step-card__top">
+          <div class="preview-step-card__headline">
+            <span class="step-index">{{ String(index + 1).padStart(2, '0') }}</span>
             <strong>{{ step.name }}</strong>
-            <a-tag class="preview-step-status" :color="resolveStepStatusColor(index)" bordered>
-              {{ resolveStepStatusLabel(index) }}
-            </a-tag>
           </div>
-          <div class="step-row step-row-meta">
-            <span class="step-trigger">{{ formatTriggerLabel(step.trigger.type) }}</span>
-            <small>{{ step.actions.length }} 个动作</small>
-          </div>
+          <a-tag class="preview-step-status" :color="resolveStepStatusColor(index)" bordered>
+            {{ resolveStepStatusLabel(index) }}
+          </a-tag>
+        </div>
+        <div class="preview-step-card__bottom">
+          <span class="step-trigger">{{ formatTriggerLabel(step.trigger.type) }}</span>
+          <small>{{ step.actions.length }} 个动作</small>
         </div>
       </li>
     </ol>
@@ -169,11 +193,26 @@ const resolveStepStatusColor = (stepIndex: number) => {
 .timeline-summary-card {
   display: grid;
   gap: 6px;
-  margin: 12px 12px 10px;
-  padding: 10px 12px;
+  margin: 8px 12px 6px;
+  padding: 8px 10px 10px;
   border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 12px;
   background: linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(255, 255, 255, 0.98));
+}
+
+.timeline-summary-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.timeline-summary-card__meta span,
+.timeline-summary-card__row span,
+.timeline-summary-card__copy {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--cw-color-muted);
 }
 
 .timeline-summary-card__row {
@@ -183,38 +222,27 @@ const resolveStepStatusColor = (stepIndex: number) => {
   gap: 8px;
 }
 
-.timeline-summary-card__row span,
-.timeline-summary-card small,
-.timeline-steps-hint small {
-  font-size: 12px;
-  line-height: 1.45;
-  color: var(--cw-color-muted);
-}
-
 .timeline-summary-card strong {
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.3;
   color: var(--cw-color-text);
+  white-space: nowrap;
 }
 
 .timeline-summary-card__value {
-  font-size: 13px;
-  line-height: 1.4;
+  font-size: 12px;
+  line-height: 1.35;
   font-weight: 600;
   color: var(--cw-color-text);
+  white-space: nowrap;
 }
 
-.timeline-steps-hint {
-  display: grid;
-  gap: 2px;
-  margin: 0 12px 10px;
-  padding: 0 2px;
-}
-
-.timeline-steps-hint strong {
-  font-size: 13px;
-  line-height: 1.35;
-  color: var(--cw-color-text);
+.timeline-summary-card__copy {
+  margin: 0;
+  overflow: hidden;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .section-head {
@@ -236,7 +264,7 @@ const resolveStepStatusColor = (stepIndex: number) => {
 
 .preview-side {
   display: grid;
-  grid-template-rows: auto auto auto minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
   gap: 0;
   height: 100%;
   min-height: 0;
@@ -249,7 +277,7 @@ const resolveStepStatusColor = (stepIndex: number) => {
 .steps-list {
   display: grid;
   align-content: start;
-  gap: 8px;
+  gap: 6px;
   grid-auto-rows: var(--cw-preview-step-card-height, 84px);
   min-height: 0;
   margin: 0;
@@ -259,12 +287,12 @@ const resolveStepStatusColor = (stepIndex: number) => {
 }
 
 .preview-step-card {
+  position: relative;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: var(--cw-space-3);
-  align-items: center;
+  gap: 6px;
+  align-content: center;
   height: var(--cw-preview-step-card-height, 84px);
-  padding: 10px 12px;
+  padding: 10px 12px 10px 16px;
   border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: var(--cw-radius-md);
   background: rgba(255, 255, 255, 0.98);
@@ -275,61 +303,84 @@ const resolveStepStatusColor = (stepIndex: number) => {
     background var(--cw-duration-fast) var(--cw-ease-standard);
 }
 
+.preview-step-card::before {
+  content: "";
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  left: 0;
+  width: 3px;
+  border-radius: 999px;
+  background: rgba(134, 144, 156, 0.22);
+}
+
 .preview-step-card.is-current {
   border-color: rgba(22, 93, 255, 0.3);
   background: rgba(240, 247, 255, 0.98);
   box-shadow: inset 0 0 0 1px rgba(22, 93, 255, 0.08);
 }
 
+.preview-step-card.is-current::before {
+  background: #165dff;
+}
+
 .preview-step-card.is-done {
   opacity: 0.72;
 }
 
-.preview-step-marker {
+.preview-step-card.is-done::before {
+  background: #00b42a;
+}
+
+.preview-step-card__top,
+.preview-step-card__bottom {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.preview-step-card__headline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.preview-step-card__headline strong {
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--cw-color-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .step-index {
   display: inline-grid;
+  flex-shrink: 0;
   place-items: center;
-  width: 34px;
-  height: 34px;
+  width: 24px;
+  height: 24px;
   border-radius: var(--cw-radius-pill);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--cw-color-primary);
   background: var(--cw-color-primary-soft);
 }
 
-.step-copy {
-  display: grid;
-  gap: var(--cw-space-1);
-}
-
-.step-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--cw-space-3);
-}
-
-.step-row span,
-.step-copy small {
-  font-size: 13px;
-  line-height: 1.5;
+.preview-step-card__bottom small {
+  flex-shrink: 0;
+  font-size: 12px;
+  line-height: 1.4;
   color: var(--cw-color-muted);
-}
-
-.step-row-meta {
-  align-items: center;
 }
 
 .step-trigger {
   display: inline-flex;
   align-items: center;
-  min-height: 24px;
+  min-height: 22px;
   padding: 0 8px;
   border-radius: 999px;
   font-size: 11px;
@@ -340,6 +391,7 @@ const resolveStepStatusColor = (stepIndex: number) => {
 
 .preview-step-status {
   flex-shrink: 0;
+  margin-left: 8px;
 }
 
 .empty-state {

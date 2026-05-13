@@ -1,0 +1,39 @@
+{
+  "assetDir": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-05-13-preview-right-sidebar-round-01",
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-05-13T03:49:59.970Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "sidebar-initial-density",
+      "hasLegacyHint": false,
+      "summaryCardHeight": 106,
+      "summaryRowCount": 2,
+      "firstStepCardHeight": 70,
+      "firstStepCardPaddingLeft": 16,
+      "firstStepHeadlineGap": 8,
+      "firstStepTopAlign": "space-between",
+      "firstStepBottomAlign": "space-between",
+      "summaryMetaText": "第 1 / 2 页2 个步骤",
+      "summaryCopyText": "当前焦点页，按步骤推进预览。",
+      "summaryRowsText": [
+        "当前页0/2 步",
+        "课件进度已完成 0 / 2 页"
+      ],
+      "summaryCardText": "第 1 / 2 页 2 个步骤 当前页 0/2 步 课件进度 已完成 0 / 2 页 当前焦点页，按步骤推进预览。",
+      "firstStepStatus": "待触发",
+      "secondStepStatus": "待执行"
+    },
+    {
+      "id": "sidebar-post-play",
+      "firstStepStatus": "已完成",
+      "secondStepStatus": "已完成",
+      "summaryCopy": "当前页已播放完成，可切换页面或重新开始。"
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

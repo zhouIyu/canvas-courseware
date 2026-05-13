@@ -271,7 +271,7 @@ const resolvePreviewLayoutVariables = (
       "--cw-preview-fit-padding-block-start": "4px",
       "--cw-preview-fit-padding-inline": "4px",
       "--cw-preview-fit-padding-block-end": "6px",
-      "--cw-preview-step-card-height": "68px",
+      "--cw-preview-step-card-height": "66px",
       "--cw-preview-slide-thumbnail-height": "40px",
     };
   }
@@ -288,7 +288,7 @@ const resolvePreviewLayoutVariables = (
       "--cw-preview-fit-padding-block-start": "6px",
       "--cw-preview-fit-padding-inline": "6px",
       "--cw-preview-fit-padding-block-end": "8px",
-      "--cw-preview-step-card-height": "74px",
+      "--cw-preview-step-card-height": "70px",
       "--cw-preview-slide-thumbnail-height": "44px",
     };
   }
@@ -304,7 +304,7 @@ const resolvePreviewLayoutVariables = (
     "--cw-preview-fit-padding-block-start": "8px",
     "--cw-preview-fit-padding-inline": "6px",
     "--cw-preview-fit-padding-block-end": "10px",
-    "--cw-preview-step-card-height": "84px",
+    "--cw-preview-step-card-height": "76px",
     "--cw-preview-slide-thumbnail-height": "48px",
   };
 };
