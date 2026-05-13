@@ -281,7 +281,7 @@
   当前结果：
   已完成。预览页主操作保留为蓝色填充按钮，上一页 / 上一步 / 重播 / 下一页收敛为 Ghost 按钮组，“重新开始课件 / 沉浸播放”收口到“更多”菜单，缩放视图控制与播放控制已压缩到同一行；已通过 `pnpm typecheck`、`pnpm build`、`pnpm test:vnext-35-d`、`pnpm test:vnext-36-e` 与 `pnpm test:vnext-37-e` 验证。
 
-- [ ] VNext-37-F 收紧预览页中央区域的辅助信息
+- [x] VNext-37-F 收紧预览页中央区域的辅助信息
   说明：
   将画布下方的状态卡片改为画布右上角的浮动 Badge，释放约 120px 垂直空间。
   来源：
@@ -295,6 +295,8 @@
   - 移除 `.playback-insight-strip` 区域
   - 新增 `.preview-status-badge` 浮动组件
   - 修改 `packages/vue/src/preview/PreviewTimelineSidebar.vue`，在顶部增加进度摘要
+  当前结果：
+  已完成。预览页中央区域已移除画布下方的大块状态卡片，改为右上角可展开的浮动状态 Badge，并把课件级进度收口到右侧步骤栏顶部；同时为“更多”低频动作改为稳定弹层按钮链路，确保 `沉浸播放 / 重新开始课件` 与既有预览回归继续可用；已通过 `pnpm typecheck`、`pnpm build`、`pnpm test:vnext-35-d`、`pnpm test:vnext-36-e`、`pnpm test:vnext-37-e` 与 `pnpm test:vnext-37-f` 验证。
 
 - [ ] VNext-37-G 优化左侧页面卡片的信息组织
   说明：

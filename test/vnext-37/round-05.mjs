@@ -87,9 +87,9 @@ async function selectPreviewMoreAction(page, optionText) {
   await moreButton.click();
   const popup = page.locator(".arco-trigger-popup:visible").last();
   await popup.waitFor();
-  const option = popup.locator(".arco-dropdown-option").filter({ hasText: optionText }).first();
+  const option = popup.locator(".preview-more-menu__item").filter({ hasText: optionText }).first();
   await option.waitFor();
-  await option.click({ force: true });
+  await option.click();
 }
 
 await ensureDirectory(ASSET_DIR);
@@ -190,7 +190,7 @@ try {
   logStep("verify more menu contains low-frequency actions only");
   await page.getByRole("button", { name: "更多" }).first().click();
   const moreMenuLabels = await page
-    .locator(".arco-trigger-popup:visible .arco-dropdown-option")
+    .locator(".arco-trigger-popup:visible .preview-more-menu__item")
     .evaluateAll((options) =>
       options.map((option) => option.textContent?.replace(/\s+/g, " ").trim() ?? ""),
     );

@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
-
-type PreviewPlaybackDropdownAction = "restart-courseware" | "toggle-immersive-playback";
+import { computed, ref } from "vue";
 
 /** 预览播放控制条的只读展示参数。 */
 const props = withDefaults(
@@ -43,6 +41,9 @@ const primaryActionLabel = computed(() =>
 /** 主操作按钮是否允许继续点击。 */
 const isPrimaryActionDisabled = computed(() => !props.canPlayNextStep);
 
+/** 当前“更多”面板是否处于展开态。 */
+const isMoreActionsVisible = ref(false);
+
 /** 预览播放控制条对外派发的标准意图。 */
 const emit = defineEmits<{
   /** 请求切到上一页。 */
@@ -61,21 +62,23 @@ const emit = defineEmits<{
   "toggle-immersive-playback": [];
 }>();
 
-/** 处理低频菜单动作，统一把菜单选择映射回既有事件。 */
-const handleDropdownActionSelect = (action: string | number | Record<string, unknown>) => {
-  if (typeof action !== "string") {
-    return;
-  }
+/** 关闭低频动作弹出层。 */
+const closeMoreActions = () => {
+  isMoreActionsVisible.value = false;
+};
 
-  const normalizedAction = action as PreviewPlaybackDropdownAction;
-  if (normalizedAction === "restart-courseware") {
+/** 处理低频动作，统一做派发与收口。 */
+const handleMoreAction = (
+  action: "restart-courseware" | "toggle-immersive-playback",
+) => {
+  if (action === "restart-courseware") {
     emit("restart-courseware");
+    closeMoreActions();
     return;
   }
 
-  if (normalizedAction === "toggle-immersive-playback") {
-    emit("toggle-immersive-playback");
-  }
+  emit("toggle-immersive-playback");
+  closeMoreActions();
 };
 </script>
 
@@ -131,7 +134,12 @@ const handleDropdownActionSelect = (action: string | number | Record<string, unk
     </div>
 
     <div class="preview-playback-controls__primary">
-      <a-dropdown @select="handleDropdownActionSelect">
+      <a-trigger
+        v-model:popup-visible="isMoreActionsVisible"
+        trigger="click"
+        position="bl"
+        popup-container="body"
+      >
         <a-button
           class="preview-more-button"
           type="outline"
@@ -143,26 +151,28 @@ const handleDropdownActionSelect = (action: string | number | Record<string, unk
           </template>
         </a-button>
         <template #content>
-          <a-doption
-            class="preview-playback-controls__menu-option"
-            value="restart-courseware"
-          >
-            <template #icon>
+          <div class="preview-more-menu" role="menu" aria-label="更多预览操作">
+            <button
+              type="button"
+              class="preview-more-menu__item"
+              @mousedown.stop.prevent
+              @click.stop.prevent="handleMoreAction('restart-courseware')"
+            >
               <icon-refresh />
-            </template>
-            重新开始课件
-          </a-doption>
-          <a-doption
-            class="preview-playback-controls__menu-option"
-            value="toggle-immersive-playback"
-          >
-            <template #icon>
+              <span>重新开始课件</span>
+            </button>
+            <button
+              type="button"
+              class="preview-more-menu__item"
+              @mousedown.stop.prevent
+              @click.stop.prevent="handleMoreAction('toggle-immersive-playback')"
+            >
               <icon-fullscreen />
-            </template>
-            {{ props.immersiveToggleLabel }}
-          </a-doption>
+              <span>{{ props.immersiveToggleLabel }}</span>
+            </button>
+          </div>
         </template>
-      </a-dropdown>
+      </a-trigger>
 
       <a-button
         class="preview-primary-button"
@@ -225,6 +235,41 @@ const handleDropdownActionSelect = (action: string | number | Record<string, unk
 
 .preview-playback-controls__menu-option {
   font-size: 12px;
+}
+
+.preview-more-menu {
+  display: grid;
+  gap: 4px;
+  min-width: 160px;
+  padding: 4px 0;
+}
+
+.preview-more-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  color: var(--cw-color-text);
+  cursor: pointer;
+  background: transparent;
+  transition:
+    background var(--cw-duration-fast) var(--cw-ease-standard),
+    color var(--cw-duration-fast) var(--cw-ease-standard);
+}
+
+.preview-more-menu__item:hover {
+  color: var(--cw-color-primary);
+  background: rgba(22, 93, 255, 0.08);
+}
+
+.preview-more-menu__item :deep(svg) {
+  font-size: 14px;
 }
 
 @container (max-width: 768px) {

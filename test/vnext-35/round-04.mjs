@@ -51,11 +51,11 @@ async function selectPreviewMoreAction(page, optionText) {
   const moreButton = page.getByRole("button", { name: "更多" }).first();
   await moreButton.click();
   const option = page
-    .locator(".arco-trigger-popup:visible .arco-dropdown-option")
+    .locator(".arco-trigger-popup:visible .preview-more-menu__item")
     .filter({ hasText: optionText })
     .first();
   await option.waitFor();
-  await option.click({ force: true });
+  await option.click();
 }
 
 /**

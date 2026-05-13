@@ -17,6 +17,10 @@ const props = withDefaults(
     isActiveSlide?: boolean;
     /** 当前页在整份课件中的页码标签。 */
     slidePositionLabel?: string;
+    /** 整份课件的页面级进度标签。 */
+    coursewareProgressLabel?: string;
+    /** 当前课件进度的补充说明。 */
+    coursewareProgressCopy?: string;
     /** 当前页整体进度标签。 */
     slideProgressLabel?: string;
     /** 当前页卡片状态标签。 */
@@ -29,6 +33,8 @@ const props = withDefaults(
     playbackStatus: "idle",
     isActiveSlide: false,
     slidePositionLabel: "未选择页面",
+    coursewareProgressLabel: "暂无课件页面",
+    coursewareProgressCopy: "切换页面后，这里会同步展示整份课件的播放进度。",
     slideProgressLabel: "0/0 步",
     slideStatusLabel: "未播放",
   },
@@ -74,7 +80,7 @@ const resolveStepStatusColor = (stepIndex: number) => {
     <header class="section-head compact">
       <div class="timeline-heading">
         <h3>步骤状态</h3>
-        <p>{{ props.slidePositionLabel }} · {{ props.slideProgressLabel }}</p>
+        <p>{{ props.coursewareProgressLabel }}</p>
       </div>
       <a-tag v-if="props.isActiveSlide" class="timeline-status-tag" bordered>
         {{ props.slideStatusLabel }}
@@ -82,7 +88,20 @@ const resolveStepStatusColor = (stepIndex: number) => {
       <span v-else class="timeline-status-text">{{ props.slideStatusLabel }}</span>
     </header>
 
-    <div v-if="props.steps.length > 0" class="timeline-summary-card">
+    <div class="timeline-summary-card">
+      <div class="timeline-summary-card__row">
+        <span>当前页</span>
+        <strong>{{ props.slideProgressLabel }}</strong>
+      </div>
+      <small>{{ props.slidePositionLabel }}</small>
+      <div class="timeline-summary-card__row">
+        <span>课件进度</span>
+        <span class="timeline-summary-card__value">{{ props.coursewareProgressLabel }}</span>
+      </div>
+      <small>{{ props.coursewareProgressCopy }}</small>
+    </div>
+
+    <div v-if="props.steps.length > 0" class="timeline-steps-hint">
       <strong>{{ props.slideProgressLabel }}</strong>
       <small>
         {{ props.playbackStatus === "completed" ? "当前页播放完成" : "按步骤推进当前页预览" }}
@@ -149,12 +168,27 @@ const resolveStepStatusColor = (stepIndex: number) => {
 
 .timeline-summary-card {
   display: grid;
-  gap: 4px;
+  gap: 6px;
   margin: 12px 12px 10px;
   padding: 10px 12px;
   border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 12px;
   background: linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(255, 255, 255, 0.98));
+}
+
+.timeline-summary-card__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.timeline-summary-card__row span,
+.timeline-summary-card small,
+.timeline-steps-hint small {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--cw-color-muted);
 }
 
 .timeline-summary-card strong {
@@ -163,10 +197,24 @@ const resolveStepStatusColor = (stepIndex: number) => {
   color: var(--cw-color-text);
 }
 
-.timeline-summary-card small {
-  font-size: 12px;
-  line-height: 1.45;
-  color: var(--cw-color-muted);
+.timeline-summary-card__value {
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--cw-color-text);
+}
+
+.timeline-steps-hint {
+  display: grid;
+  gap: 2px;
+  margin: 0 12px 10px;
+  padding: 0 2px;
+}
+
+.timeline-steps-hint strong {
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--cw-color-text);
 }
 
 .section-head {
@@ -188,7 +236,7 @@ const resolveStepStatusColor = (stepIndex: number) => {
 
 .preview-side {
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-rows: auto auto auto minmax(0, 1fr);
   gap: 0;
   height: 100%;
   min-height: 0;

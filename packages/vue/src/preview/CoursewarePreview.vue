@@ -3,6 +3,7 @@ import type { CoursewareDocument } from "@canvas-courseware/core";
 import { computed, ref, watch } from "vue";
 import StageViewportControls from "../shared/StageViewportControls.vue";
 import PreviewPlaybackControls from "./PreviewPlaybackControls.vue";
+import PreviewStatusBadge from "./PreviewStatusBadge.vue";
 import PreviewTimelineSidebar from "./PreviewTimelineSidebar.vue";
 import {
   DEFAULT_PREVIEW_HEIGHT,
@@ -156,7 +157,6 @@ const {
   completedStepCount,
   coursewareProgressCopy,
   coursewareProgressLabel,
-  coursewareProgressPercent,
   hasActiveSlide,
   isCoursewareCompleted,
   nextTriggerLabel,
@@ -164,14 +164,10 @@ const {
   playbackHintTitle,
   playbackStatusLabel,
   playbackStatusTagColor,
-  playbackSummary,
-  slideCount,
   slidePlaybackProgressMap,
   slidePositionLabel,
   stageSizeLabel,
   stepPositionLabel,
-  stepProgressLabel,
-  stepProgressPercent,
 } = usePreviewPlaybackProgress({
   document: computed(() => state.value.document),
   activeSlide,
@@ -239,14 +235,6 @@ const isEmbedded = computed(() => !props.showHeader);
 /** 当前工作区高度对应的视觉密度档位。 */
 const previewViewportDensity = computed<WorkspaceViewportDensity>(() =>
   resolveWorkspaceViewportDensity(props.height),
-);
-
-/** 内嵌工作台里优先把中心区域让给课件本身，收起附加说明卡片。 */
-const shouldShowInsightStrip = computed(
-  () =>
-    !isImmersivePlayback.value &&
-    !isEmbedded.value &&
-    previewViewportDensity.value === "spacious",
 );
 
 /** 当前画布区头部是否需要展示标题。 */
@@ -358,10 +346,16 @@ const previewLayoutClass = computed(() => ({
 
 /** 当前画布壳层是否处于“只保留课件主体”的紧凑模式。 */
 const previewStageShellClass = computed(() => ({
-  "is-stage-only": !shouldShowInsightStrip.value,
+  "is-stage-only": true,
   "is-embedded-stage": isEmbedded.value,
   "is-immersive-stage": isImmersivePlayback.value,
 }));
+
+/** 浮动状态 Badge 在播放进度变化后用于重置折叠状态。 */
+const previewStatusBadgeResetKey = computed(
+  () =>
+    `${state.value.slideId ?? "no-slide"}:${state.value.stepIndex}:${state.value.status}:${activeSlide.value?.id ?? "none"}`,
+);
 
 /** 切换左侧 slide 栏显隐。 */
 const toggleSlideRail = () => {
@@ -428,17 +422,17 @@ const immersivePlaybackHint = computed(
     :style="previewShellStyle"
   >
     <header v-if="shouldShowHeader" class="preview-topbar">
-      <div class="preview-heading">
-        <div class="title-row">
-          <h2>{{ title }}</h2>
-          <a-tag class="playback-status-tag" :color="playbackStatusTagColor" bordered>
-            {{ playbackStatusLabel }}
-          </a-tag>
+        <div class="preview-heading">
+          <div class="title-row">
+            <h2>{{ title }}</h2>
+            <a-tag class="playback-status-tag" :color="playbackStatusTagColor" bordered>
+              {{ playbackStatusLabel }}
+            </a-tag>
+          </div>
+          <p class="preview-copy">
+            {{ activeSlide?.name ?? "未选择页面" }} · {{ nextTriggerLabel }} · {{ stageSizeLabel }}
+          </p>
         </div>
-        <p class="preview-copy">
-          {{ playbackSummary }} · {{ nextTriggerLabel }} · {{ activeSlide?.name ?? "未选择页面" }}
-        </p>
-      </div>
       <div class="preview-topbar-actions">
         <div class="preview-topbar-action-group">
           <div class="status-badges topbar-badges">
@@ -587,57 +581,12 @@ const immersivePlaybackHint = computed(
                 <a-tag class="preview-next-trigger-tag" bordered>{{ nextTriggerLabel }}</a-tag>
               </div>
             </div>
-            <div
-              v-if="!shouldShowInsightStrip && !isImmersivePlayback"
-              class="preview-stage-summary-inline"
-            >
-              <div class="preview-stage-summary-topline">
-                <strong class="courseware-progress-value">{{ coursewareProgressLabel }}</strong>
-                <span class="courseware-progress-copy">{{ coursewareProgressCopy }}</span>
-              </div>
-              <div class="preview-stage-summary-bottomline">
-                <strong class="playback-hint-title">{{ playbackHintTitle }}</strong>
-                <small class="playback-hint-copy">{{ playbackHintCopy }}</small>
-              </div>
-            </div>
-            <div v-else class="immersive-playback-hint">
+            <div v-if="isImmersivePlayback" class="immersive-playback-hint">
               <a-tag :color="playbackStatusTagColor" bordered>{{ playbackStatusLabel }}</a-tag>
               <span>{{ immersivePlaybackHint }}</span>
             </div>
           </div>
         </header>
-
-        <div v-if="shouldShowInsightStrip" class="playback-insight-strip">
-          <article class="playback-insight-card">
-            <span class="playback-insight-label">课件进度</span>
-            <strong class="preview-slide-position courseware-progress-value">
-              {{ coursewareProgressLabel }}
-            </strong>
-            <small class="courseware-progress-copy">{{ coursewareProgressCopy }}</small>
-            <div class="playback-progress-track" aria-hidden="true">
-              <span
-                class="playback-progress-fill"
-                :style="{ width: `${coursewareProgressPercent}%` }"
-              />
-            </div>
-          </article>
-          <article class="playback-insight-card">
-            <span class="playback-insight-label">步骤进度</span>
-            <strong class="preview-step-progress">{{ stepProgressLabel }}</strong>
-            <small>{{ stepPositionLabel }}</small>
-            <div class="playback-progress-track" aria-hidden="true">
-              <span
-                class="playback-progress-fill"
-                :style="{ width: `${stepProgressPercent}%` }"
-              />
-            </div>
-          </article>
-          <article class="playback-insight-card is-emphasis">
-            <span class="playback-insight-label">当前提示</span>
-            <strong class="playback-hint-title">{{ playbackHintTitle }}</strong>
-            <small class="playback-hint-copy">{{ playbackHintCopy }}</small>
-          </article>
-        </div>
 
         <div class="preview-stage">
           <div
@@ -647,6 +596,24 @@ const immersivePlaybackHint = computed(
           >
             <div class="preview-stage-scroll" :style="canvasBackdropStyle">
               <div v-if="activeSlide" class="preview-stage-frame" :style="canvasFrameStyle">
+                <div class="preview-progress-bridge" aria-hidden="true">
+                  <span class="courseware-progress-value">{{ coursewareProgressLabel }}</span>
+                  <span class="courseware-progress-copy">{{ coursewareProgressCopy }}</span>
+                  <span class="playback-hint-title">{{ playbackHintTitle }}</span>
+                  <span class="playback-hint-copy">{{ playbackHintCopy }}</span>
+                </div>
+                <PreviewStatusBadge
+                  v-if="!isImmersivePlayback"
+                  :courseware-progress-copy="coursewareProgressCopy"
+                  :courseware-progress-label="coursewareProgressLabel"
+                  :playback-hint-copy="playbackHintCopy"
+                  :playback-hint-title="playbackHintTitle"
+                  :playback-status-label="playbackStatusLabel"
+                  :playback-status-tag-color="playbackStatusTagColor"
+                  :reset-key="previewStatusBadgeResetKey"
+                  :slide-position-label="slidePositionLabel"
+                  :step-position-label="stepPositionLabel"
+                />
                 <div class="preview-stage-surface" :style="canvasSurfaceStyle">
                   <canvas ref="previewCanvasRef" />
                 </div>
@@ -663,6 +630,8 @@ const immersivePlaybackHint = computed(
       <PreviewTimelineSidebar
         v-show="!effectiveTimelineCollapsed"
         :completed-step-count="completedStepCount"
+        :courseware-progress-copy="coursewareProgressCopy"
+        :courseware-progress-label="coursewareProgressLabel"
         :is-active-slide="hasActiveSlide"
         :playback-status="state.status"
         :slide-position-label="slidePositionLabel"

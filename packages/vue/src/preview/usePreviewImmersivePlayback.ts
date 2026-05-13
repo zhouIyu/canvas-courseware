@@ -412,7 +412,12 @@ function createFullscreenChangeHandler(
     const isCurrentShellFullscreen = fullscreenElement === shellRef.value;
 
     isFullscreenActive.value = isCurrentShellFullscreen;
-    if (!fullscreenElement || !isCurrentShellFullscreen) {
+    if (fullscreenElement) {
+      isImmersivePlayback.value = isCurrentShellFullscreen;
+      return;
+    }
+
+    if (!isFullscreenActive.value) {
       isImmersivePlayback.value = false;
     }
   };

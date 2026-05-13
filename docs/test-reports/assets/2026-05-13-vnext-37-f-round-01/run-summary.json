@@ -1,0 +1,39 @@
+{
+  "assetDir": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-05-13-vnext-37-f-round-01",
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-05-13T02:43:50.403Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "initial-layout",
+      "hasInsightStrip": false,
+      "hasBadge": true,
+      "badgeTopOffset": 14,
+      "badgeRightOffset": 14,
+      "badgeWidth": 264,
+      "viewportHeight": 671,
+      "stageHeadHeight": 107,
+      "bridgeText": "已完成 0 / 2 页第 1 / 2 页 · 课程封面 · 0/2 步下一步：第 1 步 · 展示诗句内容已完成 0 / 2 步 · 点击页面继续"
+    },
+    {
+      "id": "compact-badge-and-sidebar",
+      "compactBadgeText": "等待继续 第 1 / 2 页 当前焦点：第 1 / 2 步",
+      "sidebarHeadingText": "已完成 0 / 2 页",
+      "sidebarSummaryText": "当前页 0/2 步 第 1 / 2 页 课件进度 已完成 0 / 2 页 第 1 / 2 页 · 课程封面 · 0/2 步"
+    },
+    {
+      "id": "expanded-badge",
+      "expandedBadgeText": "等待继续 课件进度 已完成 0 / 2 页 第 1 / 2 页 · 课程封面 · 0/2 步 当前页 第 1 / 2 页 当前焦点：第 1 / 2 步 当前提示 下一步：第 1 步 · 展示诗句内容 已完成 0 / 2 步 · 点击页面继续"
+    },
+    {
+      "id": "post-play-state",
+      "postPlayCompactBadgeText": "播放中 第 1 / 2 页 当前焦点：第 1 / 2 步",
+      "postPlaySidebarHeadingText": "已完成 0 / 2 页"
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

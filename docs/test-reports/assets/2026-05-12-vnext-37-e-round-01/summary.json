@@ -1,6 +1,6 @@
 {
   "baseUrl": "http://127.0.0.1:32173/projects",
-  "executedAt": "2026-05-12T09:58:29.819Z",
+  "executedAt": "2026-05-13T02:43:48.156Z",
   "desktopViewport": {
     "width": 1440,
     "height": 900
@@ -10,7 +10,7 @@
       "id": "topbar-layout",
       "hasSingleRow": true,
       "controlRowHeight": 38,
-      "topbarActionsHeight": 190,
+      "topbarActionsHeight": 86,
       "actionGroupWidth": 539,
       "playbackControlsWidth": 539,
       "navigationTop": 90,
@@ -35,7 +35,7 @@
     {
       "id": "more-menu-actions",
       "restartedSlidePosition": "第 1 / 2 页",
-      "restartedFirstStepStatus": "播放中",
+      "restartedFirstStepStatus": "待触发",
       "restartedPrimaryText": "播放下一步"
     }
   ],
