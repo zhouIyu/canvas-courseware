@@ -1,7 +1,7 @@
 {
   "assetDir": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-05-14-vnext-37-h-round-01",
   "baseUrl": "http://127.0.0.1:32173/projects",
-  "executedAt": "2026-05-14T09:53:05.415Z",
+  "executedAt": "2026-05-14T10:38:39.314Z",
   "checks": [
     {
       "id": "project-list-empty-state",
@@ -11,16 +11,12 @@
     },
     {
       "id": "embedded-editor-copy",
-      "text": "插入文本矩形图片历史 撤销 重做 ‹‹页面还没有页面，先新建一页 新建页面 □还没有页面点击“新建第一页”开始创建新建第一页适配 100% 100% □还没有页面点击“当前页设置”，先创建或恢复页面当前页设置组件属性时间轴◎未选中对象点击画布中的对象查看属性",
+      "text": "插入文本矩形图片历史 撤销 重做 ‹‹页面还没有页面 新建页面 适配 100% 100% □还没有页面点击“当前页设置”，先创建或恢复页面当前页设置组件属性时间轴◎未选中对象点击画布中的对象查看属性",
       "topbarCount": 0
     },
     {
       "id": "edit-empty-states",
-      "slideRail": {
-        "title": "还没有页面",
-        "description": "点击“新建第一页”开始创建",
-        "actionText": "新建第一页"
-      },
+      "slideRailEmptyStateCount": 0,
       "stage": {
         "title": "还没有页面",
         "description": "点击“当前页设置”，先创建或恢复页面",

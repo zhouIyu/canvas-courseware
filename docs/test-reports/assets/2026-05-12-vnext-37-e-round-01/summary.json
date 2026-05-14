@@ -1,6 +1,6 @@
 {
   "baseUrl": "http://127.0.0.1:32173/projects",
-  "executedAt": "2026-05-13T02:43:48.156Z",
+  "executedAt": "2026-05-14T10:36:59.444Z",
   "desktopViewport": {
     "width": 1440,
     "height": 900
@@ -30,7 +30,14 @@
       "options": [
         "重新开始课件",
         "沉浸播放"
-      ]
+      ],
+      "style": {
+        "backgroundColor": "rgba(255, 255, 255, 0.98)",
+        "boxShadow": "rgba(15, 23, 42, 0.14) 0px 20px 44px 0px, rgba(15, 23, 42, 0.08) 0px 6px 18px 0px",
+        "borderTopWidth": "1px",
+        "minWidth": "176px",
+        "firstItemWhiteSpace": "nowrap"
+      }
     },
     {
       "id": "more-menu-actions",

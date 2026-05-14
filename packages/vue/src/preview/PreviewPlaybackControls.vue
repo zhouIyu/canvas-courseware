@@ -240,27 +240,42 @@ const handleMoreAction = (
 .preview-more-menu {
   display: grid;
   gap: 4px;
-  min-width: 160px;
-  padding: 4px 0;
+  min-width: 176px;
+  padding: 6px;
+  border: 1px solid color-mix(in srgb, var(--cw-color-border) 90%, #ffffff);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow:
+    0 20px 44px rgba(15, 23, 42, 0.14),
+    0 6px 18px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(16px);
 }
 
 .preview-more-menu__item {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 8px;
   width: 100%;
+  min-height: 36px;
   padding: 8px 12px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 12px;
   font-size: 12px;
   font-weight: 600;
+  line-height: 1.4;
   text-align: left;
   color: var(--cw-color-text);
+  white-space: nowrap;
   cursor: pointer;
   background: transparent;
   transition:
     background var(--cw-duration-fast) var(--cw-ease-standard),
     color var(--cw-duration-fast) var(--cw-ease-standard);
+}
+
+.preview-more-menu__item span {
+  white-space: nowrap;
 }
 
 .preview-more-menu__item:hover {

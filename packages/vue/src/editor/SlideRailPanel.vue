@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { Slide } from "@canvas-courseware/core";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import EmptyState from "../shared/EmptyState.vue";
 import { createSlideBackgroundStyle } from "../shared";
 
 /** slide 重命名事件的载荷。 */
@@ -110,7 +109,7 @@ const pendingDeleteSlideId = ref<string | null>(null);
 
 /** 页面数量摘要，供顶部说明复用。 */
 const slideSummary = computed(() =>
-  props.slides.length > 0 ? `共 ${props.slides.length} 页，可拖拽排序` : "还没有页面，先新建一页",
+  props.slides.length > 0 ? `共 ${props.slides.length} 页，可拖拽排序` : "还没有页面",
 );
 
 /** 根据 slide id 读取当前页面对象。 */
@@ -589,18 +588,6 @@ onBeforeUnmount(() => {
           删除页面
         </a-button>
       </div>
-    </div>
-
-    <div v-else class="rail-empty">
-      <EmptyState
-        compact
-        title="还没有页面"
-        description="点击“新建第一页”开始创建"
-        action-text="新建第一页"
-        @action="emit('create')"
-      >
-        <template #icon>□</template>
-      </EmptyState>
     </div>
 
     <a-modal

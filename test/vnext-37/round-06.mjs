@@ -15,7 +15,7 @@ const BASE_URL = process.env.CW_BASE_URL ?? "http://127.0.0.1:32173/projects";
 const STORAGE_KEY = "canvas-courseware.projects";
 
 /** 当前轮次测试产物目录。 */
-const ASSET_DIR = path.resolve("docs/test-reports/assets/2026-05-13-vnext-37-f-round-01");
+const ASSET_DIR = path.resolve("docs/test-reports/assets/2026-05-14-vnext-37-f-round-02");
 
 /**
  * 打印测试步骤，便于定位执行进度。
@@ -98,10 +98,10 @@ try {
   logStep("open preview workspace");
   await openPreviewWorkspace(page);
 
-  logStep("verify central insight strip has been removed");
+  logStep("verify central insight strip and floating status card have been removed");
   const initialMetrics = await page.locator(".preview-stage-shell").evaluate((element) => {
     const frame = element.querySelector(".preview-stage-frame");
-    const compactBadge = element.querySelector(".preview-status-badge__compact");
+    const badge = element.querySelector(".preview-status-badge");
     const bridge = element.querySelector(".preview-progress-bridge");
     const insightStrip = element.querySelector(".playback-insight-strip");
     const viewport = element.querySelector(".preview-stage-viewport");
@@ -109,7 +109,6 @@ try {
 
     if (
       !(frame instanceof HTMLElement) ||
-      !(compactBadge instanceof HTMLElement) ||
       !(bridge instanceof HTMLElement) ||
       !(viewport instanceof HTMLElement) ||
       !(stageHead instanceof HTMLElement)
@@ -117,17 +116,12 @@ try {
       throw new Error("VNext-37-F 预览中心区域结构不完整");
     }
 
-    const frameRect = frame.getBoundingClientRect();
-    const badgeRect = compactBadge.getBoundingClientRect();
     const viewportRect = viewport.getBoundingClientRect();
     const stageHeadRect = stageHead.getBoundingClientRect();
 
     return {
       hasInsightStrip: Boolean(insightStrip),
-      hasBadge: true,
-      badgeTopOffset: Math.round(badgeRect.top - frameRect.top),
-      badgeRightOffset: Math.round(frameRect.right - badgeRect.right),
-      badgeWidth: Math.round(badgeRect.width),
+      hasBadge: Boolean(badge),
       viewportHeight: Math.round(viewportRect.height),
       stageHeadHeight: Math.round(stageHeadRect.height),
       bridgeText: bridge.textContent?.replace(/\s+/g, " ").trim() ?? "",
@@ -140,85 +134,70 @@ try {
   });
 
   assertOrThrow(!initialMetrics.hasInsightStrip, "预览中心区域仍然存在旧的底部信息条。");
-  assertOrThrow(initialMetrics.hasBadge, "预览中心区域缺少右上角状态 Badge。");
   assertOrThrow(
-    initialMetrics.badgeTopOffset >= 0 && initialMetrics.badgeTopOffset <= 32,
-    `状态 Badge 顶部偏移异常：${initialMetrics.badgeTopOffset}px`,
+    !initialMetrics.hasBadge,
+    "预览中心区域仍然渲染了右上角浮动状态卡。",
   );
   assertOrThrow(
-    initialMetrics.badgeRightOffset >= 0 && initialMetrics.badgeRightOffset <= 32,
-    `状态 Badge 右侧偏移异常：${initialMetrics.badgeRightOffset}px`,
+    initialMetrics.bridgeText.includes("已完成 0 / 2 页") &&
+      initialMetrics.bridgeText.includes("第 1 / 2 页"),
+    `预览进度桥接文案异常：${initialMetrics.bridgeText}`,
   );
 
-  logStep("verify compact badge text and sidebar summary");
-  const compactBadgeText = await readNormalizedText(page, ".preview-status-badge__compact");
+  logStep("verify sidebar summary remains the only visible progress carrier");
   const sidebarHeadingText = await readNormalizedText(page, ".timeline-heading p");
   const sidebarSummaryText = await readNormalizedText(page, ".timeline-summary-card");
 
   summary.checks.push({
-    id: "compact-badge-and-sidebar",
-    compactBadgeText,
+    id: "sidebar-summary-only",
     sidebarHeadingText,
     sidebarSummaryText,
   });
 
   assertOrThrow(
-    compactBadgeText.includes("第 1 / 2 页") && compactBadgeText.includes("当前焦点：第 1 / 2 步"),
-    `紧凑态 Badge 文案异常：${compactBadgeText}`,
-  );
-  assertOrThrow(
     sidebarHeadingText.includes("已完成 0 / 2 页"),
     `右侧步骤栏顶部未承接课件级进度：${sidebarHeadingText}`,
   );
   assertOrThrow(
-    sidebarSummaryText.includes("当前页") && sidebarSummaryText.includes("课件进度"),
+    sidebarSummaryText.includes("当前页") &&
+      sidebarSummaryText.includes("课件进度") &&
+      sidebarSummaryText.includes("0/2 步"),
     `右侧步骤栏摘要结构异常：${sidebarSummaryText}`,
   );
 
-  logStep("expand badge and verify detail content");
-  await page.locator(".preview-status-badge__compact").click();
-  await page.locator(".preview-status-badge__expanded").waitFor();
-
-  const expandedBadgeText = await readNormalizedText(page, ".preview-status-badge__expanded");
-  summary.checks.push({
-    id: "expanded-badge",
-    expandedBadgeText,
-  });
-
-  assertOrThrow(
-    expandedBadgeText.includes("课件进度") &&
-      expandedBadgeText.includes("当前页") &&
-      expandedBadgeText.includes("当前提示"),
-    `展开态 Badge 缺少必要信息：${expandedBadgeText}`,
-  );
-
-  logStep("advance one step and verify badge resets to compact state");
+  logStep("advance one step and verify sidebar summary still updates without floating card");
   await page.locator(".preview-primary-button").first().click();
   await page.waitForFunction(() => {
-    const badge = document.querySelector(".preview-status-badge__compact");
-    return Boolean(badge);
+    const summaryCard = document.querySelector(".timeline-summary-card");
+    return summaryCard?.textContent?.includes("1/2 步") ?? false;
   });
 
-  const postPlayCompactBadgeText = await readNormalizedText(page, ".preview-status-badge__compact");
   const postPlaySidebarHeadingText = await readNormalizedText(page, ".timeline-heading p");
+  const postPlaySidebarSummaryText = await readNormalizedText(page, ".timeline-summary-card");
+  const postPlayFloatingCardCount = await page.locator(".preview-status-badge").count();
 
   summary.checks.push({
     id: "post-play-state",
-    postPlayCompactBadgeText,
     postPlaySidebarHeadingText,
+    postPlaySidebarSummaryText,
+    postPlayFloatingCardCount,
   });
 
   assertOrThrow(
-    postPlayCompactBadgeText.includes("第 1 / 2 页"),
-    `播放一步后 Badge 未正确重置到紧凑态：${postPlayCompactBadgeText}`,
+    postPlayFloatingCardCount === 0,
+    `播放一步后仍然出现了浮动状态卡：${postPlayFloatingCardCount}`,
   );
   assertOrThrow(
     postPlaySidebarHeadingText.includes("已完成 0 / 2 页"),
     `播放一步后右侧课件级进度不应提前记为整页完成：${postPlaySidebarHeadingText}`,
   );
+  assertOrThrow(
+    postPlaySidebarSummaryText.includes("1/2 步"),
+    `播放一步后右侧步骤摘要未正确更新：${postPlaySidebarSummaryText}`,
+  );
 
   await page.screenshot({
-    path: path.join(ASSET_DIR, "preview-status-badge.png"),
+    path: path.join(ASSET_DIR, "preview-right-sidebar-summary.png"),
     fullPage: true,
   });
 

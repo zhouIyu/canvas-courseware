@@ -194,10 +194,32 @@ try {
     .evaluateAll((options) =>
       options.map((option) => option.textContent?.replace(/\s+/g, " ").trim() ?? ""),
     );
+  const moreMenuStyleSnapshot = await page
+    .locator(".arco-trigger-popup:visible .preview-more-menu")
+    .evaluate((element) => {
+      const menu = element instanceof HTMLElement ? element : null;
+
+      if (!menu) {
+        throw new Error("更多菜单弹层未按预期渲染。");
+      }
+
+      const menuStyle = window.getComputedStyle(menu);
+      const firstItem = menu.querySelector(".preview-more-menu__item");
+      const itemStyle = firstItem instanceof HTMLElement ? window.getComputedStyle(firstItem) : null;
+
+      return {
+        backgroundColor: menuStyle.backgroundColor,
+        boxShadow: menuStyle.boxShadow,
+        borderTopWidth: menuStyle.borderTopWidth,
+        minWidth: menuStyle.minWidth,
+        firstItemWhiteSpace: itemStyle?.whiteSpace ?? "",
+      };
+    });
 
   summary.checks.push({
     id: "more-menu-options",
     options: moreMenuLabels,
+    style: moreMenuStyleSnapshot,
   });
 
   assertOrThrow(
@@ -217,6 +239,26 @@ try {
         !label.includes("播放下一步"),
     ),
     `更多菜单混入了高频主链路操作：${moreMenuLabels.join(" | ")}`,
+  );
+  assertOrThrow(
+    !moreMenuStyleSnapshot.backgroundColor.endsWith(", 0)"),
+    `更多菜单背景仍为透明态：${moreMenuStyleSnapshot.backgroundColor}`,
+  );
+  assertOrThrow(
+    moreMenuStyleSnapshot.boxShadow !== "none",
+    `更多菜单缺少浮层阴影：${moreMenuStyleSnapshot.boxShadow}`,
+  );
+  assertOrThrow(
+    Number.parseFloat(moreMenuStyleSnapshot.borderTopWidth) >= 1,
+    `更多菜单边框宽度异常：${moreMenuStyleSnapshot.borderTopWidth}`,
+  );
+  assertOrThrow(
+    Number.parseFloat(moreMenuStyleSnapshot.minWidth) >= 176,
+    `更多菜单最小宽度异常：${moreMenuStyleSnapshot.minWidth}`,
+  );
+  assertOrThrow(
+    moreMenuStyleSnapshot.firstItemWhiteSpace === "nowrap",
+    `更多菜单项未保持单行展示：${moreMenuStyleSnapshot.firstItemWhiteSpace}`,
   );
 
   logStep("verify more menu restart action still works");

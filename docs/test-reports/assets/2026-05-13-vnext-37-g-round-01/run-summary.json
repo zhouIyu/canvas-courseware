@@ -1,7 +1,7 @@
 {
-  "assetDir": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-05-14-vnext-37-g-round-01",
+  "assetDir": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-05-13-vnext-37-g-round-01",
   "baseUrl": "http://127.0.0.1:32173/projects",
-  "executedAt": "2026-05-14T10:37:48.335Z",
+  "executedAt": "2026-05-14T06:38:34.906Z",
   "checks": [
     {
       "id": "primary-card-metrics",
@@ -22,7 +22,7 @@
       "id": "rename-first-slide",
       "slides": [
         {
-          "id": "slide-95994559-6e9f-45eb-9e54-d83343399fff",
+          "id": "slide-22ada9bd-6afc-467e-b337-c18fab39605a",
           "name": "封面页"
         }
       ]
@@ -31,31 +31,30 @@
       "id": "context-menu-create-after",
       "slides": [
         {
-          "id": "slide-95994559-6e9f-45eb-9e54-d83343399fff",
+          "id": "slide-22ada9bd-6afc-467e-b337-c18fab39605a",
           "name": "封面页"
         },
         {
-          "id": "slide-b2e44c71-909f-497e-826b-1976633adbec",
+          "id": "slide-3f67ae76-48b1-490e-9e1f-c914c655d2a7",
           "name": "第2页"
         }
       ]
     },
     {
       "id": "inactive-card-top-text",
-      "cardIndex": 0,
-      "text": "01"
+      "text": "02当前页"
     },
     {
       "id": "drag-reorder",
       "before": [
-        "slide-95994559-6e9f-45eb-9e54-d83343399fff",
-        "slide-b2e44c71-909f-497e-826b-1976633adbec"
+        "slide-22ada9bd-6afc-467e-b337-c18fab39605a",
+        "slide-3f67ae76-48b1-490e-9e1f-c914c655d2a7"
       ],
       "after": [
-        "slide-b2e44c71-909f-497e-826b-1976633adbec",
-        "slide-95994559-6e9f-45eb-9e54-d83343399fff"
+        "slide-3f67ae76-48b1-490e-9e1f-c914c655d2a7",
+        "slide-22ada9bd-6afc-467e-b337-c18fab39605a"
       ],
-      "activeSlideId": "slide-b2e44c71-909f-497e-826b-1976633adbec"
+      "activeSlideId": "slide-3f67ae76-48b1-490e-9e1f-c914c655d2a7"
     }
   ],
   "consoleErrors": [],

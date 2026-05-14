@@ -4,7 +4,6 @@ import { computed, ref, watch } from "vue";
 import EmptyState from "../shared/EmptyState.vue";
 import StageViewportControls from "../shared/StageViewportControls.vue";
 import PreviewPlaybackControls from "./PreviewPlaybackControls.vue";
-import PreviewStatusBadge from "./PreviewStatusBadge.vue";
 import PreviewTimelineSidebar from "./PreviewTimelineSidebar.vue";
 import {
   DEFAULT_PREVIEW_HEIGHT,
@@ -352,12 +351,6 @@ const previewStageShellClass = computed(() => ({
   "is-immersive-stage": isImmersivePlayback.value,
 }));
 
-/** 浮动状态 Badge 在播放进度变化后用于重置折叠状态。 */
-const previewStatusBadgeResetKey = computed(
-  () =>
-    `${state.value.slideId ?? "no-slide"}:${state.value.stepIndex}:${state.value.status}:${activeSlide.value?.id ?? "none"}`,
-);
-
 /** 切换左侧 slide 栏显隐。 */
 const toggleSlideRail = () => {
   isSlideRailCollapsed.value = !isSlideRailCollapsed.value;
@@ -603,18 +596,6 @@ const immersivePlaybackHint = computed(
                   <span class="playback-hint-title">{{ playbackHintTitle }}</span>
                   <span class="playback-hint-copy">{{ playbackHintCopy }}</span>
                 </div>
-                <PreviewStatusBadge
-                  v-if="!isImmersivePlayback"
-                  :courseware-progress-copy="coursewareProgressCopy"
-                  :courseware-progress-label="coursewareProgressLabel"
-                  :playback-hint-copy="playbackHintCopy"
-                  :playback-hint-title="playbackHintTitle"
-                  :playback-status-label="playbackStatusLabel"
-                  :playback-status-tag-color="playbackStatusTagColor"
-                  :reset-key="previewStatusBadgeResetKey"
-                  :slide-position-label="slidePositionLabel"
-                  :step-position-label="stepPositionLabel"
-                />
                 <div class="preview-stage-surface" :style="canvasSurfaceStyle">
                   <canvas ref="previewCanvasRef" />
                 </div>

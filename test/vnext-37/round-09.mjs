@@ -208,7 +208,7 @@ try {
 
   logStep("verify edit workspace empty states");
   await ensureEditorSideExpanded(page);
-  const slideRailEmptyState = await readEmptyStateSnapshot(page, ".slide-rail .rail-empty");
+  const slideRailEmptyStateCount = await page.locator(".slide-rail .rail-empty").count();
   const stageEmptyState = await readEmptyStateSnapshot(page, ".workspace-shell .empty-stage");
   await page.locator(".side-tabs-nav .arco-tabs-tab").filter({ hasText: "组件属性" }).click();
   const inspectorEmptyState = await readEmptyStateSnapshot(page, ".inspector-panel");
@@ -217,14 +217,13 @@ try {
 
   summary.checks.push({
     id: "edit-empty-states",
-    slideRail: slideRailEmptyState,
+    slideRailEmptyStateCount,
     stage: stageEmptyState,
     inspector: inspectorEmptyState,
     timeline: timelineEmptyState,
   });
 
-  assertOrThrow(slideRailEmptyState.title === "还没有页面", `页面栏空态标题异常：${slideRailEmptyState.title}`);
-  assertOrThrow(slideRailEmptyState.actionText === "新建第一页", `页面栏空态按钮异常：${slideRailEmptyState.actionText}`);
+  assertOrThrow(slideRailEmptyStateCount === 0, `页面栏空态卡仍未移除：${slideRailEmptyStateCount}`);
   assertOrThrow(stageEmptyState.title === "还没有页面", `编辑区空态标题异常：${stageEmptyState.title}`);
   assertOrThrow(stageEmptyState.actionText === "当前页设置", `编辑区空态按钮异常：${stageEmptyState.actionText}`);
   assertOrThrow(inspectorEmptyState.title === "未选中对象", `属性面板空态标题异常：${inspectorEmptyState.title}`);
