@@ -38,9 +38,9 @@ function resolveEditorViewportVariables(
       "--cw-editor-toolbar-padding-inline": "12px",
       "--cw-editor-toolbar-group-padding": "3px 5px",
       "--cw-slide-list-gap": "7px",
-      "--cw-slide-card-shell-padding": "5px",
-      "--cw-slide-thumbnail-min-height": "56px",
-      "--cw-slide-card-hint-display": "none",
+      "--cw-slide-card-shell-padding": "4px",
+      "--cw-slide-card-gap": "5px",
+      "--cw-slide-thumbnail-min-height": "48px",
     };
   }
 
@@ -60,9 +60,9 @@ function resolveEditorViewportVariables(
       "--cw-editor-toolbar-padding-inline": "13px",
       "--cw-editor-toolbar-group-padding": "4px 6px",
       "--cw-slide-list-gap": "8px",
-      "--cw-slide-card-shell-padding": "6px",
-      "--cw-slide-thumbnail-min-height": "60px",
-      "--cw-slide-card-hint-display": "flex",
+      "--cw-slide-card-shell-padding": "5px",
+      "--cw-slide-card-gap": "5px",
+      "--cw-slide-thumbnail-min-height": "52px",
     };
   }
 
@@ -81,9 +81,9 @@ function resolveEditorViewportVariables(
     "--cw-editor-toolbar-padding-inline": "14px",
     "--cw-editor-toolbar-group-padding": "4px 6px",
     "--cw-slide-list-gap": "8px",
-    "--cw-slide-card-shell-padding": "6px",
-    "--cw-slide-thumbnail-min-height": "64px",
-    "--cw-slide-card-hint-display": "flex",
+    "--cw-slide-card-shell-padding": "5px",
+    "--cw-slide-card-gap": "6px",
+    "--cw-slide-thumbnail-min-height": "56px",
   };
 }
 

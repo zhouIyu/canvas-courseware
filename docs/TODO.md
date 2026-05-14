@@ -212,26 +212,27 @@
 - [x] VNext-37-E 统一按钮样式与操作层级：已完成预览页主次操作分组重构，将上一页 / 上一步 / 重播 / 下一页收敛为 Ghost 按钮组，“重新开始课件 / 沉浸播放”收口到“更多”菜单，并把缩放视图控制与播放控制拆为同一行的两组入口；已通过 `pnpm typecheck`、`pnpm build`、`pnpm test:vnext-35-d`、`pnpm test:vnext-36-e` 与 `pnpm test:vnext-37-e` 验证
 - [x] VNext-37-F 收紧预览页中央区域的辅助信息：已移除画布下方 `.playback-insight-strip` 状态条，改为画布右上角可展开的浮动状态 Badge，并把课件级进度迁移到右侧步骤栏顶部；同时补齐“更多”低频动作的稳定弹层交互与相关预览回归脚本适配；已通过 `pnpm typecheck`、`pnpm build`、`pnpm test:vnext-35-d`、`pnpm test:vnext-36-e`、`pnpm test:vnext-37-e` 与 `pnpm test:vnext-37-f` 验证
 - [x] UI 评审反馈：重构预览页右侧步骤栏卡片，压缩摘要层级与步骤卡片高度，并补齐右栏专项 UI 回归；已通过 `pnpm typecheck`、`pnpm build`、`node test/vnext-37/round-07.mjs`、`pnpm test:vnext-35-d`、`pnpm test:vnext-36-e` 与 `pnpm test:vnext-37-f` 验证
+- [x] VNext-37-G 优化左侧页面卡片的信息组织：已移除页面卡片底部常驻“提示条”，改为 hover 时显示的轻量操作提示；同时压缩缩略图与卡片间距，统一页码 / 标题 / 统计信息层级，并保留双击重命名、右键菜单与拖拽排序链路；已通过 `pnpm typecheck`、`pnpm build` 与 `pnpm test:vnext-37-g` 验证
 
 ## 待完成
 
 ### VNext-37 UI/UX 优化（简洁、大气、方便使用）
 
-- [ ] VNext-37-G 优化左侧页面卡片的信息组织
 - [ ] VNext-37-H 统一空态与辅助文案的表达方式
 
 ## 进行中
 
-- VNext-37-G 优化左侧页面卡片的信息组织：`VNext-37-F` 已完成，下一步继续压缩左侧页面卡片信息层级与卡片高度。
+- 暂无。`VNext-37-G` 已完成开发、自测与回归，等待用户 review 后继续 `VNext-37-H`。
 
 ## 当前下一步
 
 - `VNext-36` 的 `A / B / C / D / E / F` 已全部完成。
 - `VNext-37` 已完成版本规划，并已同步进入当前执行池。
-- `VNext-37-A / VNext-37-B / VNext-37-C / VNext-37-D / VNext-37-E / VNext-37-F` 已完成开发、自测与回归。
+- `VNext-37-A / VNext-37-B / VNext-37-C / VNext-37-D / VNext-37-E / VNext-37-F / VNext-37-G` 已完成开发、自测与回归。
 - `VNext-37-F` 已完成预览页中央辅助信息收口：画布下方状态条已移除，右上角浮动 Badge 与右侧步骤栏进度摘要已接管状态承载，低频“更多”动作链路已稳定。
 - 预览页右侧步骤栏卡片已按最新 UI 评审完成重构：顶部摘要改为单卡片收口，步骤卡片压缩为双行紧凑结构，并新增右栏专项 UI 回归脚本。
-- 下一步继续完成 `VNext-37-G`：优化左侧页面卡片的信息组织。
+- `VNext-37-G` 已完成左侧页面卡片信息收口：常驻提示已移除，hover 提示、占位缩略图、标题与统计信息层级已完成紧凑化，并通过专项回归验证卡片高度、重命名、右键菜单与拖拽排序。
+- 下一步等待用户 review；确认后继续完成 `VNext-37-H`：统一空态与辅助文案的表达方式。
 - 详细设计文档见 `docs/vnext-37/` 目录。
 
 ## 相关文档

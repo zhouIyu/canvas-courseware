@@ -526,23 +526,15 @@ onBeforeUnmount(() => {
         >
           <div class="slide-card-top">
             <span class="slide-index">{{ String(index + 1).padStart(2, '0') }}</span>
-            <div class="slide-card-flags">
-              <span class="slide-state-pill" :class="{ 'is-active': slide.id === activeSlideId }">
-                {{ slide.id === activeSlideId ? "当前页" : "右键管理" }}
-              </span>
-              <span class="slide-drag-caption">拖拽排序</span>
-            </div>
+            <span v-if="slide.id === activeSlideId" class="slide-state-pill is-active">当前页</span>
           </div>
 
           <div class="slide-thumbnail" :style="resolveSlideThumbnailStyle(slide)">
             <template v-if="!hasSlideThumbnail(slide.id)">
-              <span class="thumb-line long" />
-              <span class="thumb-line short" />
-              <span class="thumb-dots">
-                <i />
-                <i />
-                <i />
-              </span>
+              <div class="slide-thumbnail-placeholder">
+                <span class="slide-thumbnail-placeholder-mark">预览</span>
+                <span class="slide-thumbnail-placeholder-copy">暂无预览</span>
+              </div>
             </template>
           </div>
 
@@ -569,15 +561,13 @@ onBeforeUnmount(() => {
 
             <div class="slide-meta">
               <span>{{ slide.nodes.length }} 个对象</span>
+              <span class="slide-meta-separator" aria-hidden="true">·</span>
               <span>{{ slide.timeline.steps.length }} 步</span>
-            </div>
-
-            <div class="slide-card-hint">
-              <span>双击命名</span>
-              <span>右键更多</span>
             </div>
           </div>
         </div>
+
+        <div class="slide-card-hover-hint" aria-hidden="true">双击重命名 · 右键更多</div>
       </article>
     </div>
 
@@ -752,7 +742,7 @@ onBeforeUnmount(() => {
 
 .slide-card {
   display: grid;
-  gap: 8px;
+  gap: var(--cw-slide-card-gap, 6px);
   min-width: 0;
   cursor: pointer;
   outline: none;
@@ -770,20 +760,12 @@ onBeforeUnmount(() => {
   gap: 6px;
 }
 
-.slide-card-flags {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 4px;
-  min-width: 0;
-}
-
 .slide-index {
   margin: 0;
   font-size: 11px;
   font-weight: 700;
-  line-height: 1.4;
-  letter-spacing: 0.14em;
+  line-height: 1.1;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--cw-color-primary);
 }
@@ -791,7 +773,7 @@ onBeforeUnmount(() => {
 .slide-state-pill {
   display: inline-flex;
   align-items: center;
-  min-height: 20px;
+  min-height: 18px;
   padding: 0 6px;
   border-radius: var(--cw-radius-pill);
   font-size: 10px;
@@ -805,62 +787,56 @@ onBeforeUnmount(() => {
 }
 
 .slide-state-pill.is-active,
-.slide-card-shell:hover .slide-state-pill,
 .slide-card-shell.is-context-open .slide-state-pill {
   color: var(--cw-color-primary);
   background: color-mix(in srgb, var(--cw-color-primary) 12%, #ffffff);
 }
 
-.slide-drag-caption {
-  font-size: 10px;
-  line-height: 1.4;
-  color: var(--cw-color-muted);
-}
-
 .slide-thumbnail {
-  display: grid;
-  gap: 6px;
-  justify-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-height: var(--cw-slide-thumbnail-min-height, 64px);
-  padding: 10px 8px;
+  padding: 6px;
   border: 1px solid #dfe6ee;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.98);
   box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
 }
 
-.thumb-line {
-  display: block;
-  height: 6px;
-  border-radius: var(--cw-radius-pill);
-  background: color-mix(in srgb, var(--cw-color-primary) 66%, #ffffff);
-}
-
-.thumb-line.long {
-  width: 58px;
-}
-
-.thumb-line.short {
-  width: 40px;
-  opacity: 0.64;
-}
-
-.thumb-dots {
+.slide-thumbnail-placeholder {
   display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 5px;
+  color: color-mix(in srgb, var(--cw-color-muted) 84%, #ffffff);
 }
 
-.thumb-dots i {
-  display: inline-block;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--cw-color-primary) 70%, #ffffff);
+.slide-thumbnail-placeholder-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  min-height: 18px;
+  padding: 0 6px;
+  border: 1px solid color-mix(in srgb, var(--cw-color-primary) 18%, #ffffff);
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  color: color-mix(in srgb, var(--cw-color-primary) 58%, var(--cw-color-muted));
+  background: color-mix(in srgb, var(--cw-color-primary) 7%, #ffffff);
+}
+
+.slide-thumbnail-placeholder-copy {
+  font-size: 10px;
+  line-height: 1.2;
 }
 
 .slide-card-copy {
   display: grid;
-  gap: 4px;
+  gap: 2px;
   min-width: 0;
 }
 
@@ -872,8 +848,8 @@ onBeforeUnmount(() => {
   display: block;
   overflow: hidden;
   font-size: 13px;
-  font-weight: 700;
-  line-height: 1.35;
+  font-weight: 600;
+  line-height: 1.25;
   color: var(--cw-color-text);
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -885,28 +861,43 @@ onBeforeUnmount(() => {
 
 .slide-meta {
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px 6px;
+  align-items: center;
+  gap: 4px;
   font-size: 11px;
   line-height: 1.4;
   color: var(--cw-color-muted);
 }
 
-.slide-card-hint {
-  display: var(--cw-slide-card-hint-display, flex);
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-  font-size: 10px;
-  line-height: 1.4;
-  color: color-mix(in srgb, var(--cw-color-muted) 78%, #ffffff);
-  transition: color var(--cw-duration-fast) var(--cw-ease-standard);
+.slide-meta-separator {
+  color: color-mix(in srgb, var(--cw-color-muted) 64%, #ffffff);
 }
 
-.slide-card-shell:hover .slide-card-hint,
-.slide-card-shell.is-active .slide-card-hint,
-.slide-card-shell.is-context-open .slide-card-hint {
-  color: var(--cw-color-primary);
+.slide-card-hover-hint {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  left: 10px;
+  display: flex;
+  justify-content: center;
+  padding: 6px 8px;
+  border-radius: 9px;
+  font-size: 10px;
+  line-height: 1.2;
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(15, 23, 42, 0.78);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition:
+    opacity var(--cw-duration-fast) var(--cw-ease-standard),
+    transform var(--cw-duration-fast) var(--cw-ease-standard);
+}
+
+.slide-card-shell:hover .slide-card-hover-hint,
+.slide-card-shell:focus-within .slide-card-hover-hint,
+.slide-card-shell.is-context-open .slide-card-hover-hint {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .slide-context-menu {

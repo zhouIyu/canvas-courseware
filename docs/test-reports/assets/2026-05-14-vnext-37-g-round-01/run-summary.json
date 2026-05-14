@@ -1,0 +1,64 @@
+{
+  "assetDir": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-05-14-vnext-37-g-round-01",
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-05-14T06:50:31.496Z",
+  "checks": [
+    {
+      "id": "primary-card-metrics",
+      "metrics": {
+        "cardHeight": 125.64,
+        "thumbnailHeight": 52,
+        "hoverHintOpacity": 0,
+        "hasLegacyHint": false,
+        "hasPersistentManagePill": false,
+        "placeholderText": "暂无预览"
+      }
+    },
+    {
+      "id": "hover-hint-opacity",
+      "hoverHintOpacity": 1
+    },
+    {
+      "id": "rename-first-slide",
+      "slides": [
+        {
+          "id": "slide-0b8491d3-2125-466b-b654-54b8357f81cb",
+          "name": "封面页"
+        }
+      ]
+    },
+    {
+      "id": "context-menu-create-after",
+      "slides": [
+        {
+          "id": "slide-0b8491d3-2125-466b-b654-54b8357f81cb",
+          "name": "封面页"
+        },
+        {
+          "id": "slide-e0480500-d1c6-46cd-a2fb-7352fc39fdec",
+          "name": "第2页"
+        }
+      ]
+    },
+    {
+      "id": "inactive-card-top-text",
+      "cardIndex": 0,
+      "text": "01"
+    },
+    {
+      "id": "drag-reorder",
+      "before": [
+        "slide-0b8491d3-2125-466b-b654-54b8357f81cb",
+        "slide-e0480500-d1c6-46cd-a2fb-7352fc39fdec"
+      ],
+      "after": [
+        "slide-e0480500-d1c6-46cd-a2fb-7352fc39fdec",
+        "slide-0b8491d3-2125-466b-b654-54b8357f81cb"
+      ],
+      "activeSlideId": "slide-e0480500-d1c6-46cd-a2fb-7352fc39fdec"
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "result": "passed"
+}
