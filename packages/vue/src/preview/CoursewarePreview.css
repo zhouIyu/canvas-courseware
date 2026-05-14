@@ -379,6 +379,8 @@
 
 .slide-chip-list {
   display: grid;
+  /* 单页时不要把唯一一行拉伸到整列高度，保持卡片按内容高度贴顶排列。 */
+  align-content: start;
   gap: 6px;
   min-height: 0;
   overflow-y: auto;

@@ -4,6 +4,7 @@
 
 ## 已完成
 
+- [x] UI 修复：修复预览页左侧单页场景下页面卡片被拉伸到整列高度的问题，并补齐专项回归脚本
 - [x] 明确 MVP 基本范围：Text / Image / Rect、多页 slide、每页独立 canvas
 - [x] 明确交付形态：TypeScript SDK + Vue 3 monorepo + Fabric MVP
 - [x] 增加架构约束：UI 层与事件层解耦

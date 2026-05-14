@@ -1,0 +1,24 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-05-14T10:48:01.233Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "checks": [
+    {
+      "id": "single-slide-preview-sidebar",
+      "projectTitle": "单页预览左栏高度回归 1778755681234",
+      "metrics": {
+        "cardCount": 1,
+        "listHeight": 737.46875,
+        "cardHeight": 91.84375,
+        "cardTopOffset": 10,
+        "cardHeightRatio": 0.12453917538878766,
+        "summaryText": "已完成 1 / 1 页"
+      }
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}
