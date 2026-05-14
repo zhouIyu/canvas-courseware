@@ -1,19 +1,25 @@
 [
   {
-    "id": "document-646b5cc7-ec8a-48e2-8ef3-30edd804814d",
-    "title": "VNext35E Beta 1778233105062",
-    "updatedAt": "2026-05-08T09:38:25.116Z",
+    "id": "document-712ebf63-783f-460a-878c-0f645a02f7e8",
+    "title": "VNext35E Beta 1778752468674",
+    "createdAt": "2026-05-14T09:54:28.714Z",
+    "updatedAt": "2026-05-14T09:54:28.714Z",
     "thumbnail": "#FFFFFF",
     "slideThumbnails": {},
+    "workspaceState": {
+      "timelineCollapsedStepIdsBySlideId": {}
+    },
     "document": {
       "version": "1.0.0",
       "meta": {
-        "id": "document-646b5cc7-ec8a-48e2-8ef3-30edd804814d",
-        "title": "VNext35E Beta 1778233105062"
+        "id": "document-712ebf63-783f-460a-878c-0f645a02f7e8",
+        "title": "VNext35E Beta 1778752468674",
+        "createdAt": "2026-05-14T09:54:28.714Z",
+        "updatedAt": "2026-05-14T09:54:28.714Z"
       },
       "slides": [
         {
-          "id": "slide-738fcf6e-0885-4fd5-a2b7-198a94a68270",
+          "id": "slide-912e432f-cec9-4ae2-966c-09e5c2d9b998",
           "name": "第1页",
           "size": {
             "width": 1280,
@@ -33,20 +39,26 @@
     }
   },
   {
-    "id": "document-0210d4f5-1e53-4fb6-be1a-9e69fcfca9d6",
-    "title": "VNext35E Alpha 1778233103808",
-    "updatedAt": "2026-05-08T09:38:24.767Z",
+    "id": "document-a40be47e-c0c2-412e-a117-69d745b6be80",
+    "title": "VNext35E Alpha 1778752468344",
+    "createdAt": "2026-05-14T09:54:28.397Z",
+    "updatedAt": "2026-05-14T09:54:28.397Z",
     "thumbnail": "#FFFFFF",
     "slideThumbnails": {},
+    "workspaceState": {
+      "timelineCollapsedStepIdsBySlideId": {}
+    },
     "document": {
       "version": "1.0.0",
       "meta": {
-        "id": "document-0210d4f5-1e53-4fb6-be1a-9e69fcfca9d6",
-        "title": "VNext35E Alpha 1778233103808"
+        "id": "document-a40be47e-c0c2-412e-a117-69d745b6be80",
+        "title": "VNext35E Alpha 1778752468344",
+        "createdAt": "2026-05-14T09:54:28.397Z",
+        "updatedAt": "2026-05-14T09:54:28.397Z"
       },
       "slides": [
         {
-          "id": "slide-9d981cfe-4f69-4884-86f5-3c4295f1d9f2",
+          "id": "slide-ae14bda6-4117-4424-bef8-97bb9281afad",
           "name": "第1页",
           "size": {
             "width": 1280,
@@ -66,20 +78,26 @@
     }
   },
   {
-    "id": "document-397df1b7-36ff-49c9-9d24-4cef0059cd24",
+    "id": "document-251fa195-f5c5-4f5c-a564-8369f57a6ed6",
     "title": "古诗讲解示例",
-    "updatedAt": "2026-05-08T09:38:23.290Z",
+    "createdAt": "2026-05-14T09:54:27.837Z",
+    "updatedAt": "2026-05-14T09:54:27.837Z",
     "thumbnail": "#FFFFFF",
     "slideThumbnails": {},
+    "workspaceState": {
+      "timelineCollapsedStepIdsBySlideId": {}
+    },
     "document": {
       "version": "1.0.0",
       "meta": {
-        "id": "document-397df1b7-36ff-49c9-9d24-4cef0059cd24",
-        "title": "古诗讲解示例"
+        "id": "document-251fa195-f5c5-4f5c-a564-8369f57a6ed6",
+        "title": "古诗讲解示例",
+        "createdAt": "2026-05-14T09:54:27.837Z",
+        "updatedAt": "2026-05-14T09:54:27.837Z"
       },
       "slides": [
         {
-          "id": "slide-51feb8ab-967c-4f94-bd89-e117df6d34b5",
+          "id": "slide-83d5c6c0-98a3-41c2-aec8-c7a816d11068",
           "name": "课程封面",
           "size": {
             "width": 1280,
@@ -91,7 +109,7 @@
           },
           "nodes": [
             {
-              "id": "node-4ce30be7-c635-4f01-87cb-169e3d611d04",
+              "id": "node-b41fa674-8ffd-45f3-a003-b7072d194e6f",
               "type": "text",
               "name": "Course Title",
               "x": 176,
@@ -114,7 +132,7 @@
               }
             },
             {
-              "id": "node-b2e80b5f-00fb-4ca9-bae7-5e54693285b0",
+              "id": "node-5127f7cb-bb3c-402f-8212-380a8c6ffc87",
               "type": "text",
               "name": "Author Name",
               "x": 304,
@@ -137,7 +155,7 @@
               }
             },
             {
-              "id": "node-e95ab808-5a11-4a15-bfe2-b3b68691b6d0",
+              "id": "node-c843b98d-1820-429a-86f3-a771240f58a1",
               "type": "rect",
               "name": "Poem Card",
               "x": 144,
@@ -156,7 +174,7 @@
               }
             },
             {
-              "id": "node-92bdecc3-a2f5-46c6-85d4-836bca8c28bb",
+              "id": "node-3bb8106f-5dab-43c2-bd2d-7f66cc699ffa",
               "type": "text",
               "name": "Poem Body",
               "x": 214,
@@ -179,7 +197,7 @@
               }
             },
             {
-              "id": "node-b053d26e-7d9d-41e2-a922-769b7c4142d4",
+              "id": "node-a16a374c-3f87-483f-8059-5eb6eaf9f03e",
               "type": "image",
               "name": "Voice Button",
               "x": 870,
@@ -199,22 +217,22 @@
           "timeline": {
             "steps": [
               {
-                "id": "step-fb001928-9ff5-47e6-b2d1-fa9f566e8a4b",
+                "id": "step-997ea5a7-a110-449e-b445-3372c1c25cec",
                 "name": "展示诗句内容",
                 "trigger": {
                   "type": "page-click"
                 },
                 "actions": [
                   {
-                    "id": "action-a741cb85-e0f7-41fc-bfc0-7152a44e9f84",
+                    "id": "action-dcc9a294-2b0c-4e2e-a17d-c175e70a01fe",
                     "type": "show-node",
-                    "targetId": "node-92bdecc3-a2f5-46c6-85d4-836bca8c28bb",
-                    "animationId": "animation-03e2fa07-23c4-418d-aff5-b86518b31a98"
+                    "targetId": "node-3bb8106f-5dab-43c2-bd2d-7f66cc699ffa",
+                    "animationId": "animation-4aa946dd-10e2-42ce-a913-54cf3b840c99"
                   }
                 ]
               },
               {
-                "id": "step-7b6634d2-38ac-478c-a405-7527ed2df6f8",
+                "id": "step-ca409b1b-4afb-4846-a880-2ad8f76b1438",
                 "name": "展示语音按钮",
                 "trigger": {
                   "type": "auto",
@@ -222,25 +240,25 @@
                 },
                 "actions": [
                   {
-                    "id": "action-06016e8b-5261-43a8-aeba-edc4890ff803",
+                    "id": "action-5fc1bdc5-5efd-4d4d-acdd-f169f7f46776",
                     "type": "show-node",
-                    "targetId": "node-b053d26e-7d9d-41e2-a922-769b7c4142d4",
-                    "animationId": "animation-6a2578ce-d600-4171-a971-6fd097c5b57c"
+                    "targetId": "node-a16a374c-3f87-483f-8059-5eb6eaf9f03e",
+                    "animationId": "animation-304cfd99-c669-4b00-afce-ab5c85f0e616"
                   }
                 ]
               }
             ],
             "animations": [
               {
-                "id": "animation-03e2fa07-23c4-418d-aff5-b86518b31a98",
-                "targetId": "node-92bdecc3-a2f5-46c6-85d4-836bca8c28bb",
+                "id": "animation-4aa946dd-10e2-42ce-a913-54cf3b840c99",
+                "targetId": "node-3bb8106f-5dab-43c2-bd2d-7f66cc699ffa",
                 "kind": "fade",
                 "durationMs": 320,
                 "easing": "ease-out"
               },
               {
-                "id": "animation-6a2578ce-d600-4171-a971-6fd097c5b57c",
-                "targetId": "node-b053d26e-7d9d-41e2-a922-769b7c4142d4",
+                "id": "animation-304cfd99-c669-4b00-afce-ab5c85f0e616",
+                "targetId": "node-a16a374c-3f87-483f-8059-5eb6eaf9f03e",
                 "kind": "slide-up",
                 "durationMs": 360,
                 "easing": "ease-out",
@@ -250,7 +268,7 @@
           }
         },
         {
-          "id": "slide-ca34e251-b041-485b-902d-b5ea64cfce89",
+          "id": "slide-b9dd8aba-d427-466e-92d7-484961ce32eb",
           "name": "教学流程",
           "size": {
             "width": 1280,
@@ -262,7 +280,7 @@
           },
           "nodes": [
             {
-              "id": "node-da41a199-2851-4cf2-b8af-903e4a0954f2",
+              "id": "node-d1b506c7-a1eb-414e-833f-223c10052f30",
               "type": "text",
               "name": "Process Title",
               "x": 110,
@@ -285,7 +303,7 @@
               }
             },
             {
-              "id": "node-6c1ab18e-f941-467a-96ef-56a1f1dae64d",
+              "id": "node-39669114-0c68-433b-8e99-d7b2581e6834",
               "type": "rect",
               "name": "Process Card",
               "x": 110,
@@ -304,7 +322,7 @@
               }
             },
             {
-              "id": "node-481e47b8-c087-4285-8564-a36b339cfa43",
+              "id": "node-318f1019-ec4c-48be-8e4a-39ac68a858af",
               "type": "text",
               "name": "Process Hint",
               "x": 154,
@@ -330,25 +348,25 @@
           "timeline": {
             "steps": [
               {
-                "id": "step-76808a00-2fa3-45e9-b644-4193a0e12304",
+                "id": "step-a25466fe-34ac-4176-a65a-807a39a3d793",
                 "name": "显示流程提示",
                 "trigger": {
                   "type": "page-click"
                 },
                 "actions": [
                   {
-                    "id": "action-8313aa34-d156-4e07-ad0b-71809f27bbfb",
+                    "id": "action-5774caf0-5256-41ca-9fc7-db7429ad6b1f",
                     "type": "show-node",
-                    "targetId": "node-481e47b8-c087-4285-8564-a36b339cfa43",
-                    "animationId": "animation-45c9ef17-bf79-4628-a03e-6de7218f7a6f"
+                    "targetId": "node-318f1019-ec4c-48be-8e4a-39ac68a858af",
+                    "animationId": "animation-cd4a5c9c-d9c8-4f59-938c-5d1bbf69c544"
                   }
                 ]
               }
             ],
             "animations": [
               {
-                "id": "animation-45c9ef17-bf79-4628-a03e-6de7218f7a6f",
-                "targetId": "node-481e47b8-c087-4285-8564-a36b339cfa43",
+                "id": "animation-cd4a5c9c-d9c8-4f59-938c-5d1bbf69c544",
+                "targetId": "node-318f1019-ec4c-48be-8e4a-39ac68a858af",
                 "kind": "fade",
                 "durationMs": 260,
                 "easing": "ease-out"

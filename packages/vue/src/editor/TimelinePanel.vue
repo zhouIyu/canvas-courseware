@@ -6,6 +6,7 @@ import {
   type TimelineStep,
 } from "@canvas-courseware/core";
 import { computed } from "vue";
+import EmptyState from "../shared/EmptyState.vue";
 import TimelineStepCard from "./TimelineStepCard.vue";
 import type { TimelineStepDuplicatePayload } from "./timeline-panel-types";
 import {
@@ -153,17 +154,26 @@ function handleOpenStepSettings(stepId: string, stepIndex: number): void {
 
 <template>
   <section class="timeline-panel">
-    <div v-if="!hasSlide" class="group-card empty-card">
-      <h4>未选择页面</h4>
-      <p class="group-copy">选择页面后即可配置步骤和动作。</p>
-    </div>
+    <EmptyState
+      v-if="!hasSlide"
+      compact
+      title="还没有页面"
+      description="先创建页面，再开始编排播放步骤"
+    >
+      <template #icon>◫</template>
+    </EmptyState>
+
+    <template v-else-if="!hasNodes">
+      <EmptyState
+        compact
+        title="当前页面还没有对象"
+        description="先插入文本、矩形或图片，再配置步骤"
+      >
+        <template #icon>◎</template>
+      </EmptyState>
+    </template>
 
     <template v-else>
-      <div v-if="!hasNodes" class="group-card empty-card">
-        <h4>暂无可编排对象</h4>
-        <p class="group-copy">先添加文本、矩形或图片。</p>
-      </div>
-
       <section class="group-card">
         <div class="group-head">
           <h4>步骤</h4>
@@ -212,7 +222,17 @@ function handleOpenStepSettings(stepId: string, stepIndex: number): void {
             @toggle-collapsed="handleToggleStepCollapsed(step.id)"
           />
         </div>
-        <p v-else class="panel-empty">暂无步骤。</p>
+        <EmptyState
+          v-else
+          compact
+          title="当前页面还没有播放步骤"
+          description="点击“新建步骤”开始配置"
+          action-text="新建步骤"
+          action-type="text"
+          @action="handleCreateStep"
+        >
+          <template #icon>◎</template>
+        </EmptyState>
       </section>
     </template>
   </section>

@@ -652,9 +652,6 @@ defineExpose({
           <h2>{{ title }}</h2>
           <span class="mode-pill">编辑模式</span>
         </div>
-        <p class="editor-copy">
-          当前壳层只消费标准 snapshot，并把所有操作继续下沉为 controller 命令，保持 UI 与事件层解耦。
-        </p>
       </div>
 
       <div class="stat-grid">

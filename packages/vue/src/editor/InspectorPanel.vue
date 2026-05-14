@@ -16,6 +16,7 @@ import {
   formatStepIndexLabel,
   formatTriggerLabel,
 } from "../shared";
+import EmptyState from "../shared/EmptyState.vue";
 import { resolveImageSourceSyncPatch } from "./image-file";
 import LocalImageFileTrigger from "./LocalImageFileTrigger.vue";
 
@@ -557,15 +558,14 @@ const handleAnimationOffsetYChange = (
 
 <template>
   <section class="inspector-panel">
-    <div v-if="hasMultipleSelection" class="group-card empty-card">
-      <div class="group-head">
-        <h4>多选状态</h4>
-        <span class="group-badge warning">仅查看</span>
-      </div>
-      <p class="group-copy">
-        当前已选中多个对象。为了保持属性修改语义稳定，首版属性面板只支持单选编辑。
-      </p>
-    </div>
+    <EmptyState
+      v-if="hasMultipleSelection"
+      compact
+      title="当前选中了多个对象"
+      description="先聚焦一个对象，再查看和编辑详细属性"
+    >
+      <template #icon>◫</template>
+    </EmptyState>
 
     <template v-else-if="hasSingleSelection && selectedNode">
       <div class="group-card">
@@ -1000,13 +1000,14 @@ const handleAnimationOffsetYChange = (
       </div>
     </template>
 
-    <div v-else class="group-card empty-card">
-      <div class="group-head">
-        <h4>未选择组件</h4>
-        <span class="group-badge">待选择</span>
-      </div>
-      <p class="group-copy">选中一个画布对象后，这里会显示它的基础信息和类型专属属性。</p>
-    </div>
+    <EmptyState
+      v-else
+      compact
+      title="未选中对象"
+      description="点击画布中的对象查看属性"
+    >
+      <template #icon>◎</template>
+    </EmptyState>
   </section>
 </template>
 
@@ -1021,6 +1022,11 @@ const handleAnimationOffsetYChange = (
     linear-gradient(180deg, rgba(234, 88, 12, 0.05), rgba(255, 255, 255, 0.96)),
     var(--cw-color-surface);
   box-shadow: var(--cw-shadow-weak);
+}
+
+.inspector-panel :deep(.cw-empty-state) {
+  max-width: none;
+  margin: 0;
 }
 
 .group-badge {

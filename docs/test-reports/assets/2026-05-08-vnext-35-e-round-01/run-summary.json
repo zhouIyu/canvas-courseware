@@ -1,6 +1,6 @@
 {
   "baseUrl": "http://127.0.0.1:32173/projects",
-  "executedAt": "2026-05-08T09:38:22.649Z",
+  "executedAt": "2026-05-14T09:54:27.231Z",
   "desktopViewport": {
     "width": 1440,
     "height": 900
@@ -15,25 +15,25 @@
     },
     {
       "id": "alpha-project-created",
-      "title": "VNext35E Alpha 1778233103808",
-      "workspaceTitle": "VNext35E Alpha 1778233103808"
+      "title": "VNext35E Alpha 1778752468344",
+      "workspaceTitle": "VNext35E Alpha 1778752468344"
     },
     {
       "id": "beta-project-created",
-      "title": "VNext35E Beta 1778233105062",
-      "workspaceTitle": "VNext35E Beta 1778233105062"
+      "title": "VNext35E Beta 1778752468674",
+      "workspaceTitle": "VNext35E Beta 1778752468674"
     },
     {
       "id": "default-sort-and-updated-display",
       "titles": [
-        "VNext35E Beta 1778233105062",
-        "VNext35E Alpha 1778233103808",
+        "VNext35E Beta 1778752468674",
+        "VNext35E Alpha 1778752468344",
         "古诗讲解示例"
       ],
       "updatedSnapshot": {
         "label": "最后编辑",
-        "summary": "今天 17:38",
-        "detail": "2026/05/08 17:38"
+        "summary": "今天 17:54",
+        "detail": "2026/05/14 17:54"
       },
       "countLabel": "共 3 个项目，按最近编辑优先排序"
     },
@@ -41,30 +41,30 @@
       "id": "ascending-sort",
       "titles": [
         "古诗讲解示例",
-        "VNext35E Alpha 1778233103808",
-        "VNext35E Beta 1778233105062"
+        "VNext35E Alpha 1778752468344",
+        "VNext35E Beta 1778752468674"
       ],
       "countLabel": "共 3 个项目，按较早编辑优先排序"
     },
     {
       "id": "descending-sort-restored",
       "titles": [
-        "VNext35E Beta 1778233105062",
-        "VNext35E Alpha 1778233103808",
+        "VNext35E Beta 1778752468674",
+        "VNext35E Alpha 1778752468344",
         "古诗讲解示例"
       ]
     },
     {
       "id": "search-alpha",
       "titles": [
-        "VNext35E Alpha 1778233103808"
+        "VNext35E Alpha 1778752468344"
       ],
       "countLabel": "共 3 个项目，匹配 1 个，按最近编辑优先排序"
     },
     {
       "id": "open-project-from-search",
-      "workspaceTitle": "VNext35E Alpha 1778233103808",
-      "workspaceUrl": "http://127.0.0.1:32173/projects/document-0210d4f5-1e53-4fb6-be1a-9e69fcfca9d6?mode=edit"
+      "workspaceTitle": "VNext35E Alpha 1778752468344",
+      "workspaceUrl": "http://127.0.0.1:32173/projects/document-a40be47e-c0c2-412e-a117-69d745b6be80?mode=edit"
     },
     {
       "id": "empty-search-state",
@@ -75,13 +75,13 @@
     {
       "id": "search-cleared",
       "titles": [
-        "VNext35E Beta 1778233105062",
-        "VNext35E Alpha 1778233103808",
+        "VNext35E Beta 1778752468674",
+        "VNext35E Alpha 1778752468344",
         "古诗讲解示例"
       ],
       "storedProjectTitles": [
-        "VNext35E Beta 1778233105062",
-        "VNext35E Alpha 1778233103808",
+        "VNext35E Beta 1778752468674",
+        "VNext35E Alpha 1778752468344",
         "古诗讲解示例"
       ]
     }

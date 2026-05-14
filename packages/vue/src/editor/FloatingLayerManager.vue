@@ -6,6 +6,7 @@ import type {
   ReorderPosition,
 } from "@canvas-courseware/core";
 import { computed, nextTick, ref, watch } from "vue";
+import EmptyState from "../shared/EmptyState.vue";
 import { formatNodeTypeLabel } from "../shared";
 import type { LayerSelectionPayload } from "./layer-selection";
 import type {
@@ -682,9 +683,14 @@ watch(
         </article>
       </div>
 
-      <p v-else class="floating-layer-manager__empty">
-        当前页面还没有组件，先从上方工具栏插入文本、矩形或图片。
-      </p>
+      <EmptyState
+        v-else
+        compact
+        title="当前页面还没有对象"
+        description="从工具栏插入文本、矩形或图片"
+      >
+        <template #icon>◫</template>
+      </EmptyState>
     </div>
   </section>
 </template>

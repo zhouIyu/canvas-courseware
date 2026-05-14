@@ -20,6 +20,7 @@ import {
   type CSSProperties,
   type ComponentPublicInstance,
 } from "vue";
+import EmptyState from "../shared/EmptyState.vue";
 import StageViewportControls from "../shared/StageViewportControls.vue";
 import { useStageViewportFit } from "../shared";
 import FloatingLayerManager from "./FloatingLayerManager.vue";
@@ -581,8 +582,14 @@ defineExpose({
             </div>
           </div>
           <div v-else class="empty-stage">
-            <strong>还没有可编辑的页面</strong>
-            <p>先新增一个 slide，再开始插入文本、矩形或图片。</p>
+            <EmptyState
+              title="还没有页面"
+              description="点击“当前页设置”，先创建或恢复页面"
+              action-text="当前页设置"
+              @action="emit('open-slide-settings')"
+            >
+              <template #icon>□</template>
+            </EmptyState>
           </div>
         </div>
       </div>

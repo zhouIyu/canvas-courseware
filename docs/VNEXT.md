@@ -314,7 +314,7 @@
   当前结果：
   已完成。左侧页面卡片已移除底部常驻提示，改为 hover 时显示的轻量提示层；无缩略图场景已改为更简洁的“预览 / 暂无预览”占位，页码 / 标题 / 统计信息层级与缩略图高度已同步压缩，并保留双击重命名、右键菜单与拖拽排序链路；已通过 `pnpm typecheck`、`pnpm build` 与 `pnpm test:vnext-37-g` 验证。
 
-- [ ] VNext-37-H 统一空态与辅助文案的表达方式
+- [x] VNext-37-H 统一空态与辅助文案的表达方式
   说明：
   移除技术说明文案，优化空态文案为操作指引，控制文案长度。
   来源：
@@ -327,6 +327,8 @@
   - 修改 `packages/vue/src/editor/CoursewareEditor.vue` 移除技术说明
   - 创建统一的 `EmptyState.vue` 组件
   - 替换所有空态文案为优化版本
+  当前结果：
+  已完成。编辑器顶部技术说明已移除，统一 `EmptyState.vue` 已覆盖编辑态 / 预览态 / 项目列表的关键空态场景；已通过 `pnpm typecheck`、`pnpm build`、`pnpm test:vnext-37-h` 与 `pnpm test:vnext-35-e` 验证。
 
 ## 暂不纳入 VNext-38
 

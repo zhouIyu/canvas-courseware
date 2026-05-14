@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { CoursewareDocument } from "@canvas-courseware/core";
 import { computed, ref, watch } from "vue";
+import EmptyState from "../shared/EmptyState.vue";
 import StageViewportControls from "../shared/StageViewportControls.vue";
 import PreviewPlaybackControls from "./PreviewPlaybackControls.vue";
 import PreviewStatusBadge from "./PreviewStatusBadge.vue";
@@ -618,10 +619,13 @@ const immersivePlaybackHint = computed(
                   <canvas ref="previewCanvasRef" />
                 </div>
               </div>
-              <div v-else class="empty-state">
-                <strong>还没有可预览的页面</strong>
-                <p>编辑器新增页面后，这里会自动同步同一份文档内容。</p>
-              </div>
+              <EmptyState
+                v-else
+                title="还没有页面"
+                description="在编辑模式中创建页面后即可预览"
+              >
+                <template #icon>◌</template>
+              </EmptyState>
             </div>
           </div>
         </div>

@@ -1,0 +1,56 @@
+{
+  "assetDir": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-05-14-vnext-37-h-round-01",
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-05-14T09:53:05.415Z",
+  "checks": [
+    {
+      "id": "project-list-empty-state",
+      "title": "没有找到匹配的项目",
+      "description": "试试调整关键词，或清空“no-match-empty-state”后重新查看",
+      "actionText": "清空搜索"
+    },
+    {
+      "id": "embedded-editor-copy",
+      "text": "插入文本矩形图片历史 撤销 重做 ‹‹页面还没有页面，先新建一页 新建页面 □还没有页面点击“新建第一页”开始创建新建第一页适配 100% 100% □还没有页面点击“当前页设置”，先创建或恢复页面当前页设置组件属性时间轴◎未选中对象点击画布中的对象查看属性",
+      "topbarCount": 0
+    },
+    {
+      "id": "edit-empty-states",
+      "slideRail": {
+        "title": "还没有页面",
+        "description": "点击“新建第一页”开始创建",
+        "actionText": "新建第一页"
+      },
+      "stage": {
+        "title": "还没有页面",
+        "description": "点击“当前页设置”，先创建或恢复页面",
+        "actionText": "当前页设置"
+      },
+      "inspector": {
+        "title": "未选中对象",
+        "description": "点击画布中的对象查看属性",
+        "actionText": ""
+      },
+      "timeline": {
+        "title": "还没有页面",
+        "description": "先创建页面，再开始编排播放步骤",
+        "actionText": ""
+      }
+    },
+    {
+      "id": "preview-empty-states",
+      "stage": {
+        "title": "还没有页面",
+        "description": "在编辑模式中创建页面后即可预览",
+        "actionText": ""
+      },
+      "timeline": {
+        "title": "当前页面还没有播放步骤",
+        "description": "回到编辑模式，点击“新建步骤”开始配置",
+        "actionText": ""
+      }
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

@@ -655,8 +655,9 @@
 .preview-shell.is-immersive .collapsed-side-shell small,
 .preview-shell.is-immersive :deep(.step-row span),
 .preview-shell.is-immersive :deep(.step-copy small),
-.preview-shell.is-immersive :deep(.empty-state),
-.preview-shell.is-immersive :deep(.empty-state strong),
+.preview-shell.is-immersive :deep(.cw-empty-state),
+.preview-shell.is-immersive :deep(.cw-empty-state__title),
+.preview-shell.is-immersive :deep(.cw-empty-state__description),
 .preview-shell.is-immersive :deep(.section-head h3) {
   color: #e2e8f0;
 }

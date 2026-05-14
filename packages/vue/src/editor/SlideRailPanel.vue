@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Slide } from "@canvas-courseware/core";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import EmptyState from "../shared/EmptyState.vue";
 import { createSlideBackgroundStyle } from "../shared";
 
 /** slide 重命名事件的载荷。 */
@@ -590,9 +591,17 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <a-empty v-else class="rail-empty" description="还没有页面">
-      <a-button size="small" type="primary" @click="emit('create')">新建第一页</a-button>
-    </a-empty>
+    <div v-else class="rail-empty">
+      <EmptyState
+        compact
+        title="还没有页面"
+        description="点击“新建第一页”开始创建"
+        action-text="新建第一页"
+        @action="emit('create')"
+      >
+        <template #icon>□</template>
+      </EmptyState>
+    </div>
 
     <a-modal
       :visible="Boolean(pendingDeleteSlide)"

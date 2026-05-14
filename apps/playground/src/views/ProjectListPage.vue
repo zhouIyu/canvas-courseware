@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { IconFolderAdd, IconSearch } from "@arco-design/web-vue/es/icon";
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
+import { EmptyState } from "@canvas-courseware/vue";
 import ProjectCreateModal from "../components/ProjectCreateModal.vue";
 import { collectProjectAssetIdsFromDocument, removeProjectAssets } from "../projects/project-assets";
 import {
@@ -307,9 +309,16 @@ const projectCountLabel = computed(() => {
   return `共 ${totalProjectCount} 个项目，匹配 ${matchedProjects.value.length} 个，${projectSortLabel.value}`;
 });
 
-/** 当前空状态文案。 */
+/** 当前空态主标题。 */
+const emptyStateTitle = computed(() =>
+  hasSearchQuery.value ? "没有找到匹配的项目" : "还没有项目",
+);
+
+/** 当前空态补充说明。 */
 const emptyStateDescription = computed(() =>
-  hasSearchQuery.value ? `没有匹配“${searchQuery.value.trim()}”的项目` : "还没有项目，先创建一个吧",
+  hasSearchQuery.value
+    ? `试试调整关键词，或清空“${searchQuery.value.trim()}”后重新查看`
+    : "点击“创建项目”开始搭建新的课件工作台",
 );
 
 /** 打开新建项目弹窗。 */
@@ -503,22 +512,16 @@ onMounted(() => {
         </a-card>
       </div>
 
-      <a-empty v-else class="empty-state" :description="emptyStateDescription">
-        <a-button
-          v-if="hasSearchQuery"
-          type="outline"
-          @click="clearSearchQuery"
-        >
-          清空搜索
-        </a-button>
-        <a-button
-          v-else
-          type="primary"
-          @click="openCreateProjectModal"
-        >
-          创建项目
-        </a-button>
-      </a-empty>
+      <EmptyState
+        v-else
+        class="empty-state"
+        :icon="hasSearchQuery ? IconSearch : IconFolderAdd"
+        :title="emptyStateTitle"
+        :description="emptyStateDescription"
+        :action-text="hasSearchQuery ? '清空搜索' : '创建项目'"
+        :action-type="hasSearchQuery ? 'outline' : 'primary'"
+        @action="hasSearchQuery ? clearSearchQuery() : openCreateProjectModal()"
+      />
     </section>
 
     <ProjectCreateModal

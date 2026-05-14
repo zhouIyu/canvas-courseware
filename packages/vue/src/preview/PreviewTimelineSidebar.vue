@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { formatTriggerLabel } from "../shared";
+import EmptyState from "../shared/EmptyState.vue";
 import type { PlaybackState, TimelineStep } from "@canvas-courseware/core";
 
 /** 右侧步骤栏的只读输入参数。 */
@@ -159,10 +160,14 @@ const resolveStepStatusColor = (stepIndex: number) => {
         </div>
       </li>
     </ol>
-    <div v-else class="empty-state compact">
-      <strong>当前页面还没有步骤</strong>
-      <p>后续 timeline 配置完成后，这里会直接展示页面点击、自动触发与对象点击的执行顺序。</p>
-    </div>
+    <EmptyState
+      v-else
+      compact
+      title="当前页面还没有播放步骤"
+      description="回到编辑模式，点击“新建步骤”开始配置"
+    >
+      <template #icon>◎</template>
+    </EmptyState>
   </aside>
 </template>
 
@@ -394,26 +399,8 @@ const resolveStepStatusColor = (stepIndex: number) => {
   margin-left: 8px;
 }
 
-.empty-state {
-  display: grid;
-  gap: var(--cw-space-2);
-  justify-items: center;
-  max-width: 28rem;
-  margin: 12px auto;
-  padding: var(--cw-space-6);
-  border: 1px dashed color-mix(in srgb, var(--cw-color-primary) 28%, transparent);
-  border-radius: var(--cw-radius-lg);
-  color: var(--cw-color-muted);
-  background: rgba(255, 255, 255, 0.9);
-  text-align: center;
-}
-
-.empty-state.compact {
-  padding: var(--cw-space-5);
-}
-
-.empty-state strong {
-  font-size: 18px;
-  color: var(--cw-color-text);
+.preview-side :deep(.cw-empty-state) {
+  margin-top: 12px;
+  max-width: none;
 }
 </style>

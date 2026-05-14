@@ -51,6 +51,11 @@
   color: var(--cw-color-muted);
 }
 
+.timeline-panel :deep(.cw-empty-state) {
+  max-width: none;
+  margin: 0;
+}
+
 .step-list {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
