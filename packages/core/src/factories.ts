@@ -3,6 +3,7 @@ import type {
   CoursewareDocument,
   CoursewareNode,
   EditorSnapshot,
+  ImageCrop,
   ImageNode,
   NodeAnimation,
   ObjectFit,
@@ -84,6 +85,14 @@ export interface CreateImageNodeOptions {
   y?: number;
   width?: number;
   height?: number;
+  /** 初始适配方式。 */
+  objectFit?: ObjectFit;
+  /** 初始水平翻转状态。 */
+  flipX?: boolean;
+  /** 初始垂直翻转状态。 */
+  flipY?: boolean;
+  /** 初始裁剪窗口。 */
+  crop?: ImageCrop;
 }
 
 export interface CreateRectNodeOptions {
@@ -246,7 +255,15 @@ export function createImageNode(options: CreateImageNodeOptions = {}): ImageNode
     locked: false,
     props: {
       src: options.src ?? "",
-      objectFit: "cover",
+      objectFit: options.objectFit ?? "cover",
+      flipX: options.flipX ?? false,
+      flipY: options.flipY ?? false,
+      crop: options.crop ?? {
+        x: 0,
+        y: 0,
+        width: 1,
+        height: 1,
+      },
     },
   };
 }

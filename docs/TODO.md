@@ -217,10 +217,10 @@
 - [x] UI 修复：预览页“更多”下拉菜单补齐实体底板、边框与阴影，并锁定菜单项单行展示，避免底层状态胶囊透出造成样式错乱
 - [x] VNext-37-H 统一空态与辅助文案的表达方式：已移除编辑器顶部技术说明文案，并创建统一 `EmptyState` 组件收口编辑态 / 预览态 / 项目列表空态；已通过 `pnpm typecheck`、`pnpm build`、`pnpm test:vnext-37-h` 与 `pnpm test:vnext-35-e` 验证
 - [x] P0 `VNext-38-A` Text 元素属性增强：已为 Text 节点补齐字体选择、两端对齐、行高、透明度与旋转角度编辑入口；属性面板拆出独立 `InspectorTextSection`，文本 schema / 默认值 / 导入解析同步支持新增字段，并新增 `pnpm test:vnext-38-a` 覆盖“编辑 -> 自动保存 -> 刷新回显”链路；已通过 `pnpm typecheck`、`pnpm build` 与 `pnpm test:vnext-38-a`
+- [x] P0 `VNext-38-B` Image 元素属性增强：已为 Image 节点补齐适配方式切换、水平 / 垂直翻转与基础裁剪入口，并把图片渲染统一收口到固定 frame 模型，确保编辑态 / 预览态对 `objectFit / flip / crop` 的表现一致；属性面板拆出独立 `InspectorImageSection`，图片 schema / 默认值 / 导入解析同步支持新增字段，并新增 `pnpm test:vnext-38-b` 覆盖“编辑 -> 自动保存 -> 刷新回显 + 预览像素验证”链路；已通过 `pnpm typecheck`、`pnpm build` 与 `pnpm test:vnext-38-b`
 
 ## 待完成
 
-- [ ] P0 `VNext-38-B` Image 元素属性增强：补齐透明度、旋转角度、适配方式切换、水平 / 垂直翻转与基础裁剪
 - [ ] P0 `VNext-38-C` Rect 元素属性增强：补齐圆角、渐变填充、透明度、旋转角度与基础阴影
 - [ ] P0 `VNext-38-D` 通用属性与旋转手柄：补齐旋转手柄、角度输入、锁定宽高比与尺寸联动
 - [ ] P1 `VNext-38-E` 选中对象信息显示：补齐尺寸、坐标与旋转角度的实时浮动反馈
@@ -238,8 +238,9 @@
 - `VNext-37` 已完成开发、自测与回归，本轮 UI/UX 优化范围已完成收口。
 - `VNext-38` 已完成版本规划，并已同步进入当前执行池。
 - `VNext-38-A` 已完成开发、自测与回归，Text 基础属性链路已补齐。
+- `VNext-38-B` 已完成开发、自测与回归，Image 基础属性链路已补齐。
 - `VNext-37-A / VNext-37-B / VNext-37-C / VNext-37-D / VNext-37-E / VNext-37-F / VNext-37-G / VNext-37-H` 已完成开发、自测与回归。
-- 当前建议按 `P0` 顺序优先推进 `VNext-38-B / C / D`，先完成 Image / Rect 属性补齐与通用旋转交互基础，再推进 `P1` 的信息反馈与效率增强项。
+- 当前建议按 `P0` 顺序优先推进 `VNext-38-C / D`，先完成 Rect 属性补齐与通用旋转交互基础，再推进 `P1` 的信息反馈与效率增强项。
 - 下一步等待用户 review；确认后即可切换到 `VNext-38` 的开发执行。
 - 详细版本范围与批次说明以 `docs/VNEXT.md` 为准。
 

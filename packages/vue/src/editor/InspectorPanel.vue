@@ -18,9 +18,8 @@ import {
   formatTriggerLabel,
 } from "../shared";
 import EmptyState from "../shared/EmptyState.vue";
-import { resolveImageSourceSyncPatch } from "./image-file";
+import InspectorImageSection from "./InspectorImageSection.vue";
 import InspectorTextSection from "./InspectorTextSection.vue";
-import LocalImageFileTrigger from "./LocalImageFileTrigger.vue";
 
 /** 属性面板需要的只读状态输入。 */
 const props = withDefaults(
@@ -53,13 +52,6 @@ const emit = defineEmits<{
   /** 删除当前节点关联的动画资源。 */
   "remove-animation": [animationId: string];
 }>();
-
-/** 图片填充方式选项。 */
-const objectFitOptions = [
-  { label: "填满", value: "fill" },
-  { label: "完整显示", value: "contain" },
-  { label: "裁切铺满", value: "cover" },
-] as const;
 
 /** 动画类型选项。 */
 const animationKindOptions = [
@@ -104,26 +96,6 @@ const hasSelectedAnimations = computed(() => props.selectedAnimations.length > 0
 
 /** 当前已展开高级参数的动画 id 列表。 */
 const expandedAnimationIds = ref<string[]>([]);
-
-/** 当前图片节点的来源说明。 */
-const imageSourceHint = computed(() => {
-  if (props.selectedNode?.type !== "image") {
-    return "";
-  }
-
-  const source = props.selectedNode.props.src.trim();
-  if (!source) {
-    return "当前还是空图片框，点击“更换图片”可直接选择本地图片。";
-  }
-
-  return source.startsWith("data:")
-    ? "当前使用本地图片，保存后会随项目一起恢复。"
-    : "当前使用图片地址，也可以直接更换为本地图片。";
-});
-
-/** 读取旧资源可复用的文件名，仅在 data URL 场景下回退到 alt 字段。 */
-const resolvePreviousImageFileName = (node: Extract<CoursewareNode, { type: "image" }>) =>
-  node.props.src.trim().startsWith("data:") ? node.props.alt ?? null : null;
 
 /** 读取文本输入框的字符串值。 */
 const readTextInputValue = (value: unknown, fallback = ""): string => {
@@ -237,77 +209,6 @@ const handleNodeToggle = (
   });
 };
 
-/** 更新图片地址。 */
-const handleImageSourceInput = (value: string | number | undefined) => {
-  if (props.selectedNode?.type !== "image") {
-    return;
-  }
-
-  const nextSource = readTextInputValue(value, props.selectedNode.props.src);
-  if (nextSource.trim().length === 0) {
-    updateNode({
-      props: {
-        src: nextSource,
-      },
-    });
-    return;
-  }
-
-  const syncPatch = resolveImageSourceSyncPatch({
-    currentName: props.selectedNode.name,
-    currentAlt: props.selectedNode.props.alt,
-    previousSource: props.selectedNode.props.src,
-    previousFileName: resolvePreviousImageFileName(props.selectedNode),
-    nextSource,
-  });
-
-  updateNode({
-    ...(syncPatch.name ? { name: syncPatch.name } : {}),
-    props: {
-      src: nextSource,
-      ...(syncPatch.alt ? { alt: syncPatch.alt } : {}),
-    },
-  });
-};
-
-/** 更新图片替代文本。 */
-const handleImageAltInput = (value: string | number | undefined) => {
-  if (props.selectedNode?.type !== "image") {
-    return;
-  }
-
-  updateNode({
-    props: {
-      alt: readTextInputValue(value, props.selectedNode.props.alt ?? ""),
-    },
-  });
-};
-
-/** 更新图片适配方式。 */
-const handleImageObjectFitChange = (value: string | number | boolean | undefined) => {
-  if (props.selectedNode?.type !== "image") {
-    return;
-  }
-
-  updateNode({
-    props: {
-      objectFit: readTextInputValue(value, props.selectedNode.props.objectFit ?? "cover") as
-        | "fill"
-        | "contain"
-        | "cover",
-    },
-  });
-};
-
-/** 从属性面板直接替换当前图片节点的本地资源。 */
-const handleImageFileSelect = (file: File) => {
-  if (props.selectedNode?.type !== "image") {
-    return;
-  }
-
-  emit("replace-image", props.selectedNode.id, file);
-};
-
 /** 更新矩形填充色。 */
 const handleRectFillChange = (value: string | undefined) => {
   if (props.selectedNode?.type !== "rect") {
@@ -368,6 +269,11 @@ const updateAnimation = (animation: NodeAnimation) => {
 /** 转发子分组抛出的节点更新事件，继续复用当前属性面板的标准命令出口。 */
 const forwardNodeUpdate = (nodeId: string, patch: NodePatch) => {
   emit("update-node", nodeId, patch);
+};
+
+/** 转发图片分组抛出的本地文件替换事件。 */
+const forwardImageReplace = (nodeId: string, file: File) => {
+  emit("replace-image", nodeId, file);
 };
 
 /** 为当前选中对象新增一个默认动画。 */
@@ -621,59 +527,12 @@ const handleAnimationOffsetYChange = (
         </div>
       </div>
 
-      <div v-if="selectedNode.type === 'image'" class="group-card">
-        <div class="group-head">
-          <h4>图片属性</h4>
-          <span class="group-badge">Image</span>
-        </div>
-
-        <div class="field-grid">
-          <div class="field field-span-2">
-            <span class="field-label">图片资源</span>
-            <div class="image-source-row">
-              <LocalImageFileTrigger
-                aria-label="更换当前图片"
-                label="更换图片"
-                variant="panel"
-                @select="handleImageFileSelect"
-              />
-              <span class="image-source-hint">{{ imageSourceHint }}</span>
-            </div>
-          </div>
-
-          <div class="field field-span-2">
-            <span class="field-label">图片地址</span>
-            <a-input class="field-input" :model-value="selectedNode.props.src" @input="handleImageSourceInput" />
-          </div>
-
-          <div class="field field-span-2">
-            <span class="field-label">替代文本</span>
-            <a-input
-              class="field-input"
-              :model-value="selectedNode.props.alt ?? ''"
-              @input="handleImageAltInput"
-            />
-          </div>
-
-          <div class="field field-span-2">
-            <span class="field-label">适配方式</span>
-            <a-select
-              class="field-input"
-              :model-value="selectedNode.props.objectFit ?? 'cover'"
-              popup-container="body"
-              @change="handleImageObjectFitChange"
-            >
-              <a-option
-                v-for="option in objectFitOptions"
-                :key="option.value"
-                :value="option.value"
-              >
-                {{ option.label }}
-              </a-option>
-            </a-select>
-          </div>
-        </div>
-      </div>
+      <InspectorImageSection
+        v-if="selectedNode.type === 'image'"
+        :node="selectedNode"
+        @replace-image="forwardImageReplace"
+        @update-node="forwardNodeUpdate"
+      />
 
       <div class="group-card">
         <div class="group-head">

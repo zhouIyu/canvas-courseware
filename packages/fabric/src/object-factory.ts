@@ -13,6 +13,7 @@ import {
   type RectNode,
   type TextNode,
 } from "@canvas-courseware/core";
+import { FabricFrameImage } from "./frame-image-object";
 import { loadFabricImageWithRemoteFallback } from "./image-loader";
 
 /** 编辑态控制点的可视尺寸，适当放大以改善缩放控制点的可点击性。 */
@@ -38,6 +39,8 @@ export type FabricRenderableObject = FabricObject & {
   height?: number;
   opacity?: number;
   visible?: boolean;
+  flipX?: boolean;
+  flipY?: boolean;
   text?: string;
   setCoords?: () => void;
 };
@@ -158,21 +161,37 @@ export async function createFabricImageObject(
   }
 
   try {
-    const object = (await loadFabricImageWithRemoteFallback(node.props.src, {
+    const loadedImage = await loadFabricImageWithRemoteFallback(node.props.src, {
       left: node.x,
       top: node.y,
       angle: node.rotation,
       opacity: node.opacity,
       visible: node.visible,
+      flipX: node.props.flipX ?? false,
+      flipY: node.props.flipY ?? false,
       ...createNodeInteractionOptions(node, options),
       originX: "left",
       originY: "top",
-    })) as FabricRenderableObject;
+    });
+    const object = new FabricFrameImage(loadedImage.getElement(), {
+      left: node.x,
+      top: node.y,
+      angle: node.rotation,
+      opacity: node.opacity,
+      visible: node.visible,
+      flipX: node.props.flipX ?? false,
+      flipY: node.props.flipY ?? false,
+      frameWidth: node.width,
+      frameHeight: node.height,
+      objectFit: node.props.objectFit ?? "cover",
+      crop: node.props.crop ?? null,
+      ...createNodeInteractionOptions(node, options),
+      originX: "left",
+      originY: "top",
+    }) as FabricRenderableObject;
 
-    const naturalWidth = object.width || 1;
-    const naturalHeight = object.height || 1;
-    object.scaleX = node.width / naturalWidth;
-    object.scaleY = node.height / naturalHeight;
+    object.scaleX = 1;
+    object.scaleY = 1;
 
     return finalizeFabricObject(object, node, options);
   } catch {
@@ -193,6 +212,8 @@ export function createFabricImagePlaceholder(
     angle: node.rotation,
     opacity: node.opacity,
     visible: node.visible,
+    flipX: node.props.flipX ?? false,
+    flipY: node.props.flipY ?? false,
     fill: "#EEF2FA",
     stroke: "#8EA3C7",
     strokeWidth: 1,

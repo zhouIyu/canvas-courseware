@@ -191,6 +191,48 @@
   color: var(--cw-color-muted);
 }
 
+.inspector-panel .image-crop-card {
+  gap: var(--cw-space-3);
+  padding: 14px;
+  background: rgba(248, 250, 252, 0.92);
+}
+
+.inspector-panel .image-crop-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  border: 1px solid rgba(19, 78, 74, 0.08);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(22, 93, 255, 0.04), rgba(255, 255, 255, 0.94)),
+    rgba(255, 255, 255, 0.92);
+  cursor: grab;
+}
+
+.inspector-panel .image-crop-preview:active {
+  cursor: grabbing;
+}
+
+.inspector-panel .image-crop-preview__frame {
+  position: relative;
+  width: 220px;
+  height: 148px;
+  overflow: hidden;
+  border-radius: 12px;
+  background:
+    linear-gradient(135deg, rgba(148, 163, 184, 0.16), rgba(148, 163, 184, 0.04)),
+    rgba(226, 232, 240, 0.56);
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.24);
+}
+
+.inspector-panel .image-crop-preview__image {
+  position: absolute;
+  border-radius: 10px;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+  will-change: left, top, width, height, transform;
+}
+
 .inspector-panel .field-span-2 {
   grid-column: span 2;
 }

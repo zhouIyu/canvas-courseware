@@ -144,6 +144,22 @@ export function readBoolean(value: UnknownRecord, key: string, path: string): bo
 }
 
 /**
+ * 读取一个可选布尔字段。
+ * 字段缺失时返回 `undefined`，存在时继续复用统一布尔校验。
+ */
+export function readOptionalBoolean(
+  value: UnknownRecord,
+  key: string,
+  path: string,
+): boolean | undefined {
+  if (value[key] === undefined) {
+    return undefined;
+  }
+
+  return readBoolean(value, key, path);
+}
+
+/**
  * 读取并断言某个字段属于指定枚举值集合。
  * 这样可以把 union 类型的运行时校验集中到一处维护。
  */

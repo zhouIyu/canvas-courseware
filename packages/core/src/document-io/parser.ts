@@ -6,6 +6,7 @@ import type {
   EasingName,
   ImageNode,
   ImageNodeProps,
+  ImageCrop,
   ObjectFit,
   RectNode,
   RectNodeProps,
@@ -25,6 +26,7 @@ import {
   readEnum,
   readNodeType,
   readNumber,
+  readOptionalBoolean,
   readOptionalEnum,
   readOptionalNumber,
   readOptionalString,
@@ -224,6 +226,24 @@ function parseImageNodeProps(value: unknown, path: string): ImageNodeProps {
       `${path}.objectFit`,
       ["fill", "contain", "cover"],
     ),
+    flipX: readOptionalBoolean(propsRecord, "flipX", `${path}.flipX`),
+    flipY: readOptionalBoolean(propsRecord, "flipY", `${path}.flipY`),
+    crop: parseOptionalImageCrop(propsRecord.crop, `${path}.crop`),
+  };
+}
+
+/** 解析图片裁剪窗口，限制所有比例值都落在 0 - 1 区间内。 */
+function parseOptionalImageCrop(value: unknown, path: string): ImageCrop | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  const cropRecord = expectRecord(value, path);
+  return {
+    x: readNumber(cropRecord, "x", `${path}.x`, 0, 1),
+    y: readNumber(cropRecord, "y", `${path}.y`, 0, 1),
+    width: readNumber(cropRecord, "width", `${path}.width`, 0, 1),
+    height: readNumber(cropRecord, "height", `${path}.height`, 0, 1),
   };
 }
 

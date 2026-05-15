@@ -82,7 +82,7 @@
   完成情况：
   已于 2026-05-15 完成。当前已拆出独立 `InspectorTextSection` 收口文本属性面板，补齐字体预设、两端对齐、行高调节与字体缺失降级提示；同时贯通 Text 节点默认值、schema 解析与刷新恢复链路，并新增 `pnpm test:vnext-38-a` 覆盖“编辑 -> 自动保存 -> 刷新回显”专项回归。已通过 `pnpm typecheck`、`pnpm build` 与 `pnpm test:vnext-38-a`。
 
-- [ ] VNext-38-B Image 元素属性增强
+- [x] VNext-38-B Image 元素属性增强
   说明：
   补齐 Image 元素的核心样式属性，完善图片适配与基础变换能力。
   来源：
@@ -99,6 +99,8 @@
   - 在 `packages/vue/src/editor/PropertyPanel.vue` 中补齐对应的属性编辑控件
   - 图片裁剪采用 Fabric 的 clipPath 或 crop 能力，不引入独立裁剪编辑器
   - 保持现有图片导入、换图、设为背景与资源管理逻辑不变
+  完成情况：
+  已于 2026-05-15 完成。当前已拆出独立 `InspectorImageSection` 收口图片属性面板，补齐适配方式切换、水平 / 垂直翻转与基础裁剪交互；同时把图片渲染统一收口到固定 frame 模型，确保编辑态 / 预览态对 `objectFit / flip / crop` 的表现一致，并贯通 Image 节点默认值、schema 解析与刷新恢复链路；新增 `pnpm test:vnext-38-b` 覆盖“编辑 -> 自动保存 -> 刷新回显 + 预览像素验证”专项回归。已通过 `pnpm typecheck`、`pnpm build` 与 `pnpm test:vnext-38-b`。
 
 - [ ] VNext-38-C Rect 元素属性增强
   说明：

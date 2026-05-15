@@ -8,6 +8,18 @@ export type TextFontStyle = "normal" | "italic";
 export type ObjectFit = "fill" | "contain" | "cover";
 export type EasingName = "linear" | "ease-in" | "ease-out" | "ease-in-out";
 
+/** 图片裁剪窗口在原始资源上的归一化描述。 */
+export interface ImageCrop {
+  /** 裁剪窗口左上角 X 偏移，按 0 - 1 比例表达。 */
+  x: number;
+  /** 裁剪窗口左上角 Y 偏移，按 0 - 1 比例表达。 */
+  y: number;
+  /** 裁剪窗口宽度，按 0 - 1 比例表达。 */
+  width: number;
+  /** 裁剪窗口高度，按 0 - 1 比例表达。 */
+  height: number;
+}
+
 export interface CoursewareDocument {
   version: string;
   meta: CoursewareMeta;
@@ -80,6 +92,12 @@ export interface ImageNodeProps {
   src: string;
   alt?: string;
   objectFit?: ObjectFit;
+  /** 是否对图片执行水平翻转。 */
+  flipX?: boolean;
+  /** 是否对图片执行垂直翻转。 */
+  flipY?: boolean;
+  /** 当前图片在原图上的基础裁剪窗口。 */
+  crop?: ImageCrop;
 }
 
 export interface RectNodeProps {

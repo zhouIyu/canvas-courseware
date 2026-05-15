@@ -1,0 +1,70 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-05-15T08:26:27.647Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "fixturePath": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-05-15-vnext-38-b-round-01/vnext38-image-fixture.svg",
+  "targetObjectFit": "contain",
+  "targetOpacityPercent": 58,
+  "targetRotation": -18,
+  "targetCrop": {
+    "x": 0.5,
+    "y": 0,
+    "width": 0.5,
+    "height": 1
+  },
+  "checks": [
+    {
+      "id": "stored-image-node-after-edit",
+      "opacity": 0.58,
+      "rotation": -18,
+      "objectFit": "contain",
+      "flipX": true,
+      "flipY": false,
+      "crop": {
+        "x": 0.5,
+        "y": 0,
+        "width": 0.5,
+        "height": 1
+      }
+    },
+    {
+      "id": "preview-pixels-after-edit",
+      "previewRegionSummary": {
+        "bounds": {
+          "minX": 292,
+          "maxX": 708,
+          "minY": 110,
+          "maxY": 450
+        },
+        "blueCount": 1712,
+        "greenCount": 616,
+        "sampledCount": 2329
+      },
+      "previewCenterPoint": {
+        "x": 500,
+        "y": 280
+      },
+      "previewPixelCenter": [
+        157,
+        184,
+        246,
+        255
+      ]
+    },
+    {
+      "id": "reloaded-inspector-values",
+      "rotation": "-18",
+      "opacity": "58",
+      "cropX": "0.5",
+      "cropWidth": "0.5",
+      "objectFitLabel": "完整显示",
+      "flipXChecked": true
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "result": "passed"
+}
