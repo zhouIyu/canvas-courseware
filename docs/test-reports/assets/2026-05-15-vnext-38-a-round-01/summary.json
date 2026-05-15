@@ -1,0 +1,35 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-05-15T06:47:51.238Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "targetFontLabel": "Times New Roman",
+  "targetFontValue": "\"Times New Roman\", \"Times\", serif",
+  "targetTextAlign": "justify",
+  "targetLineHeight": 2.3,
+  "targetOpacityPercent": 64,
+  "targetRotation": 27,
+  "checks": [
+    {
+      "id": "stored-text-node-after-edit",
+      "fontFamily": "\"Times New Roman\", \"Times\", serif",
+      "textAlign": "justify",
+      "lineHeight": 2.3,
+      "opacity": 0.64,
+      "rotation": 27
+    },
+    {
+      "id": "reloaded-inspector-values",
+      "rotation": "27",
+      "opacity": "64",
+      "lineHeight": "2.3",
+      "fontLabel": "Times New Roman",
+      "alignLabel": "两端对齐"
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "result": "passed"
+}

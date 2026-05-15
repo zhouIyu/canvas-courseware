@@ -204,7 +204,7 @@ function parseTextNodeProps(value: unknown, path: string): TextNodeProps {
       propsRecord,
       "textAlign",
       `${path}.textAlign`,
-      ["left", "center", "right"],
+      ["left", "center", "right", "justify"],
     ),
   };
 }

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import "./InspectorPanel.css";
 import {
   createNodeAnimation,
   type CoursewareNode,
@@ -18,6 +19,7 @@ import {
 } from "../shared";
 import EmptyState from "../shared/EmptyState.vue";
 import { resolveImageSourceSyncPatch } from "./image-file";
+import InspectorTextSection from "./InspectorTextSection.vue";
 import LocalImageFileTrigger from "./LocalImageFileTrigger.vue";
 
 /** 属性面板需要的只读状态输入。 */
@@ -52,13 +54,6 @@ const emit = defineEmits<{
   "remove-animation": [animationId: string];
 }>();
 
-/** 文字对齐选项。 */
-const textAlignOptions = [
-  { label: "左对齐", value: "left" },
-  { label: "居中", value: "center" },
-  { label: "右对齐", value: "right" },
-] as const;
-
 /** 图片填充方式选项。 */
 const objectFitOptions = [
   { label: "填满", value: "fill" },
@@ -92,21 +87,6 @@ const hasMultipleSelection = computed(() => props.selectedCount > 1);
 /** 当前节点的透明度百分比。 */
 const nodeOpacityPercent = computed(() =>
   props.selectedNode ? Math.round(props.selectedNode.opacity * 100) : 100,
-);
-
-/** 当前文本节点是否处于加粗状态。 */
-const isTextBold = computed(() => {
-  if (props.selectedNode?.type !== "text") {
-    return false;
-  }
-
-  const fontWeight = props.selectedNode.props.fontWeight ?? 400;
-  return fontWeight === "bold" || Number(fontWeight) >= 600;
-});
-
-/** 当前文本节点是否处于斜体状态。 */
-const isTextItalic = computed(
-  () => props.selectedNode?.type === "text" && props.selectedNode.props.fontStyle === "italic",
 );
 
 /** 当前节点是否已经加入了至少一个步骤。 */
@@ -257,87 +237,6 @@ const handleNodeToggle = (
   });
 };
 
-/** 更新文本内容。 */
-const handleTextContentInput = (value: string | number | undefined) => {
-  if (props.selectedNode?.type !== "text") {
-    return;
-  }
-
-  updateNode({
-    props: {
-      text: readTextInputValue(value, props.selectedNode.props.text),
-    },
-  });
-};
-
-/** 更新文本字号。 */
-const handleTextFontSizeChange = (value: number | string | undefined) => {
-  if (props.selectedNode?.type !== "text") {
-    return;
-  }
-
-  updateNode({
-    props: {
-      fontSize: readNumberInputValue(value, props.selectedNode.props.fontSize, 10),
-    },
-  });
-};
-
-/** 更新文本颜色。 */
-const handleTextColorChange = (value: string | undefined) => {
-  if (props.selectedNode?.type !== "text") {
-    return;
-  }
-
-  updateNode({
-    props: {
-      color: readTextInputValue(value, props.selectedNode.props.color),
-    },
-  });
-};
-
-/** 更新文本对齐方式。 */
-const handleTextAlignChange = (value: string | number | boolean | undefined) => {
-  if (props.selectedNode?.type !== "text") {
-    return;
-  }
-
-  updateNode({
-    props: {
-      textAlign: readTextInputValue(value, props.selectedNode.props.textAlign ?? "left") as
-        | "left"
-        | "center"
-        | "right",
-    },
-  });
-};
-
-/** 切换文本粗细，供属性面板与浮动工具条共用同一套文档字段。 */
-const handleTextBoldToggle = () => {
-  if (props.selectedNode?.type !== "text") {
-    return;
-  }
-
-  updateNode({
-    props: {
-      fontWeight: isTextBold.value ? 400 : 700,
-    },
-  });
-};
-
-/** 切换文本斜体状态。 */
-const handleTextItalicToggle = () => {
-  if (props.selectedNode?.type !== "text") {
-    return;
-  }
-
-  updateNode({
-    props: {
-      fontStyle: isTextItalic.value ? "normal" : "italic",
-    },
-  });
-};
-
 /** 更新图片地址。 */
 const handleImageSourceInput = (value: string | number | undefined) => {
   if (props.selectedNode?.type !== "image") {
@@ -464,6 +363,11 @@ const handleRectRadiusChange = (value: number | string | undefined) => {
 /** 统一发出动画更新事件。 */
 const updateAnimation = (animation: NodeAnimation) => {
   emit("upsert-animation", animation);
+};
+
+/** 转发子分组抛出的节点更新事件，继续复用当前属性面板的标准命令出口。 */
+const forwardNodeUpdate = (nodeId: string, patch: NodePatch) => {
+  emit("update-node", nodeId, patch);
 };
 
 /** 为当前选中对象新增一个默认动画。 */
@@ -662,83 +566,11 @@ const handleAnimationOffsetYChange = (
         <p class="group-footnote">当前透明度：{{ formatOpacityValue(selectedNode.opacity) }}</p>
       </div>
 
-      <div v-if="selectedNode.type === 'text'" class="group-card">
-        <div class="group-head">
-          <h4>文本属性</h4>
-          <span class="group-badge">Text</span>
-        </div>
-
-        <div class="field-grid">
-          <div class="field field-span-2">
-            <span class="field-label">内容</span>
-            <a-textarea
-              class="field-input field-textarea"
-              :model-value="selectedNode.props.text"
-              @input="handleTextContentInput"
-            />
-          </div>
-
-          <div class="field">
-            <span class="field-label">字号</span>
-            <a-input-number
-              class="field-input"
-              min="10"
-              :model-value="selectedNode.props.fontSize"
-              @change="handleTextFontSizeChange"
-            />
-          </div>
-
-          <div class="field">
-            <span class="field-label">颜色</span>
-            <a-color-picker
-              class="field-input color-input"
-              :model-value="selectedNode.props.color"
-              show-text
-              @change="handleTextColorChange"
-            />
-          </div>
-
-          <div class="field field-span-2">
-            <span class="field-label">字形样式</span>
-            <div class="text-style-toggle-row">
-              <a-button
-                class="text-style-toggle"
-                :class="{ 'is-active': isTextBold }"
-                type="outline"
-                @click="handleTextBoldToggle"
-              >
-                加粗
-              </a-button>
-              <a-button
-                class="text-style-toggle"
-                :class="{ 'is-active': isTextItalic }"
-                type="outline"
-                @click="handleTextItalicToggle"
-              >
-                斜体
-              </a-button>
-            </div>
-          </div>
-
-          <div class="field field-span-2">
-            <span class="field-label">对齐方式</span>
-            <a-select
-              class="field-input"
-              :model-value="selectedNode.props.textAlign"
-              popup-container="body"
-              @change="handleTextAlignChange"
-            >
-              <a-option
-                v-for="option in textAlignOptions"
-                :key="option.value"
-                :value="option.value"
-              >
-                {{ option.label }}
-              </a-option>
-            </a-select>
-          </div>
-        </div>
-      </div>
+      <InspectorTextSection
+        v-if="selectedNode.type === 'text'"
+        :node="selectedNode"
+        @update-node="forwardNodeUpdate"
+      />
 
       <div v-if="selectedNode.type === 'rect'" class="group-card">
         <div class="group-head">
@@ -1010,329 +842,3 @@ const handleAnimationOffsetYChange = (
     </EmptyState>
   </section>
 </template>
-
-<style scoped>
-.inspector-panel {
-  display: grid;
-  gap: var(--cw-space-4);
-  padding: var(--cw-space-5);
-  border: 1px solid var(--cw-color-border);
-  border-radius: var(--cw-radius-lg);
-  background:
-    linear-gradient(180deg, rgba(234, 88, 12, 0.05), rgba(255, 255, 255, 0.96)),
-    var(--cw-color-surface);
-  box-shadow: var(--cw-shadow-weak);
-}
-
-.inspector-panel :deep(.cw-empty-state) {
-  max-width: none;
-  margin: 0;
-}
-
-.group-badge {
-  display: inline-flex;
-  align-items: center;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.5;
-  color: var(--cw-color-muted);
-}
-
-.group-badge.accent {
-  color: var(--cw-color-primary);
-}
-
-.group-badge.warning {
-  color: var(--cw-color-accent);
-}
-
-.group-card {
-  display: grid;
-  gap: var(--cw-space-4);
-  padding: 18px;
-  border: 1px solid rgba(19, 78, 74, 0.08);
-  border-radius: var(--cw-radius-md);
-  background: rgba(255, 255, 255, 0.9);
-}
-
-.group-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--cw-space-3);
-}
-
-.group-head h4 {
-  margin: 0;
-  font-size: 17px;
-  line-height: 1.4;
-}
-
-.group-copy,
-.group-footnote {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.6;
-  color: var(--cw-color-muted);
-}
-
-.field-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--cw-space-3);
-}
-
-.timeline-overview {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--cw-space-2);
-}
-
-.timeline-chip {
-  display: inline-flex;
-  align-items: center;
-  min-height: 30px;
-  padding: 0 12px;
-  border-radius: var(--cw-radius-pill);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--cw-color-muted);
-  background: rgba(100, 116, 139, 0.1);
-}
-
-.timeline-chip.accent {
-  color: var(--cw-color-primary);
-  background: rgba(22, 93, 255, 0.12);
-}
-
-.timeline-chip.subtle {
-  color: var(--cw-color-text);
-  background: rgba(19, 78, 74, 0.08);
-}
-
-.timeline-step-list {
-  display: grid;
-  gap: var(--cw-space-3);
-}
-
-.timeline-step-card {
-  display: grid;
-  gap: var(--cw-space-2);
-  padding: 14px 16px;
-  border: 1px solid rgba(19, 78, 74, 0.08);
-  border-radius: var(--cw-radius-md);
-  background: rgba(255, 255, 255, 0.92);
-}
-
-.timeline-step-topline {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--cw-space-2);
-}
-
-.timeline-step-topline strong {
-  font-size: 15px;
-  color: var(--cw-color-text);
-}
-
-.timeline-step-topline span,
-.timeline-step-card small {
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--cw-color-muted);
-}
-
-.timeline-step-card p {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.6;
-  color: var(--cw-color-text);
-}
-
-.animation-list {
-  display: grid;
-  gap: var(--cw-space-3);
-}
-
-.animation-card {
-  display: grid;
-  gap: var(--cw-space-3);
-  padding: 14px 16px;
-  border: 1px solid rgba(19, 78, 74, 0.08);
-  border-radius: var(--cw-radius-md);
-  background: rgba(255, 255, 255, 0.92);
-}
-
-.card-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--cw-space-3);
-}
-
-.card-title-row {
-  display: flex;
-  align-items: center;
-  gap: var(--cw-space-2);
-}
-
-.card-index {
-  display: inline-flex;
-  align-items: center;
-  min-height: 30px;
-  padding: 0 12px;
-  border-radius: var(--cw-radius-pill);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--cw-color-primary);
-  background: rgba(22, 93, 255, 0.1);
-}
-
-.field {
-  display: grid;
-  gap: var(--cw-space-2);
-}
-
-.image-source-row {
-  display: grid;
-  gap: var(--cw-space-2);
-}
-
-.image-source-hint {
-  font-size: 13px;
-  line-height: 1.6;
-  color: var(--cw-color-muted);
-}
-
-.field-span-2 {
-  grid-column: span 2;
-}
-
-.field-label {
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.5;
-  color: var(--cw-color-text);
-}
-
-.field-input {
-  width: 100%;
-}
-
-.field-input:deep(.arco-input-wrapper),
-.field-input:deep(.arco-select-view),
-.field-input:deep(.arco-input-number),
-.field-input:deep(.arco-textarea-wrapper),
-.field-input:deep(.arco-color-picker-trigger) {
-  width: 100%;
-  min-height: 44px;
-}
-
-.field-textarea {
-  min-height: 112px;
-}
-
-.field-textarea:deep(textarea) {
-  min-height: 112px;
-  resize: vertical;
-}
-
-.color-input {
-  padding: 6px;
-}
-
-.text-style-toggle-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--cw-space-2);
-}
-
-.text-style-toggle {
-  min-width: 84px;
-  min-height: 40px;
-  border-radius: 12px;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.text-style-toggle.is-active {
-  color: var(--cw-color-primary);
-  border-color: rgba(22, 93, 255, 0.28);
-  background: rgba(22, 93, 255, 0.08);
-}
-
-.advanced-fields {
-  margin: 0;
-  background: transparent;
-}
-
-.advanced-toggle {
-  min-height: 28px;
-  padding: 0;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--cw-color-muted);
-}
-
-.advanced-toggle:hover {
-  color: var(--cw-color-primary);
-  background: transparent;
-}
-
-.advanced-grid {
-  padding-top: var(--cw-space-3);
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--cw-space-3);
-}
-
-.toggle-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--cw-space-3);
-}
-
-.toggle-field {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 48px;
-  padding: 0 14px;
-}
-
-.field-toggle {
-  flex-shrink: 0;
-}
-
-.empty-card {
-  background: rgba(240, 253, 250, 0.74);
-}
-
-.icon-button {
-  min-width: 34px;
-  min-height: 34px;
-  border-radius: 10px;
-  font-size: 14px;
-}
-
-.icon-button:hover {
-  background: rgba(22, 93, 255, 0.08);
-}
-
-.danger-icon-button:hover {
-  background: rgba(245, 63, 63, 0.08);
-}
-
-@media (max-width: 640px) {
-  .field-grid,
-  .toggle-grid,
-  .advanced-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .field-span-2 {
-    grid-column: span 1;
-  }
-}
-</style>

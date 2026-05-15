@@ -62,7 +62,7 @@
 
 #### 第一优先级：元素基础属性补全
 
-- [ ] VNext-38-A Text 元素属性增强
+- [x] VNext-38-A Text 元素属性增强
   说明：
   补齐 Text 元素的核心样式属性，让文本编辑达到基础设计工具标准。
   来源：
@@ -79,6 +79,8 @@
   - 在 `packages/vue/src/editor/PropertyPanel.vue` 中补齐对应的属性编辑控件
   - 保持现有文本双击编辑、浮动工具条与自动保存逻辑不变
   - 字体选择需考虑字体加载失败的降级方案
+  完成情况：
+  已于 2026-05-15 完成。当前已拆出独立 `InspectorTextSection` 收口文本属性面板，补齐字体预设、两端对齐、行高调节与字体缺失降级提示；同时贯通 Text 节点默认值、schema 解析与刷新恢复链路，并新增 `pnpm test:vnext-38-a` 覆盖“编辑 -> 自动保存 -> 刷新回显”专项回归。已通过 `pnpm typecheck`、`pnpm build` 与 `pnpm test:vnext-38-a`。
 
 - [ ] VNext-38-B Image 元素属性增强
   说明：

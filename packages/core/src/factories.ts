@@ -20,6 +20,23 @@ import { COURSEWARE_SCHEMA_VERSION } from "./schema";
 export const DEFAULT_TEXT_FONT_FAMILY =
   '"Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif';
 
+/** 文本字体预设项，供属性面板直接生成字体选择器。 */
+export interface TextFontFamilyPreset {
+  label: string;
+  value: string;
+}
+
+/** 文本属性面板内置的基础字体方案，每项都带回退族以降低字体缺失风险。 */
+export const TEXT_FONT_FAMILY_PRESETS: readonly TextFontFamilyPreset[] = [
+  { label: "默认无衬线", value: DEFAULT_TEXT_FONT_FAMILY },
+  { label: "Arial", value: '"Arial", "Helvetica Neue", sans-serif' },
+  { label: "Times New Roman", value: '"Times New Roman", "Times", serif' },
+  { label: "Courier New", value: '"Courier New", "Courier", monospace' },
+  { label: "微软雅黑", value: '"Microsoft YaHei", "微软雅黑", sans-serif' },
+  { label: "宋体", value: '"SimSun", "宋体", serif' },
+  { label: "黑体", value: '"SimHei", "黑体", sans-serif' },
+] as const;
+
 export interface CreateDocumentOptions {
   id?: string;
   title?: string;
@@ -49,8 +66,14 @@ export interface CreateTextNodeOptions {
   height?: number;
   fontSize?: number;
   color?: string;
+  /** 初始字体族，未传时使用编辑器默认无衬线字体方案。 */
+  fontFamily?: string;
   fontWeight?: string | number;
   fontStyle?: TextFontStyle;
+  /** 初始行高，按倍数表达。 */
+  lineHeight?: number;
+  /** 初始文本对齐方式。 */
+  textAlign?: TextNode["props"]["textAlign"];
 }
 
 export interface CreateImageNodeOptions {
@@ -199,11 +222,11 @@ export function createTextNode(options: CreateTextNodeOptions = {}): TextNode {
       text: options.text ?? "New Text",
       fontSize: options.fontSize ?? 32,
       color: options.color ?? "#172033",
-      fontFamily: DEFAULT_TEXT_FONT_FAMILY,
+      fontFamily: options.fontFamily ?? DEFAULT_TEXT_FONT_FAMILY,
       fontWeight: options.fontWeight ?? 400,
       fontStyle: options.fontStyle ?? "normal",
-      lineHeight: 1.5,
-      textAlign: "left",
+      lineHeight: options.lineHeight ?? 1.5,
+      textAlign: options.textAlign ?? "left",
     },
   };
 }
