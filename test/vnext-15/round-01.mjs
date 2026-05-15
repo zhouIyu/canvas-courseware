@@ -7,6 +7,7 @@ import {
   launchBrowserSession,
   normalizeInlineText,
   readStoredProjects,
+  setImageFileAndConfirmCrop,
   waitForSaved,
   writeJsonFile,
 } from "../shared/browser-test-helpers.mjs";
@@ -134,11 +135,14 @@ async function seedNodes(page) {
   const toolbar = page.locator(".toolbar-group-insert");
   await toolbar.getByRole("button", { name: "文本" }).click();
   await toolbar.getByRole("button", { name: "矩形" }).click();
-  await toolbar
-    .locator(".local-image-file-trigger")
-    .filter({ hasText: "图片" })
-    .locator("input[type='file']")
-    .setInputFiles(IMAGE_PATH);
+  await setImageFileAndConfirmCrop(
+    toolbar
+      .locator(".local-image-file-trigger")
+      .filter({ hasText: "图片" })
+      .locator("input[type='file']"),
+    page,
+    IMAGE_PATH,
+  );
   await waitForSaved(page);
 }
 

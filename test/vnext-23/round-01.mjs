@@ -7,6 +7,7 @@ import {
   launchBrowserSession,
   normalizeInlineText,
   readStoredProjects,
+  setImageFileAndConfirmCrop,
   waitForSaved,
   writeJsonFile,
 } from "../shared/browser-test-helpers.mjs";
@@ -455,7 +456,11 @@ try {
   }
 
   logStep("replace image from context menu");
-  await page.locator(".stage-context-menu input[type='file']").setInputFiles(REPLACE_IMAGE_PATH);
+  await setImageFileAndConfirmCrop(
+    page.locator(".stage-context-menu input[type='file']"),
+    page,
+    REPLACE_IMAGE_PATH,
+  );
   await waitForSaved(page);
 
   const storedProjectsAfterReplace = await readStoredProjects(page, STORAGE_KEY);

@@ -7,6 +7,7 @@ import {
   launchBrowserSession,
   readPreviewCanvasPixel,
   readStoredProjects,
+  setImageFileAndConfirmCrop,
   waitForSaved,
   writeJsonFile,
 } from "../shared/browser-test-helpers.mjs";
@@ -244,6 +245,38 @@ function inspectorInput(page, label) {
 }
 
 /**
+ * 读取裁剪弹窗中指定标签对应的输入框。
+ *
+ * @param {import("playwright").Page} page
+ * @param {string} label
+ * @returns {import("playwright").Locator}
+ */
+function cropModalInput(page, label) {
+  return page
+    .locator(".image-crop-modal .field")
+    .filter({
+      has: page.locator(".field-label", { hasText: label }),
+    })
+    .locator("input")
+    .first();
+}
+
+/**
+ * 在裁剪弹窗中设置一个数值字段，并通过 blur 触发内部草稿同步。
+ *
+ * @param {import("playwright").Page} page
+ * @param {string} label
+ * @param {number} value
+ * @returns {Promise<void>}
+ */
+async function setCropModalNumber(page, label, value) {
+  const input = cropModalInput(page, label);
+  await input.click();
+  await input.fill(String(value));
+  await input.blur();
+}
+
+/**
  * 确保右侧属性管理栏处于展开状态。
  *
  * @param {import("playwright").Page} page
@@ -412,12 +445,15 @@ try {
   const projectId = page.url().match(/\/projects\/([^?]+)/)?.[1] ?? "";
 
   logStep("insert local image");
-  await page
-    .locator(".toolbar-group-insert .local-image-file-trigger")
-    .filter({ hasText: "图片" })
-    .first()
-    .locator("input[type='file']")
-    .setInputFiles(IMAGE_FIXTURE_PATH);
+  await setImageFileAndConfirmCrop(
+    page
+      .locator(".toolbar-group-insert .local-image-file-trigger")
+      .filter({ hasText: "图片" })
+      .first()
+      .locator("input[type='file']"),
+    page,
+    IMAGE_FIXTURE_PATH,
+  );
   await waitForSaved(page);
   await ensureRightSidebarExpanded(page);
   await ensureInspectorTabActive(page);
@@ -440,13 +476,14 @@ try {
   await waitForSaved(page);
   await toggleInspectorSwitch(page, "水平翻转");
   await waitForSaved(page);
-  await setInspectorNumber(page, "裁剪宽度", TARGET_CROP.width);
-  await waitForSaved(page);
-  await setInspectorNumber(page, "裁剪高度", TARGET_CROP.height);
-  await waitForSaved(page);
-  await setInspectorNumber(page, "裁剪 X", TARGET_CROP.x);
-  await waitForSaved(page);
-  await setInspectorNumber(page, "裁剪 Y", TARGET_CROP.y);
+  await page.getByRole("button", { name: "重新裁剪当前图片" }).click();
+  await page.locator(".image-crop-modal").waitFor();
+  await setCropModalNumber(page, "裁剪宽度", TARGET_CROP.width);
+  await setCropModalNumber(page, "裁剪高度", TARGET_CROP.height);
+  await setCropModalNumber(page, "裁剪 X", TARGET_CROP.x);
+  await setCropModalNumber(page, "裁剪 Y", TARGET_CROP.y);
+  await page.getByRole("button", { name: "确认裁剪" }).click();
+  await page.locator(".image-crop-modal").waitFor({ state: "hidden" });
   await waitForSaved(page);
 
   const projectAfterEdit = findProjectById(
@@ -522,10 +559,15 @@ try {
   await setCanvasSelection(page, activeSlideId, reloadedImageNode.id);
   const reloadedRotationValue = await inspectorInput(page, "旋转").inputValue();
   const reloadedOpacityValue = await inspectorInput(page, "透明度").inputValue();
-  const reloadedCropXValue = await inspectorInput(page, "裁剪 X").inputValue();
-  const reloadedCropWidthValue = await inspectorInput(page, "裁剪宽度").inputValue();
   const reloadedObjectFitLabel = await readInspectorSelectText(page, "适配方式");
   const reloadedFlipXChecked = await readInspectorSwitchChecked(page, "水平翻转");
+
+  await page.getByRole("button", { name: "重新裁剪当前图片" }).click();
+  await page.locator(".image-crop-modal").waitFor();
+  const reloadedCropXValue = await cropModalInput(page, "裁剪 X").inputValue();
+  const reloadedCropWidthValue = await cropModalInput(page, "裁剪宽度").inputValue();
+  await page.getByRole("button", { name: "取消" }).click();
+  await page.locator(".image-crop-modal").waitFor({ state: "hidden" });
 
   summary.checks.push({
     id: "reloaded-inspector-values",

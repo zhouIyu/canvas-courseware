@@ -2,7 +2,7 @@
   "baseUrl": "http://127.0.0.1:32173/projects",
   "insertImagePath": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-04-07-vnext-08-round-01/vnext08-sample.png",
   "replaceImagePath": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-04-07-vnext-09-round-01/vnext09-bg-portrait.png",
-  "executedAt": "2026-04-10T03:39:13.667Z",
+  "executedAt": "2026-05-15T11:00:39.592Z",
   "desktopViewport": {
     "width": 1440,
     "height": 900
@@ -10,14 +10,14 @@
   "checks": [
     {
       "id": "insert-image",
-      "imageNodeId": "node-fd828fbd-cc3a-41bb-bc4f-0c202f9b2a33",
+      "imageNodeId": "node-b2fc1b3a-0d25-49c7-90b3-6b301845b75c",
       "name": "vnext08-sample",
       "alt": "vnext08-sample.png",
       "layerLabel": "图片-vnext08-sample"
     },
     {
       "id": "replace-image-default-name-sync",
-      "imageNodeId": "node-fd828fbd-cc3a-41bb-bc4f-0c202f9b2a33",
+      "imageNodeId": "node-b2fc1b3a-0d25-49c7-90b3-6b301845b75c",
       "sameNodeId": true,
       "name": "vnext09-bg-portrait",
       "alt": "vnext09-bg-portrait.png",
@@ -25,14 +25,14 @@
     },
     {
       "id": "manual-rename",
-      "imageNodeId": "node-fd828fbd-cc3a-41bb-bc4f-0c202f9b2a33",
+      "imageNodeId": "node-b2fc1b3a-0d25-49c7-90b3-6b301845b75c",
       "name": "课程封面",
       "alt": "vnext09-bg-portrait.png",
       "layerLabel": "图片-课程封面"
     },
     {
       "id": "replace-image-custom-name-preserved",
-      "imageNodeId": "node-fd828fbd-cc3a-41bb-bc4f-0c202f9b2a33",
+      "imageNodeId": "node-b2fc1b3a-0d25-49c7-90b3-6b301845b75c",
       "sameNodeId": true,
       "name": "课程封面",
       "alt": "vnext08-sample.png",
@@ -40,7 +40,7 @@
     },
     {
       "id": "reload-persistence",
-      "imageNodeId": "node-fd828fbd-cc3a-41bb-bc4f-0c202f9b2a33",
+      "imageNodeId": "node-b2fc1b3a-0d25-49c7-90b3-6b301845b75c",
       "sameNodeAfterReload": true,
       "name": "课程封面",
       "alt": "vnext08-sample.png",

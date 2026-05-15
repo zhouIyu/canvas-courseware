@@ -1,0 +1,126 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-05-15T11:01:04.741Z",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "fixturePath": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-05-15-bug-image-inspector-overflow-round-01/bug-image-inspector-overflow-fixture.svg",
+  "longImageAlt": "bug-image-inspector-overflow-asset-name-with-many-segments-for-right-sidebar-width-pressure-check",
+  "checks": [
+    {
+      "id": "initial-inspector-overflow-snapshot",
+      "snapshot": {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "side": {
+          "selector": ".editor-side",
+          "clientWidth": 256,
+          "scrollWidth": 256,
+          "left": 1143,
+          "right": 1401,
+          "width": 258
+        },
+        "sideBody": {
+          "selector": ".editor-side-body",
+          "clientWidth": 241,
+          "scrollWidth": 241,
+          "left": 1144,
+          "right": 1400,
+          "width": 256
+        },
+        "panel": {
+          "selector": ".inspector-panel",
+          "clientWidth": 209,
+          "scrollWidth": 209,
+          "left": 1160,
+          "right": 1369,
+          "width": 209
+        },
+        "cropCard": {
+          "selector": ".image-source-row",
+          "clientWidth": 209,
+          "scrollWidth": 209,
+          "left": 1160,
+          "right": 1369,
+          "width": 209
+        },
+        "cropHead": {
+          "selector": ".group-card .group-head",
+          "clientWidth": 209,
+          "scrollWidth": 209,
+          "left": 1160,
+          "right": 1369,
+          "width": 209
+        },
+        "cropBadge": null,
+        "maxChildOverflowPx": 0,
+        "worstChild": {
+          "overflowPx": -31,
+          "selector": ".group-card",
+          "textPreview": "基础属性图片节点名称XY宽度高度旋转透明度可见锁定当前透明度：100%"
+        }
+      }
+    },
+    {
+      "id": "long-label-inspector-overflow-snapshot",
+      "snapshot": {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "side": {
+          "selector": ".editor-side",
+          "clientWidth": 256,
+          "scrollWidth": 256,
+          "left": 1143,
+          "right": 1401,
+          "width": 258
+        },
+        "sideBody": {
+          "selector": ".editor-side-body",
+          "clientWidth": 241,
+          "scrollWidth": 241,
+          "left": 1144,
+          "right": 1400,
+          "width": 256
+        },
+        "panel": {
+          "selector": ".inspector-panel",
+          "clientWidth": 209,
+          "scrollWidth": 209,
+          "left": 1160,
+          "right": 1369,
+          "width": 209
+        },
+        "cropCard": {
+          "selector": ".image-source-row",
+          "clientWidth": 209,
+          "scrollWidth": 209,
+          "left": 1160,
+          "right": 1369,
+          "width": 209
+        },
+        "cropHead": {
+          "selector": ".group-card .group-head",
+          "clientWidth": 209,
+          "scrollWidth": 209,
+          "left": 1160,
+          "right": 1369,
+          "width": 209
+        },
+        "cropBadge": null,
+        "maxChildOverflowPx": 0,
+        "worstChild": {
+          "overflowPx": -31,
+          "selector": ".group-card",
+          "textPreview": "基础属性图片节点名称XY宽度高度旋转透明度可见锁定当前透明度：100%"
+        }
+      }
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

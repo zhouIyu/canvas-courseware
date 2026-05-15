@@ -240,6 +240,11 @@ function readImageNaturalSize(src: string): Promise<Pick<LocalImageAsset, "width
   });
 }
 
+/** 对外暴露按资源地址读取原始尺寸的能力，供裁剪弹窗复用。 */
+export async function readImageNaturalSizeFromSource(src: string): Promise<Pick<LocalImageAsset, "width" | "height">> {
+  return readImageNaturalSize(src);
+}
+
 /** 读取并标准化一张本地图片文件，供编辑器直接创建节点。 */
 export async function readLocalImageAsset(file: File): Promise<LocalImageAsset> {
   if (!isImageFile(file)) {
@@ -257,6 +262,13 @@ export async function readLocalImageAsset(file: File): Promise<LocalImageAsset> 
     fileName: file.name,
     label,
   };
+}
+
+/** 仅校验文件类型，供“先选图再弹裁剪窗”链路复用。 */
+export function assertImageFile(file: File): void {
+  if (!isImageFile(file)) {
+    throw new Error("仅支持导入图片文件");
+  }
 }
 
 /** 在画布尺寸约束下计算导入图片的初始展示区域。 */

@@ -304,7 +304,7 @@ function handleSingleObjectModified(
     return;
   }
 
-  if (handleRotationModification(context, action, didRotate, meta.nodeId, nextGeometry.rotation)) {
+  if (handleRotationModification(context, action, didRotate, meta.nodeId, nextGeometry)) {
     return;
   }
 
@@ -355,7 +355,7 @@ function handleRotationModification(
   action: string,
   didRotate: boolean,
   nodeId: string,
-  rotation: number,
+  nextGeometry: ReturnType<typeof readObjectGeometry>,
 ): boolean {
   if (!context.controller || !context.currentSlideId || !action.includes("rotate")) {
     return false;
@@ -366,7 +366,9 @@ function handleRotationModification(
       type: "adapter.node.rotated",
       slideId: context.currentSlideId,
       nodeId,
-      rotation,
+      x: nextGeometry.x,
+      y: nextGeometry.y,
+      rotation: nextGeometry.rotation,
     });
   }
 

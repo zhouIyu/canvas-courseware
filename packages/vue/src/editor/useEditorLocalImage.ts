@@ -1,7 +1,11 @@
 import {
   COMMAND_TYPES,
   createImageNode,
+  DEFAULT_IMAGE_CROP,
   EditorController,
+  type ImageCrop,
+  type ImageNode,
+  type NodePatch,
   type DiagnosticLogContext,
   type DiagnosticLogLevel,
   type DiagnosticLogger,
@@ -41,7 +45,7 @@ export function useEditorLocalImage(options: UseEditorLocalImageOptions) {
   const resolveActiveSlide = () => options.activeSlide.value ?? null;
 
   /** 按节点 id 读取当前激活页面中的图片节点。 */
-  const resolveImageNode = (nodeId: string) => {
+  const resolveImageNode = (nodeId: string): ImageNode | null => {
     const imageNode = options.activeSlide.value?.nodes.find((node) => node.id === nodeId);
     return imageNode?.type === "image" ? imageNode : null;
   };
@@ -106,7 +110,10 @@ export function useEditorLocalImage(options: UseEditorLocalImageOptions) {
   };
 
   /** 把本地图片文件转换成标准图片节点并插入当前页面。 */
-  const addImageFromFile = async (file: File): Promise<string | null> => {
+  const addImageFromFile = async (
+    file: File,
+    crop: ImageCrop = { ...DEFAULT_IMAGE_CROP },
+  ): Promise<string | null> => {
     const slideId = resolveActiveSlideId();
     if (!slideId) {
       writeDiagnosticLog("warn", {
@@ -129,6 +136,7 @@ export function useEditorLocalImage(options: UseEditorLocalImageOptions) {
         y: layout.y,
         width: layout.width,
         height: layout.height,
+        crop,
       });
 
       node.props.alt = asset.fileName;
@@ -210,7 +218,11 @@ export function useEditorLocalImage(options: UseEditorLocalImageOptions) {
   };
 
   /** 用本地图片替换当前页面中的现有图片节点，同时保留布局与样式配置。 */
-  const replaceImageFromFile = async (nodeId: string, file: File): Promise<string | null> => {
+  const replaceImageFromFile = async (
+    nodeId: string,
+    file: File,
+    crop: ImageCrop = { ...DEFAULT_IMAGE_CROP },
+  ): Promise<string | null> => {
     const slideId = resolveActiveSlideId();
     const imageNode = resolveImageNode(nodeId);
     if (!slideId || !imageNode) {
@@ -246,6 +258,7 @@ export function useEditorLocalImage(options: UseEditorLocalImageOptions) {
           props: {
             src: asset.dataUrl,
             alt: nextAlt,
+            crop,
           },
         },
       });
@@ -283,6 +296,28 @@ export function useEditorLocalImage(options: UseEditorLocalImageOptions) {
 
   return {
     addImageFromFile,
+    resolveImageNode,
+    updateImageNode: (nodeId: string, patch: NodePatch): boolean => {
+      const slideId = resolveActiveSlideId();
+      const imageNode = resolveImageNode(nodeId);
+      if (!slideId || !imageNode) {
+        return false;
+      }
+
+      options.controller.execute({
+        type: COMMAND_TYPES.NODE_UPDATE,
+        slideId,
+        nodeId,
+        patch,
+      });
+      options.controller.execute({
+        type: COMMAND_TYPES.SELECTION_SET,
+        slideId,
+        nodeIds: [nodeId],
+      });
+
+      return true;
+    },
     setSlideBackgroundImageFromNode,
     replaceImageFromFile,
   };

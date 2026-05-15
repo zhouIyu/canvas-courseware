@@ -88,6 +88,16 @@ export function applySelectionToCanvas(
           .map((nodeId) => objectMap.get(nodeId))
           .filter((object): object is FabricNodeObject => Boolean(object))
       : [];
+  const activeObjects = canvas.getActiveObjects() as FabricNodeObject[];
+
+  /**
+   * 当当前 Fabric 选中态已经与标准 selection 完全一致时，
+   * 不再额外执行一次 `discardActiveObject + setActiveObject`。
+   * 这样可以避免纯文档同步阶段把控制框先清空再重建，减少旋转/拖拽结束后的闪动。
+   */
+  if (isCanvasSelectionMatched(activeObjects, selectedObjects)) {
+    return;
+  }
 
   canvas.discardActiveObject();
 
@@ -102,6 +112,17 @@ export function applySelectionToCanvas(
   }
 
   canvas.renderAll();
+}
+
+/** 判断当前 Fabric 选中对象列表是否已与标准 selection 对应的对象列表完全一致。 */
+function isCanvasSelectionMatched(
+  activeObjects: FabricNodeObject[],
+  selectedObjects: FabricNodeObject[],
+): boolean {
+  return (
+    activeObjects.length === selectedObjects.length &&
+    activeObjects.every((object, index) => object === selectedObjects[index])
+  );
 }
 
 /** 从 Fabric 当前选中对象解析标准节点 id 列表。 */

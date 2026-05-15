@@ -44,6 +44,14 @@
 - `pnpm test:vnext-33-d`
 - `pnpm test:vnext-33-e`
 - `pnpm test:vnext-33-f`
+- `pnpm test:bug-canvas-scale-on-select`
+- `pnpm test:bug-timeline-panel-density`
+- `pnpm test:bug-editor-bottom-clipped`
+- `pnpm test:bug-preview-single-slide-card-height`
+- `pnpm test:bug-sidebar-handle-offset-on-zoom`
+- `pnpm test:bug-rotate-drift`
+- `pnpm test:bug-editor-visible-after-drag`
+- `pnpm test:bug-image-inspector-overflow`
 
 ## 运行前提
 

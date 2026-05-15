@@ -64,6 +64,11 @@ export interface AdapterNodeRotatedEvent {
   type: "adapter.node.rotated";
   slideId: string;
   nodeId: string;
+  /** 旋转结束后节点应回写的 X 坐标。 */
+  x: number;
+  /** 旋转结束后节点应回写的 Y 坐标。 */
+  y: number;
+  /** 旋转结束后节点应回写的角度。 */
   rotation: number;
 }
 

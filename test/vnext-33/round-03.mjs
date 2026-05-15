@@ -7,6 +7,7 @@ import {
   launchBrowserSession,
   readWorkspaceSaveStatusLabel,
   readStoredProjects,
+  setImageFileAndConfirmCrop,
   waitForSaved,
   writeJsonFile,
 } from "../shared/browser-test-helpers.mjs";
@@ -282,12 +283,15 @@ try {
   );
 
   logStep("insert image and copy/paste by context menu");
-  await page
-    .locator(".toolbar-group-insert .local-image-file-trigger")
-    .filter({ hasText: "图片" })
-    .first()
-    .locator("input[type='file']")
-    .setInputFiles(IMAGE_PATH);
+  await setImageFileAndConfirmCrop(
+    page
+      .locator(".toolbar-group-insert .local-image-file-trigger")
+      .filter({ hasText: "图片" })
+      .first()
+      .locator("input[type='file']"),
+    page,
+    IMAGE_PATH,
+  );
   await waitForSaved(page);
 
   const projectAfterImageInsert = await readPersistedProject(page, projectId);

@@ -1,7 +1,7 @@
 {
   "baseUrl": "http://127.0.0.1:32173/projects",
   "replaceImagePath": "/Users/admin/MyDemo/canvas-courseware/docs/test-reports/assets/2026-04-07-vnext-09-round-01/vnext09-bg-portrait.png",
-  "executedAt": "2026-04-10T05:54:27.323Z",
+  "executedAt": "2026-05-15T11:00:57.397Z",
   "desktopViewport": {
     "width": 1440,
     "height": 900
@@ -44,11 +44,11 @@
     },
     {
       "id": "replace-image-from-context-menu",
-      "nodeId": "node-bc148884-d80f-41c5-9ac0-2bb3f3b11ef0",
+      "nodeId": "node-fd8fbbbf-7b95-4306-b5e0-78a6d292ac43",
       "name": "vnext09-bg-portrait",
       "alt": "vnext09-bg-portrait.png",
       "selectedNodeIds": [
-        "node-bc148884-d80f-41c5-9ac0-2bb3f3b11ef0"
+        "node-fd8fbbbf-7b95-4306-b5e0-78a6d292ac43"
       ]
     }
   ],

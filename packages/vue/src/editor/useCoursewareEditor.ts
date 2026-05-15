@@ -442,7 +442,9 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
   const {
     addImageFromFile,
     replaceImageFromFile,
+    resolveImageNode,
     setSlideBackgroundImageFromNode,
+    updateImageNode,
   } = useEditorLocalImage({
     snapshot,
     controller,
@@ -487,6 +489,8 @@ export function useCoursewareEditor(options: UseCoursewareEditorOptions = {}) {
     reorderTimelineStep,
     requestInlineTextEditingExit,
     replaceDocument,
+    resolveImageNode,
+    updateImageNode,
     selectedNode,
     selectedNodeId,
     selectNodes,

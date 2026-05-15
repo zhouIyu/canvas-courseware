@@ -61,7 +61,10 @@
     "test:bug-timeline-panel-density": "node test/bug-timeline-panel-density/round-01.mjs",
     "test:bug-editor-bottom-clipped": "node test/bug-editor-bottom-clipped/round-01.mjs",
     "test:bug-preview-single-slide-card-height": "node test/bug-preview-single-slide-card-height/round-01.mjs",
-    "test:bug-sidebar-handle-offset-on-zoom": "node test/bug-sidebar-handle-offset-on-zoom/round-01.mjs"
+    "test:bug-sidebar-handle-offset-on-zoom": "node test/bug-sidebar-handle-offset-on-zoom/round-01.mjs",
+    "test:bug-rotate-drift": "node test/bug-rotate-drift/round-01.mjs",
+    "test:bug-editor-visible-after-drag": "node test/bug-editor-visible-after-drag/round-01.mjs",
+    "test:bug-image-inspector-overflow": "node test/bug-image-inspector-overflow/round-01.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",

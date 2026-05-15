@@ -1,0 +1,46 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-05-15T11:01:13.724Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "dragDelta": {
+    "x": 84,
+    "y": 52
+  },
+  "checks": [
+    {
+      "id": "after-hide-patch",
+      "canvasState": {
+        "visible": true,
+        "left": 160,
+        "top": 180,
+        "activeNodeId": "node-adef38f0-5370-4dd9-a724-6f55f9404d2b"
+      },
+      "persistedVisible": false
+    },
+    {
+      "id": "after-drag",
+      "draggedRuntimeState": {
+        "visible": true,
+        "left": 244,
+        "top": 232,
+        "activeNodeId": "node-adef38f0-5370-4dd9-a724-6f55f9404d2b"
+      },
+      "canvasState": {
+        "visible": true,
+        "left": 244,
+        "top": 232,
+        "activeNodeId": "node-adef38f0-5370-4dd9-a724-6f55f9404d2b"
+      },
+      "persistedNode": {
+        "x": 244,
+        "y": 232,
+        "visible": false
+      }
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

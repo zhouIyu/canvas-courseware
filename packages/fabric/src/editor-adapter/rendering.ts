@@ -1,5 +1,6 @@
 import type { Canvas } from "fabric";
-import type { EditorSnapshot, Slide } from "@canvas-courseware/core";
+import type { CoursewareNode, EditorSnapshot, Slide } from "@canvas-courseware/core";
+import { DEFAULT_TEXT_FONT_FAMILY } from "@canvas-courseware/core";
 import {
   applyCanvasBackgroundImage,
   applySelectionToCanvas,
@@ -11,6 +12,7 @@ import {
   syncCanvasFrame,
   type FabricNodeObject,
 } from "../editor-adapter-support";
+import { FabricFrameImage } from "../frame-image-object";
 import type { FabricEditorAdapterContext } from "./context";
 import { clearSelectionRestoreTimer } from "./selection";
 import { clearEditorAlignmentGuides } from "./alignment";
@@ -55,6 +57,8 @@ export async function syncEditorSnapshot(
   }
 
   context.currentSlideId = slide.id;
+  const previousSlide =
+    context.lastDocumentRef?.slides.find((candidate) => candidate.id === slide.id) ?? null;
 
   const didSyncInlineTextEditing =
     context.lastDocumentRef !== snapshot.document &&
@@ -67,7 +71,15 @@ export async function syncEditorSnapshot(
     return;
   }
 
-  if (shouldRenderSlide(context, snapshot, slide)) {
+  const didSyncExistingObjects =
+    context.lastDocumentRef !== snapshot.document &&
+    context.lastRenderedSlideId === slide.id &&
+    previousSlide !== null &&
+    syncExistingEditorObjectsFromSlide(context, canvas, previousSlide, slide);
+
+  if (didSyncExistingObjects) {
+    context.lastDocumentRef = snapshot.document;
+  } else if (shouldRenderSlide(context, snapshot, slide)) {
     await renderEditorSlide(context, canvas, slide);
     context.lastDocumentRef = snapshot.document;
   } else if (shouldSyncCanvasFrame(canvas, slide)) {
@@ -85,6 +97,169 @@ export async function syncEditorSnapshot(
     applySelectionToCanvas(canvas, snapshot.selection, slide.id, context.objectMap);
   } finally {
     context.isSyncing = false;
+  }
+}
+
+/** 当页面结构稳定且仅发生节点属性变化时，尽量原地同步 Fabric 对象，避免整页重建闪动。 */
+function syncExistingEditorObjectsFromSlide(
+  context: FabricEditorAdapterContext,
+  canvas: Canvas,
+  previousSlide: Slide,
+  nextSlide: Slide,
+): boolean {
+  if (!canSyncExistingEditorObjects(context, previousSlide, nextSlide)) {
+    return false;
+  }
+
+  for (const nextNode of nextSlide.nodes) {
+    const targetObject = context.objectMap.get(nextNode.id);
+    if (!targetObject) {
+      return false;
+    }
+
+    syncEditorObjectFromNode(targetObject, nextNode);
+  }
+
+  canvas.renderAll();
+  return true;
+}
+
+/** 判断当前两版 slide 是否仍可复用现有 Fabric 对象原地同步。 */
+function canSyncExistingEditorObjects(
+  context: FabricEditorAdapterContext,
+  previousSlide: Slide,
+  nextSlide: Slide,
+): boolean {
+  if (
+    previousSlide.size !== nextSlide.size ||
+    previousSlide.background !== nextSlide.background ||
+    previousSlide.nodes.length !== nextSlide.nodes.length ||
+    context.objectMap.size !== nextSlide.nodes.length
+  ) {
+    return false;
+  }
+
+  return nextSlide.nodes.every((nextNode, index) => {
+    const previousNode = previousSlide.nodes[index];
+    return canSyncExistingEditorNode(previousNode, nextNode);
+  });
+}
+
+/** 只有节点身份、类型和图片资源入口稳定时，才允许复用现有 Fabric 对象。 */
+function canSyncExistingEditorNode(
+  previousNode: CoursewareNode,
+  nextNode: CoursewareNode,
+): boolean {
+  if (previousNode.id !== nextNode.id || previousNode.type !== nextNode.type) {
+    return false;
+  }
+
+  return (
+    previousNode.type !== "image" ||
+    (nextNode.type === "image" && previousNode.props.src === nextNode.props.src)
+  );
+}
+
+/** 把标准节点数据原地写回现有 Fabric 对象，避免几何类改动触发整页重建。 */
+function syncEditorObjectFromNode(
+  targetObject: FabricNodeObject,
+  node: CoursewareNode,
+): void {
+  applyCommonNodeObjectFields(targetObject, node);
+
+  switch (node.type) {
+    case "text":
+      applyTextNodeObjectFields(targetObject, node);
+      break;
+    case "rect":
+      applyRectNodeObjectFields(targetObject, node);
+      break;
+    case "image":
+      applyImageNodeObjectFields(targetObject, node);
+      break;
+    default:
+      break;
+  }
+
+  targetObject.setCoords?.();
+}
+
+/** 统一同步所有节点共享的几何、显隐和交互字段。 */
+function applyCommonNodeObjectFields(
+  targetObject: FabricNodeObject,
+  node: CoursewareNode,
+): void {
+  targetObject.set?.({
+    left: node.x,
+    top: node.y,
+    width: node.width,
+    height: node.height,
+    angle: node.rotation,
+    opacity: node.opacity,
+    /**
+     * 编辑态继续保持“默认全显”策略。
+     * 即使文档里的节点用于预览态仍是 `visible=false`，
+     * 原地同步几何时也不能把编辑画布里的对象重新隐藏回去。
+     */
+    visible: true,
+    selectable: !node.locked,
+    evented: !node.locked,
+    hasControls: !node.locked,
+    lockMovementX: node.locked,
+    lockMovementY: node.locked,
+    scaleX: 1,
+    scaleY: 1,
+  });
+}
+
+/** 把文本节点的样式与内容同步回现有 Textbox。 */
+function applyTextNodeObjectFields(
+  targetObject: FabricNodeObject,
+  node: Extract<CoursewareNode, { type: "text" }>,
+): void {
+  targetObject.set?.({
+    text: node.props.text,
+    fill: node.props.color,
+    fontSize: node.props.fontSize,
+    fontFamily: node.props.fontFamily ?? DEFAULT_TEXT_FONT_FAMILY,
+    fontWeight: node.props.fontWeight,
+    fontStyle: node.props.fontStyle ?? "normal",
+    lineHeight: node.props.lineHeight ?? 1.5,
+    textAlign: node.props.textAlign ?? "left",
+  });
+}
+
+/** 把矩形节点的填充、描边和圆角同步回现有 Rect。 */
+function applyRectNodeObjectFields(
+  targetObject: FabricNodeObject,
+  node: Extract<CoursewareNode, { type: "rect" }>,
+): void {
+  targetObject.set?.({
+    fill: node.props.fill,
+    stroke: node.props.stroke,
+    strokeWidth: node.props.strokeWidth,
+    rx: node.props.radius,
+    ry: node.props.radius,
+  });
+}
+
+/** 把图片节点的 frame、翻转和裁剪参数同步回现有图片对象或占位对象。 */
+function applyImageNodeObjectFields(
+  targetObject: FabricNodeObject,
+  node: Extract<CoursewareNode, { type: "image" }>,
+): void {
+  targetObject.set?.({
+    flipX: node.props.flipX ?? false,
+    flipY: node.props.flipY ?? false,
+  });
+
+  if (targetObject instanceof FabricFrameImage) {
+    targetObject.syncFrameLayout({
+      frameWidth: node.width,
+      frameHeight: node.height,
+      objectFit: node.props.objectFit ?? "cover",
+      crop: node.props.crop ?? null,
+    });
   }
 }
 

@@ -11,6 +11,7 @@ import {
   readIndexedDbStoreRecords,
   readStoredProjects,
   readWorkspaceIoFeedbackText,
+  setImageFileAndConfirmCrop,
   waitForSaved,
   writeJsonFile,
 } from "../shared/browser-test-helpers.mjs";
@@ -120,12 +121,15 @@ async function createBlankProject(page) {
  * @returns {Promise<void>}
  */
 async function insertLocalImage(page) {
-  await page
-    .locator(".toolbar-group-insert .local-image-file-trigger")
-    .filter({ hasText: "图片" })
-    .first()
-    .locator("input[type='file']")
-    .setInputFiles(LOCAL_IMAGE_PATH);
+  await setImageFileAndConfirmCrop(
+    page
+      .locator(".toolbar-group-insert .local-image-file-trigger")
+      .filter({ hasText: "图片" })
+      .first()
+      .locator("input[type='file']"),
+    page,
+    LOCAL_IMAGE_PATH,
+  );
   await waitForSaved(page);
 }
 

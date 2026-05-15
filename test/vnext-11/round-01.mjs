@@ -9,6 +9,7 @@ import {
   readPreviewCanvasPixel,
   readStoredProjects,
   readViewportMetrics,
+  setImageFileAndConfirmCrop,
   waitForSaved,
   writeJsonFile,
 } from "../shared/browser-test-helpers.mjs";
@@ -149,8 +150,16 @@ try {
     .locator(".toolbar-group-insert .local-image-file-trigger")
     .filter({ hasText: "图片" })
     .first()
-    .locator("input[type='file']")
-    .setInputFiles(INSERT_IMAGE_PATH);
+    .locator("input[type='file']");
+  await setImageFileAndConfirmCrop(
+    page
+      .locator(".toolbar-group-insert .local-image-file-trigger")
+      .filter({ hasText: "图片" })
+      .first()
+      .locator("input[type='file']"),
+    page,
+    INSERT_IMAGE_PATH,
+  );
   await openEditorSide(page);
   await page.getByRole("heading", { name: "图片属性" }).waitFor();
   await waitForSaved(page);
@@ -204,7 +213,11 @@ try {
   const imageCard = page.locator(".group-card").filter({
     has: page.getByRole("heading", { name: "图片属性" }),
   });
-  await imageCard.locator(".image-source-row input[type='file']").setInputFiles(REPLACE_IMAGE_PATH);
+  await setImageFileAndConfirmCrop(
+    imageCard.locator(".image-source-row input[type='file']"),
+    page,
+    REPLACE_IMAGE_PATH,
+  );
   await waitForSaved(page);
 
   await page.screenshot({

@@ -1,0 +1,78 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-05-15T11:01:22.407Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "targetRotation": 33,
+  "targetTranslation": {
+    "x": 46,
+    "y": 28
+  },
+  "checks": [
+    {
+      "id": "before-rotate",
+      "geometry": {
+        "x": 160,
+        "y": 180,
+        "width": 280,
+        "height": 180,
+        "rotation": 0
+      }
+    },
+    {
+      "id": "after-rotate",
+      "expectedGeometry": {
+        "nodeId": "node-c9c68c8f-95a7-46cf-b70e-5afdaee0c196",
+        "x": 206,
+        "y": 208,
+        "rotation": 33
+      },
+      "rotateRuntimeState": {
+        "preservedObjectIdentity": true,
+        "preservedSingleSelection": true,
+        "activeNodeId": "node-c9c68c8f-95a7-46cf-b70e-5afdaee0c196"
+      },
+      "snapshotGeometry": {
+        "x": 206,
+        "y": 208,
+        "width": 280,
+        "height": 180,
+        "rotation": 33
+      },
+      "persistedGeometry": {
+        "x": 206,
+        "y": 208,
+        "width": 280,
+        "height": 180,
+        "rotation": 33
+      }
+    },
+    {
+      "id": "after-reload",
+      "expectedGeometry": {
+        "nodeId": "node-c9c68c8f-95a7-46cf-b70e-5afdaee0c196",
+        "x": 206,
+        "y": 208,
+        "rotation": 33
+      },
+      "snapshotGeometry": {
+        "x": 206,
+        "y": 208,
+        "width": 280,
+        "height": 180,
+        "rotation": 33
+      },
+      "persistedGeometry": {
+        "x": 206,
+        "y": 208,
+        "width": 280,
+        "height": 180,
+        "rotation": 33
+      }
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

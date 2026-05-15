@@ -22,16 +22,19 @@ import { DEFAULT_EDITOR_HEIGHT } from "../shared";
 import BackgroundImageFitModal from "./BackgroundImageFitModal.vue";
 import EditorCanvasWorkspace from "./EditorCanvasWorkspace.vue";
 import EditorToolbar from "./EditorToolbar.vue";
+import ImageCropModal from "./ImageCropModal.vue";
 import InspectorPanel from "./InspectorPanel.vue";
 import SlideRailPanel from "./SlideRailPanel.vue";
 import SlideSettingsDrawer from "./SlideSettingsDrawer.vue";
 import StepSettingsDrawer from "./StepSettingsDrawer.vue";
 import TimelinePanel from "./TimelinePanel.vue";
 import { provideCoursewareDiagnosticLogger } from "./diagnostics";
+import { readImageNaturalSizeFromSource } from "./image-file";
 import { useCoursewareEditorTimelineWorkspaceState, type TimelineCollapsedStepIdsChangePayload } from "./useCoursewareEditorTimelineWorkspaceState";
 import { useCoursewareEditorViewport } from "./useCoursewareEditorViewport";
 import { useCoursewareEditor } from "./useCoursewareEditor";
 import { useCoursewareEditorShellActions } from "./useCoursewareEditorShellActions";
+import { useEditorImageCropModal } from "./useEditorImageCropModal";
 import { useSlideSettingsDrawer } from "./useSlideSettingsDrawer";
 /** 编辑器右侧管理区的标签名。 */
 type EditorSideTab = "node" | "timeline";
@@ -192,6 +195,7 @@ const {
   refreshInlineTextEditingLayout,
   setSlideBackgroundImageFromNode,
   replaceImageFromFile,
+  resolveImageNode,
   reorderNode,
   reorderSlide,
   reorderTimelineStep,
@@ -206,6 +210,7 @@ const {
   upsertTimelineAnimation,
   upsertTimelineStep,
   updateNode,
+  updateImageNode,
   updateSlide,
 } = useCoursewareEditor({
   document: documentModel.value,
@@ -233,6 +238,32 @@ const {
 } = useSlideSettingsDrawer({
   activeSlide,
   setSlideBackgroundImageFromNode,
+});
+
+/** 统一收口“选图即裁剪”的弹窗状态与提交动作。 */
+const {
+  closeImageCropModal,
+  handleImageCropConfirm,
+  imageCropModalFlipX,
+  imageCropModalFlipY,
+  imageCropModalInitialCrop,
+  imageCropModalNaturalSize,
+  imageCropModalObjectFit,
+  imageCropModalOkText,
+  imageCropModalSource,
+  imageCropModalSourceLabel,
+  imageCropModalTitle,
+  isApplyingImageCrop,
+  isImageCropModalVisible,
+  openImportImageCropModal,
+  openRecropImageModal,
+  openReplaceImageCropModal,
+} = useEditorImageCropModal({
+  addImageFromFile,
+  replaceImageFromFile,
+  resolveImageNode,
+  readImageNaturalSize: readImageNaturalSizeFromSource,
+  updateImageNode,
 });
 
 /**
@@ -503,7 +534,7 @@ const {
 /** 从工具条导入一张本地图片，并在失败时给出明确反馈。 */
 const handleLocalImageImport = async (file: File) => {
   try {
-    await addImageFromFile(file);
+    await openImportImageCropModal(file);
   } catch (error) {
     const message = error instanceof Error ? error.message : "图片导入失败，请重试";
     window.alert(message);
@@ -513,9 +544,19 @@ const handleLocalImageImport = async (file: File) => {
 /** 从属性面板直接替换当前图片节点，并保留节点布局和当前选中态。 */
 const handleImageReplace = async (nodeId: string, file: File) => {
   try {
-    await replaceImageFromFile(nodeId, file);
+    await openReplaceImageCropModal(nodeId, file);
   } catch (error) {
     const message = error instanceof Error ? error.message : "图片替换失败，请重试";
+    window.alert(message);
+  }
+};
+
+/** 从属性面板打开已有图片的重新裁剪流程。 */
+const handleImageRecrop = async (nodeId: string) => {
+  try {
+    await openRecropImageModal(nodeId);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "重新裁剪失败，请重试";
     window.alert(message);
   }
 };
@@ -637,6 +678,22 @@ defineExpose({
 
 <template>
   <section class="editor-shell" :class="{ 'is-embedded': isEmbedded }" :style="editorShellStyle">
+    <ImageCropModal
+      :confirm-loading="isApplyingImageCrop"
+      :flip-x="imageCropModalFlipX"
+      :flip-y="imageCropModalFlipY"
+      :initial-crop="imageCropModalInitialCrop"
+      :natural-size="imageCropModalNaturalSize"
+      :object-fit="imageCropModalObjectFit"
+      :ok-text="imageCropModalOkText"
+      :source="imageCropModalSource"
+      :source-label="imageCropModalSourceLabel"
+      :title="imageCropModalTitle"
+      :visible="isImageCropModalVisible"
+      @cancel="closeImageCropModal"
+      @confirm="handleImageCropConfirm"
+    />
+
     <BackgroundImageFitModal
       :confirm-loading="isApplyingBackgroundImageFit"
       :initial-fit="backgroundImageFitModalInitialFit"
@@ -770,6 +827,7 @@ defineExpose({
               :selected-count="inspectorSelectedCount"
               :selected-node="inspectorNode"
               :selected-animations="selectedNodeAnimations"
+              @recrop-image="handleImageRecrop"
               :timeline-summary="selectedNodeTimelineSummary"
               @replace-image="handleImageReplace"
               @update-node="handleNodeUpdate"

@@ -138,6 +138,8 @@ export function mapAdapterEventToCommand(event: AdapterEvent): EditorCommand | n
         slideId: event.slideId,
         nodeId: event.nodeId,
         patch: {
+          x: event.x,
+          y: event.y,
           rotation: event.rotation,
         },
       };

@@ -47,6 +47,8 @@ const emit = defineEmits<{
   "update-node": [nodeId: string, patch: NodePatch];
   /** 用本地文件替换当前图片节点。 */
   "replace-image": [nodeId: string, file: File];
+  /** 重新打开当前图片的裁剪弹窗。 */
+  "recrop-image": [nodeId: string];
   /** 新增或更新当前节点关联的动画资源。 */
   "upsert-animation": [animation: NodeAnimation];
   /** 删除当前节点关联的动画资源。 */
@@ -274,6 +276,11 @@ const forwardNodeUpdate = (nodeId: string, patch: NodePatch) => {
 /** 转发图片分组抛出的本地文件替换事件。 */
 const forwardImageReplace = (nodeId: string, file: File) => {
   emit("replace-image", nodeId, file);
+};
+
+/** 转发图片分组抛出的重新裁剪事件。 */
+const forwardImageRecrop = (nodeId: string) => {
+  emit("recrop-image", nodeId);
 };
 
 /** 为当前选中对象新增一个默认动画。 */
@@ -530,6 +537,7 @@ const handleAnimationOffsetYChange = (
       <InspectorImageSection
         v-if="selectedNode.type === 'image'"
         :node="selectedNode"
+        @recrop-image="forwardImageRecrop"
         @replace-image="forwardImageReplace"
         @update-node="forwardNodeUpdate"
       />

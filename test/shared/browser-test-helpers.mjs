@@ -364,3 +364,29 @@ export async function readCanvasPixel(page, selector, x, y) {
 export async function readPreviewCanvasPixel(page, x, y) {
   return readCanvasPixel(page, ".preview-stage-surface .lower-canvas", x, y);
 }
+
+/**
+ * 在“选图即裁剪”弹窗中直接确认当前默认裁剪。
+ *
+ * @param {import("playwright").Page} page
+ * @returns {Promise<void>}
+ */
+export async function confirmImageCropModal(page) {
+  const modal = page.locator(".image-crop-modal");
+  await modal.waitFor();
+  await modal.getByRole("button", { name: /确认(插入|更换|裁剪)/ }).click();
+  await modal.waitFor({ state: "hidden" });
+}
+
+/**
+ * 统一执行图片文件选择并确认默认裁剪，供编辑器图片链路回归复用。
+ *
+ * @param {import("playwright").Locator} fileInput
+ * @param {import("playwright").Page} page
+ * @param {string} filePath
+ * @returns {Promise<void>}
+ */
+export async function setImageFileAndConfirmCrop(fileInput, page, filePath) {
+  await fileInput.setInputFiles(filePath);
+  await confirmImageCropModal(page);
+}
