@@ -50,6 +50,7 @@
 - `pnpm test:bug-preview-single-slide-card-height`
 - `pnpm test:bug-sidebar-handle-offset-on-zoom`
 - `pnpm test:bug-rotate-drift`
+- `pnpm test:bug-vnext38-01`
 - `pnpm test:bug-editor-visible-after-drag`
 - `pnpm test:bug-image-inspector-overflow`
 

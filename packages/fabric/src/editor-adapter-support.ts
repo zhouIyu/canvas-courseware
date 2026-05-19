@@ -1,7 +1,8 @@
-import { ActiveSelection, Canvas } from "fabric";
+import { ActiveSelection, Canvas, Point, util, type TMat2D } from "fabric";
 import type {
   CoursewareNode,
   EditorSnapshot,
+  NodePatch,
   SelectionState,
   Slide,
 } from "@canvas-courseware/core";
@@ -206,22 +207,54 @@ export function resolveActiveSelectionTranslation(
       };
 }
 
-/** 直接计算多选拖拽后每个节点应回写到文档中的新坐标。 */
-export function resolveActiveSelectionNodeTranslations(
+/** 直接计算多选整体变换后每个节点应回写到文档中的标准几何补丁。 */
+export function resolveActiveSelectionNodePatches(
   snapshot: EditorSnapshot,
   slideId: string,
   selection: ActiveSelection,
 ): Array<{
   /** 需要回写的节点 id。 */
   nodeId: string;
-  /** 节点新的 X 坐标。 */
-  x: number;
-  /** 节点新的 Y 坐标。 */
-  y: number;
+  /** 节点新的标准补丁。 */
+  patch: NodePatch;
 }> {
   const selectedNodeIds =
     snapshot.selection.slideId === slideId ? snapshot.selection.nodeIds : [];
-  const selectedNodes = selectedNodeIds
+  const selectedNodes = resolveUnlockedSelectionNodes(snapshot, slideId, selectedNodeIds);
+  if (selectedNodes.length === 0) {
+    return [];
+  }
+
+  const activeSelectionObjectMap = resolveActiveSelectionObjectMap(selection);
+  const selectionTransform = selection.calcTransformMatrix();
+
+  return selectedNodes
+    .map((node) => {
+      const childObject = activeSelectionObjectMap.get(node.id);
+      if (!childObject) {
+        return null;
+      }
+
+      const patch = resolveActiveSelectionNodePatch(node, childObject, selectionTransform);
+      return patch ? { nodeId: node.id, patch } : null;
+    })
+    .filter(
+      (
+        entry,
+      ): entry is {
+        nodeId: string;
+        patch: NodePatch;
+      } => Boolean(entry),
+    );
+}
+
+/** 从标准快照里解析当前多选中仍可编辑的节点，避免把锁定对象写回到批量命令里。 */
+function resolveUnlockedSelectionNodes(
+  snapshot: EditorSnapshot,
+  slideId: string,
+  selectedNodeIds: string[],
+): CoursewareNode[] {
+  return selectedNodeIds
     .map((nodeId) => findNode(snapshot, slideId, nodeId))
     .filter((node): node is CoursewareNode => {
       if (!node) {
@@ -230,15 +263,97 @@ export function resolveActiveSelectionNodeTranslations(
 
       return !node.locked;
     });
-  const translation = resolveActiveSelectionTranslation(selection, selectedNodes);
+}
 
-  return translation
-    ? selectedNodes.map((node) => ({
-        nodeId: node.id,
-        x: node.x + translation.deltaX,
-        y: node.y + translation.deltaY,
-      }))
-    : [];
+/** 建立当前 ActiveSelection 内节点 id 到 Fabric 子对象的映射，便于后续逐个回写几何。 */
+function resolveActiveSelectionObjectMap(
+  selection: ActiveSelection,
+): Map<string, FabricNodeObject> {
+  const activeSelectionObjects = selection
+    .getObjects()
+    .map((object) => {
+      const meta = readNodeMeta(object as FabricNodeObject);
+      if (!meta) {
+        return null;
+      }
+
+      return {
+        nodeId: meta.nodeId,
+        object: object as FabricNodeObject,
+      };
+    })
+    .filter(
+      (
+        entry,
+      ): entry is {
+        nodeId: string;
+        object: FabricNodeObject;
+      } => Boolean(entry),
+    );
+
+  return new Map(activeSelectionObjects.map((entry) => [entry.nodeId, entry.object]));
+}
+
+/** 把 ActiveSelection 内的子对象还原到画布坐标系，并转成标准节点补丁。 */
+function resolveActiveSelectionNodePatch(
+  previousNode: CoursewareNode,
+  childObject: FabricNodeObject,
+  selectionTransform: TMat2D,
+): NodePatch | null {
+  const absoluteTransform = util.multiplyTransformMatrices(
+    selectionTransform,
+    childObject.calcOwnMatrix(),
+  );
+  const decomposedTransform = util.qrDecompose(absoluteTransform);
+  const centerPoint = new Point(
+    decomposedTransform.translateX,
+    decomposedTransform.translateY,
+  );
+  const width = round((childObject.width ?? previousNode.width) * Math.abs(decomposedTransform.scaleX));
+  const height = round(
+    (childObject.height ?? previousNode.height) * Math.abs(decomposedTransform.scaleY),
+  );
+  const angle = round(decomposedTransform.angle ?? 0);
+  const rotatedLeftTop = resolveTopLeftFromCenter(centerPoint, width, height, angle);
+  const patch: NodePatch = {
+    x: round(rotatedLeftTop.x),
+    y: round(rotatedLeftTop.y),
+    width,
+    height,
+    rotation: angle,
+  };
+
+  return isNodeGeometryPatchChanged(previousNode, patch) ? patch : null;
+}
+
+/** 判断本次批量变换是否真的改变了节点几何，避免无效历史记录。 */
+function isNodeGeometryPatchChanged(
+  previousNode: CoursewareNode,
+  patch: NodePatch,
+): boolean {
+  return (
+    patch.x !== previousNode.x ||
+    patch.y !== previousNode.y ||
+    patch.width !== previousNode.width ||
+    patch.height !== previousNode.height ||
+    patch.rotation !== previousNode.rotation
+  );
+}
+
+/** 根据中心点、尺寸和角度反推编辑器统一使用的 left/top 原点。 */
+function resolveTopLeftFromCenter(
+  centerPoint: Point,
+  width: number,
+  height: number,
+  angle: number,
+): Point {
+  const radians = (angle * Math.PI) / 180;
+  const offsetX = width / 2;
+  const offsetY = height / 2;
+  const rotatedOffsetX = offsetX * Math.cos(radians) - offsetY * Math.sin(radians);
+  const rotatedOffsetY = offsetX * Math.sin(radians) + offsetY * Math.cos(radians);
+
+  return new Point(centerPoint.x - rotatedOffsetX, centerPoint.y - rotatedOffsetY);
 }
 
 /** 从 Fabric 文本对象中提取需要回写的文本变更。 */

@@ -3,7 +3,7 @@ import {
   findNode,
   readNodeMeta,
   readObjectGeometry,
-  resolveActiveSelectionNodeTranslations,
+  resolveActiveSelectionNodePatches,
   resolveCanvasSelectionNodeIds,
   type FabricNodeObject,
 } from "../editor-adapter-support";
@@ -235,7 +235,7 @@ export function scheduleSelectionRestore(
   }, 0);
 }
 
-/** 处理多选整体变换结束后的文档回写，确保批量拖拽只生成一次历史记录。 */
+/** 处理多选整体变换结束后的文档回写，确保批量拖拽 / 旋转 / 缩放只生成一次历史记录。 */
 function handleActiveSelectionModified(
   context: FabricEditorAdapterContext,
   event: ModifiedEvent,
@@ -245,13 +245,8 @@ function handleActiveSelectionModified(
     return;
   }
 
-  const action = readTransformAction(event);
-  if (isSelectionTransformAction(action)) {
-    return;
-  }
-
   clearRetainedSelection(context);
-  const translatedNodes = resolveActiveSelectionNodeTranslations(
+  const translatedNodes = resolveActiveSelectionNodePatches(
     context.controller.getSnapshot(),
     context.currentSlideId,
     target,
@@ -429,16 +424,6 @@ function syncContextMenuSelection(
 /** 统一读取 Fabric 当前变换动作名。 */
 function readTransformAction(event: ModifiedEvent): string {
   return (event.action ?? event.transform?.action ?? "").toLowerCase();
-}
-
-/** 判断多选整体变换是否属于不应回写平移结果的缩放/旋转类动作。 */
-function isSelectionTransformAction(action: string): boolean {
-  return (
-    action.includes("scale") ||
-    action.includes("resiz") ||
-    action.includes("skew") ||
-    action.includes("rotate")
-  );
 }
 
 /** 缩放动作的命中标识并不稳定，这里统一收口判断逻辑。 */

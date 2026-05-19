@@ -46,11 +46,19 @@ export interface AdapterNodeTranslation {
   y: number;
 }
 
-/** 多选整体拖拽结束后，一次性上报所有节点的位移结果。 */
+/** 一次批量几何更新里的单个节点补丁。 */
+export interface AdapterNodeBatchPatch {
+  /** 需要回写的节点 id。 */
+  nodeId: string;
+  /** 节点新的标准补丁。 */
+  patch: NodePatch;
+}
+
+/** 多选整体变换结束后，一次性上报所有节点的几何结果。 */
 export interface AdapterNodesTranslatedEvent {
   type: "adapter.nodes.translated";
   slideId: string;
-  updates: AdapterNodeTranslation[];
+  updates: AdapterNodeBatchPatch[];
 }
 
 export interface AdapterNodeResizedEvent {

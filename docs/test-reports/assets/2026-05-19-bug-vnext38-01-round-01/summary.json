@@ -1,0 +1,134 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-05-19T06:23:54.188Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "targetRotation": 32,
+  "dragDelta": {
+    "x": 72,
+    "y": 44
+  },
+  "checks": [
+    {
+      "id": "after-rotate",
+      "rotatedGeometries": [
+        {
+          "id": "bug-vnext38-01-primary-rect",
+          "x": 180.318,
+          "y": 181.378,
+          "width": 180,
+          "height": 120,
+          "rotation": 32
+        },
+        {
+          "id": "bug-vnext38-01-secondary-rect",
+          "x": 360.535,
+          "y": 364.741,
+          "width": 200,
+          "height": 100,
+          "rotation": 32
+        }
+      ],
+      "persistedRotatedGeometries": [
+        {
+          "id": "bug-vnext38-01-primary-rect",
+          "x": 180.318,
+          "y": 181.378,
+          "width": 180,
+          "height": 120,
+          "rotation": 32
+        },
+        {
+          "id": "bug-vnext38-01-secondary-rect",
+          "x": 360.535,
+          "y": 364.741,
+          "width": 200,
+          "height": 100,
+          "rotation": 32
+        }
+      ]
+    },
+    {
+      "id": "after-drag",
+      "expectedGeometriesAfterDrag": [
+        {
+          "id": "bug-vnext38-01-primary-rect",
+          "x": 252.318,
+          "y": 225.378,
+          "width": 180,
+          "height": 120,
+          "rotation": 32
+        },
+        {
+          "id": "bug-vnext38-01-secondary-rect",
+          "x": 360.535,
+          "y": 364.741,
+          "width": 200,
+          "height": 100,
+          "rotation": 32
+        }
+      ],
+      "geometriesAfterDrag": [
+        {
+          "id": "bug-vnext38-01-primary-rect",
+          "x": 252.318,
+          "y": 225.378,
+          "width": 180,
+          "height": 120,
+          "rotation": 32
+        },
+        {
+          "id": "bug-vnext38-01-secondary-rect",
+          "x": 360.535,
+          "y": 364.741,
+          "width": 200,
+          "height": 100,
+          "rotation": 32
+        }
+      ],
+      "persistedGeometriesAfterDrag": [
+        {
+          "id": "bug-vnext38-01-primary-rect",
+          "x": 252.318,
+          "y": 225.378,
+          "width": 180,
+          "height": 120,
+          "rotation": 32
+        },
+        {
+          "id": "bug-vnext38-01-secondary-rect",
+          "x": 360.535,
+          "y": 364.741,
+          "width": 200,
+          "height": 100,
+          "rotation": 32
+        }
+      ]
+    },
+    {
+      "id": "after-reload",
+      "reloadedGeometries": [
+        {
+          "id": "bug-vnext38-01-primary-rect",
+          "x": 252.318,
+          "y": 225.378,
+          "width": 180,
+          "height": 120,
+          "rotation": 32
+        },
+        {
+          "id": "bug-vnext38-01-secondary-rect",
+          "x": 360.535,
+          "y": 364.741,
+          "width": 200,
+          "height": 100,
+          "rotation": 32
+        }
+      ]
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": []
+}

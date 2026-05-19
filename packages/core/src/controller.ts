@@ -1,4 +1,9 @@
-import { COMMAND_TYPES, type CommandEnvelope, type CommandSource, type EditorCommand } from "./commands";
+import {
+  COMMAND_TYPES,
+  type CommandEnvelope,
+  type CommandSource,
+  type EditorCommand,
+} from "./commands";
 import type { AdapterEvent } from "./events";
 import type { CoursewareDocument, EditorSnapshot } from "./schema";
 import { createCommandEnvelope, createCoursewareDocument } from "./factories";
@@ -171,10 +176,7 @@ function createTranslatedNodesCommand(
     slideId: event.slideId,
     updates: event.updates.map((update) => ({
       nodeId: update.nodeId,
-      patch: {
-        x: update.x,
-        y: update.y,
-      },
+      patch: update.patch,
     })),
   };
 }

@@ -63,6 +63,7 @@
     "test:bug-preview-single-slide-card-height": "node test/bug-preview-single-slide-card-height/round-01.mjs",
     "test:bug-sidebar-handle-offset-on-zoom": "node test/bug-sidebar-handle-offset-on-zoom/round-01.mjs",
     "test:bug-rotate-drift": "node test/bug-rotate-drift/round-01.mjs",
+    "test:bug-vnext38-01": "node test/bug-vnext38-01/round-01.mjs",
     "test:bug-editor-visible-after-drag": "node test/bug-editor-visible-after-drag/round-01.mjs",
     "test:bug-image-inspector-overflow": "node test/bug-image-inspector-overflow/round-01.mjs"
   },

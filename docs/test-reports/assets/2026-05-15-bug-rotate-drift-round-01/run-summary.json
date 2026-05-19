@@ -1,6 +1,6 @@
 {
   "baseUrl": "http://127.0.0.1:32173/projects",
-  "executedAt": "2026-05-15T11:01:22.407Z",
+  "executedAt": "2026-05-19T05:51:58.164Z",
   "desktopViewport": {
     "width": 1440,
     "height": 900
@@ -24,7 +24,7 @@
     {
       "id": "after-rotate",
       "expectedGeometry": {
-        "nodeId": "node-c9c68c8f-95a7-46cf-b70e-5afdaee0c196",
+        "nodeId": "node-a8afb010-066e-48fc-a8c8-de662ca7d8de",
         "x": 206,
         "y": 208,
         "rotation": 33
@@ -32,7 +32,7 @@
       "rotateRuntimeState": {
         "preservedObjectIdentity": true,
         "preservedSingleSelection": true,
-        "activeNodeId": "node-c9c68c8f-95a7-46cf-b70e-5afdaee0c196"
+        "activeNodeId": "node-a8afb010-066e-48fc-a8c8-de662ca7d8de"
       },
       "snapshotGeometry": {
         "x": 206,
@@ -52,7 +52,7 @@
     {
       "id": "after-reload",
       "expectedGeometry": {
-        "nodeId": "node-c9c68c8f-95a7-46cf-b70e-5afdaee0c196",
+        "nodeId": "node-a8afb010-066e-48fc-a8c8-de662ca7d8de",
         "x": 206,
         "y": 208,
         "rotation": 33
