@@ -1,5 +1,6 @@
-import type { ActiveSelection, Canvas, ModifiedEvent } from "fabric";
+import { ActiveSelection, type Canvas, type ModifiedEvent } from "fabric";
 import type { FabricNodeObject } from "./editor-adapter-support";
+import { applyActiveSelectionInteractionPolicy } from "./editor-adapter-support";
 
 /** 编辑态画布事件注册所需的回调集合。 */
 interface RegisterEditorCanvasEventsHandlers {
@@ -33,12 +34,14 @@ export function registerEditorCanvasEvents(
   canvas: Canvas,
   handlers: RegisterEditorCanvasEventsHandlers,
 ): void {
-  canvas.on("selection:created", () => {
+  canvas.on("selection:created", (event) => {
+    applyActiveSelectionPolicyIfNeeded(event.selected);
     handlers.clearAlignmentGuides();
     handlers.emitSelectionChange();
   });
 
-  canvas.on("selection:updated", () => {
+  canvas.on("selection:updated", (event) => {
+    applyActiveSelectionPolicyIfNeeded(event.selected);
     handlers.clearAlignmentGuides();
     handlers.emitSelectionChange();
   });
@@ -99,4 +102,24 @@ export function registerEditorCanvasEvents(
       event.e,
     );
   });
+}
+
+/**
+ * 当 Fabric 刚形成多选态时，立即补齐统一的多选交互策略。
+ * 这样无论多选来自框选、Shift 点选还是标准选中态回灌，都会一致禁用旋转手柄。
+ */
+function applyActiveSelectionPolicyIfNeeded(
+  selectedObjects: FabricNodeObject[] | undefined,
+): void {
+  if (!selectedObjects || selectedObjects.length <= 1) {
+    return;
+  }
+
+  const [firstSelectedObject] = selectedObjects;
+  const activeSelection = firstSelectedObject?.canvas?.getActiveObject?.();
+  if (!(activeSelection instanceof ActiveSelection)) {
+    return;
+  }
+
+  applyActiveSelectionInteractionPolicy(activeSelection);
 }

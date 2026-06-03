@@ -1,4 +1,10 @@
 import type { EditorCommand } from "./commands";
+import {
+  createDefaultRectGradientFill,
+  createDefaultRectNodeProps,
+  createDefaultRectShadow,
+  createRectCornerRadii,
+} from "./rect-style";
 import type {
   CoursewareDocument,
   CoursewareNode,
@@ -7,7 +13,10 @@ import type {
   ImageNode,
   NodeAnimation,
   ObjectFit,
+  RectCornerRadii,
+  RectGradientFill,
   RectNode,
+  RectShadow,
   Slide,
   StepTrigger,
   TextFontStyle,
@@ -103,6 +112,13 @@ export interface CreateRectNodeOptions {
   width?: number;
   height?: number;
   fill?: string;
+  fillType?: RectNode["props"]["fillType"];
+  gradient?: RectGradientFill;
+  stroke?: string;
+  strokeWidth?: number;
+  radius?: number;
+  cornerRadii?: RectCornerRadii;
+  shadow?: RectShadow;
 }
 
 /** 创建时间轴动作时允许覆盖的字段。 */
@@ -227,6 +243,7 @@ export function createTextNode(options: CreateTextNodeOptions = {}): TextNode {
     opacity: 1,
     visible: true,
     locked: false,
+    lockAspectRatio: false,
     props: {
       text: options.text ?? "New Text",
       fontSize: options.fontSize ?? 32,
@@ -253,6 +270,7 @@ export function createImageNode(options: CreateImageNodeOptions = {}): ImageNode
     opacity: 1,
     visible: true,
     locked: false,
+    lockAspectRatio: false,
     props: {
       src: options.src ?? "",
       objectFit: options.objectFit ?? "cover",
@@ -269,6 +287,9 @@ export function createImageNode(options: CreateImageNodeOptions = {}): ImageNode
 }
 
 export function createRectNode(options: CreateRectNodeOptions = {}): RectNode {
+  const defaultProps = createDefaultRectNodeProps();
+  const radius = options.radius ?? defaultProps.radius ?? 0;
+
   return {
     id: options.id ?? createId("node"),
     type: "rect",
@@ -281,11 +302,28 @@ export function createRectNode(options: CreateRectNodeOptions = {}): RectNode {
     opacity: 1,
     visible: true,
     locked: false,
+    lockAspectRatio: false,
     props: {
-      fill: options.fill ?? "#DCE8FF",
-      stroke: "#4B7BE5",
-      strokeWidth: 1,
-      radius: 16,
+      fill: options.fill ?? defaultProps.fill,
+      fillType: options.fillType ?? defaultProps.fillType,
+      gradient: options.gradient
+        ? {
+            ...options.gradient,
+          }
+        : createDefaultRectGradientFill(),
+      stroke: options.stroke ?? defaultProps.stroke,
+      strokeWidth: options.strokeWidth ?? defaultProps.strokeWidth,
+      radius,
+      cornerRadii: options.cornerRadii
+        ? {
+            ...options.cornerRadii,
+          }
+        : createRectCornerRadii(radius),
+      shadow: options.shadow
+        ? {
+            ...options.shadow,
+          }
+        : undefined,
     },
   };
 }
@@ -482,9 +520,43 @@ export function cloneTimelineStep(
 }
 
 export function cloneNode<TNode extends CoursewareNode>(node: TNode): TNode {
+  const nextProps =
+    node.type === "image"
+      ? {
+          ...node.props,
+          crop: node.props.crop
+            ? {
+                ...node.props.crop,
+              }
+            : undefined,
+        }
+      : node.type === "rect"
+        ? {
+            ...node.props,
+            gradient: node.props.gradient
+              ? {
+                  ...node.props.gradient,
+                }
+              : undefined,
+            cornerRadii: node.props.cornerRadii
+              ? {
+                  ...node.props.cornerRadii,
+                }
+              : undefined,
+            shadow: node.props.shadow
+              ? {
+                  ...node.props.shadow,
+                }
+              : undefined,
+          }
+        : {
+            ...node.props,
+          };
+
   return {
     ...node,
-    props: { ...node.props },
+    lockAspectRatio: node.lockAspectRatio ?? false,
+    props: nextProps,
   };
 }
 

@@ -15,6 +15,7 @@ import {
 } from "@canvas-courseware/core";
 import { FabricFrameImage } from "./frame-image-object";
 import { loadFabricImageWithRemoteFallback } from "./image-loader";
+import { FabricShapeRect } from "./shape-rect-object";
 
 /** 编辑态控制点的可视尺寸，适当放大以改善缩放控制点的可点击性。 */
 const EDITOR_CONTROL_CORNER_SIZE = 16;
@@ -127,19 +128,15 @@ export function createFabricRectObject(
   node: RectNode,
   options: FabricNodeFactoryOptions,
 ): FabricRenderableObject {
-  const object = new Rect({
+  const object = new FabricShapeRect({
     left: node.x,
     top: node.y,
-    width: node.width,
-    height: node.height,
     angle: node.rotation,
     opacity: node.opacity,
     visible: node.visible,
-    fill: node.props.fill,
-    stroke: node.props.stroke,
-    strokeWidth: node.props.strokeWidth,
-    rx: node.props.radius,
-    ry: node.props.radius,
+    width: node.width,
+    height: node.height,
+    rectProps: node.props,
     ...createNodeInteractionOptions(node, options),
     originX: "left",
     originY: "top",
@@ -241,6 +238,7 @@ function createNodeInteractionOptions(
       hasControls: !node.locked,
       lockMovementX: node.locked,
       lockMovementY: node.locked,
+      lockUniScaling: node.lockAspectRatio,
       /**
        * 放大编辑态控制点与命中区域，降低缩放控制点“看得见但点不中”的概率。
        * 这不会改变文档模型，只影响编辑画布中的交互可达性。

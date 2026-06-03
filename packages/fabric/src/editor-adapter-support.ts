@@ -105,14 +105,34 @@ export function applySelectionToCanvas(
   if (selectedObjects.length === 1) {
     canvas.setActiveObject(selectedObjects[0]);
   } else if (selectedObjects.length > 1) {
+    const activeSelection = new ActiveSelection(selectedObjects, {
+      canvas,
+    });
+    applyActiveSelectionInteractionPolicy(activeSelection);
     canvas.setActiveObject(
-      new ActiveSelection(selectedObjects, {
-        canvas,
-      }),
+      activeSelection,
     );
   }
 
   canvas.renderAll();
+}
+
+/**
+ * 统一收口编辑态多选控制框的交互策略。
+ * 当前先禁用 ActiveSelection 旋转，避免继续暴露尚未稳定的多选旋转链路。
+ */
+export function applyActiveSelectionInteractionPolicy(selection: ActiveSelection): void {
+  const activeSelection = selection as ActiveSelection & {
+    lockRotation?: boolean;
+    setControlsVisibility?: (options: Record<string, boolean>) => void;
+    setCoords?: () => void;
+  };
+
+  activeSelection.lockRotation = true;
+  activeSelection.setControlsVisibility?.({
+    mtr: false,
+  });
+  activeSelection.setCoords?.();
 }
 
 /** 判断当前 Fabric 选中对象列表是否已与标准 selection 对应的对象列表完全一致。 */

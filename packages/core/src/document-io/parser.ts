@@ -1,4 +1,9 @@
 import { COURSEWARE_SCHEMA_VERSION } from "../schema";
+import {
+  createDefaultRectGradientFill,
+  createDefaultRectShadow,
+  createRectCornerRadii,
+} from "../rect-style";
 import type {
   AnimationKind,
   CoursewareDocument,
@@ -8,8 +13,11 @@ import type {
   ImageNodeProps,
   ImageCrop,
   ObjectFit,
+  RectCornerRadii,
+  RectGradientFill,
   RectNode,
   RectNodeProps,
+  RectShadow,
   Slide,
   StepTrigger,
   TextAlign,
@@ -158,6 +166,7 @@ function parseNode(value: unknown, path: string): CoursewareNode {
     opacity: readNumber(nodeRecord, "opacity", `${path}.opacity`, 0, 1),
     visible: readBoolean(nodeRecord, "visible", `${path}.visible`),
     locked: readBoolean(nodeRecord, "locked", `${path}.locked`),
+    lockAspectRatio: readBoolean(nodeRecord, "lockAspectRatio", `${path}.lockAspectRatio`),
   } as const;
 
   if (nodeType === "text") {
@@ -252,12 +261,81 @@ function parseOptionalImageCrop(value: unknown, path: string): ImageCrop | undef
  */
 function parseRectNodeProps(value: unknown, path: string): RectNodeProps {
   const propsRecord = expectRecord(value, path);
+  const radius =
+    readOptionalNumber(propsRecord, "radius", `${path}.radius`, 0, 100) ?? 0;
+  const fillType =
+    readOptionalEnum<NonNullable<RectNodeProps["fillType"]>>(
+      propsRecord,
+      "fillType",
+      `${path}.fillType`,
+      ["solid", "linear-gradient"],
+    ) ?? "solid";
+  const gradient = parseOptionalRectGradient(propsRecord.gradient, `${path}.gradient`);
+  const cornerRadii = parseOptionalRectCornerRadii(propsRecord.cornerRadii, `${path}.cornerRadii`);
+  const shadow = parseOptionalRectShadow(propsRecord.shadow, `${path}.shadow`);
 
   return {
     fill: readString(propsRecord, "fill", `${path}.fill`),
+    fillType,
+    gradient: gradient ?? createDefaultRectGradientFill(),
     stroke: readOptionalString(propsRecord, "stroke", `${path}.stroke`),
     strokeWidth: readOptionalNumber(propsRecord, "strokeWidth", `${path}.strokeWidth`, 0),
-    radius: readOptionalNumber(propsRecord, "radius", `${path}.radius`, 0),
+    radius,
+    cornerRadii: cornerRadii ?? createRectCornerRadii(radius),
+    shadow,
+  };
+}
+
+/** 解析矩形线性渐变配置。 */
+function parseOptionalRectGradient(
+  value: unknown,
+  path: string,
+): RectGradientFill | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  const gradientRecord = expectRecord(value, path);
+  return {
+    from: readString(gradientRecord, "from", `${path}.from`),
+    to: readString(gradientRecord, "to", `${path}.to`),
+    angle: readNumber(gradientRecord, "angle", `${path}.angle`, -360, 360),
+  };
+}
+
+/** 解析矩形四角圆角配置。 */
+function parseOptionalRectCornerRadii(
+  value: unknown,
+  path: string,
+): RectCornerRadii | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  const radiiRecord = expectRecord(value, path);
+  return {
+    topLeft: readNumber(radiiRecord, "topLeft", `${path}.topLeft`, 0, 100),
+    topRight: readNumber(radiiRecord, "topRight", `${path}.topRight`, 0, 100),
+    bottomRight: readNumber(radiiRecord, "bottomRight", `${path}.bottomRight`, 0, 100),
+    bottomLeft: readNumber(radiiRecord, "bottomLeft", `${path}.bottomLeft`, 0, 100),
+  };
+}
+
+/** 解析矩形阴影配置。 */
+function parseOptionalRectShadow(
+  value: unknown,
+  path: string,
+): RectShadow | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  const shadowRecord = expectRecord(value, path);
+  return {
+    color: readString(shadowRecord, "color", `${path}.color`),
+    offsetX: readNumber(shadowRecord, "offsetX", `${path}.offsetX`, -200, 200),
+    offsetY: readNumber(shadowRecord, "offsetY", `${path}.offsetY`, -200, 200),
+    blur: readNumber(shadowRecord, "blur", `${path}.blur`, 0, 200),
   };
 }
 

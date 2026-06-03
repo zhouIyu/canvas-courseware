@@ -7,6 +7,7 @@ export * from "./factories";
 export * from "./image-layout";
 export * from "./local-asset";
 export * from "./reducer";
+export * from "./rect-style";
 export * from "./schema";
 export * from "./store";
 export * from "./timeline-helpers";

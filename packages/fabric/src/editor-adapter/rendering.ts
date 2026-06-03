@@ -13,6 +13,7 @@ import {
   type FabricNodeObject,
 } from "../editor-adapter-support";
 import { FabricFrameImage } from "../frame-image-object";
+import { FabricShapeRect } from "../shape-rect-object";
 import type { FabricEditorAdapterContext } from "./context";
 import { clearSelectionRestoreTimer } from "./selection";
 import { clearEditorAlignmentGuides } from "./alignment";
@@ -154,9 +155,31 @@ function canSyncExistingEditorNode(
     return false;
   }
 
+  if (previousNode.type === "rect" && nextNode.type === "rect") {
+    return canSyncExistingRectNode(previousNode, nextNode);
+  }
+
   return (
     previousNode.type !== "image" ||
     (nextNode.type === "image" && previousNode.props.src === nextNode.props.src)
+  );
+}
+
+/** 复杂矩形样式允许直接触发整页重渲染，避免 path/包围盒同步不完整。 */
+function canSyncExistingRectNode(
+  previousNode: Extract<CoursewareNode, { type: "rect" }>,
+  nextNode: Extract<CoursewareNode, { type: "rect" }>,
+): boolean {
+  const previousHasComplexCorners = Boolean(previousNode.props.cornerRadii);
+  const nextHasComplexCorners = Boolean(nextNode.props.cornerRadii);
+  const previousHasGradient = previousNode.props.fillType === "linear-gradient";
+  const nextHasGradient = nextNode.props.fillType === "linear-gradient";
+
+  return (
+    !previousHasComplexCorners &&
+    !nextHasComplexCorners &&
+    !previousHasGradient &&
+    !nextHasGradient
   );
 }
 
@@ -207,6 +230,7 @@ function applyCommonNodeObjectFields(
     hasControls: !node.locked,
     lockMovementX: node.locked,
     lockMovementY: node.locked,
+    lockUniScaling: node.lockAspectRatio,
     scaleX: 1,
     scaleY: 1,
   });
@@ -229,11 +253,20 @@ function applyTextNodeObjectFields(
   });
 }
 
-/** 把矩形节点的填充、描边和圆角同步回现有 Rect。 */
+/** 把矩形节点的填充、描边和圆角同步回现有矩形对象。 */
 function applyRectNodeObjectFields(
   targetObject: FabricNodeObject,
   node: Extract<CoursewareNode, { type: "rect" }>,
 ): void {
+  if (targetObject instanceof FabricShapeRect) {
+    targetObject.syncRectLayout({
+      width: node.width,
+      height: node.height,
+      rectProps: node.props,
+    });
+    return;
+  }
+
   targetObject.set?.({
     fill: node.props.fill,
     stroke: node.props.stroke,

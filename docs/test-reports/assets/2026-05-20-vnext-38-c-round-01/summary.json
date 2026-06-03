@@ -1,0 +1,146 @@
+{
+  "baseUrl": "http://127.0.0.1:32173/projects",
+  "executedAt": "2026-06-03T07:25:28.049Z",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "targetRectStyle": {
+    "x": 310,
+    "y": 190,
+    "width": 380,
+    "height": 220,
+    "opacityPercent": 72,
+    "rotation": 24,
+    "fillTypeLabel": "线性渐变",
+    "fillType": "linear-gradient",
+    "gradient": {
+      "from": "#F97316",
+      "to": "#0EA5E9",
+      "angle": 42
+    },
+    "stroke": "#111827",
+    "strokeWidth": 5,
+    "cornerRadii": {
+      "topLeft": 36,
+      "topRight": 8,
+      "bottomRight": 48,
+      "bottomLeft": 18
+    },
+    "shadow": {
+      "color": "#0F172A",
+      "offsetX": 12,
+      "offsetY": 16,
+      "blur": 28
+    }
+  },
+  "checks": [
+    {
+      "id": "stored-rect-node-after-edit",
+      "rectNode": {
+        "id": "node-a2f119b8-571f-41a5-ba49-c5e819038e85",
+        "type": "rect",
+        "name": "Rectangle",
+        "x": 310,
+        "y": 190,
+        "width": 380,
+        "height": 220,
+        "rotation": 24,
+        "opacity": 0.72,
+        "visible": true,
+        "locked": false,
+        "props": {
+          "fill": "#99F6E4",
+          "fillType": "linear-gradient",
+          "gradient": {
+            "from": "#F97316",
+            "to": "#0EA5E9",
+            "angle": 42
+          },
+          "stroke": "#111827",
+          "strokeWidth": 5,
+          "radius": 36,
+          "cornerRadii": {
+            "topLeft": 36,
+            "topRight": 8,
+            "bottomRight": 48,
+            "bottomLeft": 18
+          },
+          "shadow": {
+            "color": "#0F172A",
+            "offsetX": 12,
+            "offsetY": 16,
+            "blur": 28
+          }
+        }
+      },
+      "renderStateAfterEdit": {
+        "constructorName": "FabricShapeRect",
+        "rectFillType": "linear-gradient",
+        "rectCornerRadii": {
+          "topLeft": 36,
+          "topRight": 8,
+          "bottomRight": 48,
+          "bottomLeft": 18
+        },
+        "rectShadow": {
+          "color": "#0F172A",
+          "offsetX": 12,
+          "offsetY": 16,
+          "blur": 28
+        },
+        "shadowColor": "#0F172A",
+        "width": 380,
+        "height": 220
+      }
+    },
+    {
+      "id": "preview-pixel-after-edit",
+      "previewPixel": {
+        "samplePoint": {
+          "x": 500,
+          "y": 300
+        },
+        "pixel": [
+          150,
+          128,
+          105,
+          255
+        ]
+      }
+    },
+    {
+      "id": "reloaded-inspector-values",
+      "reloadedFillTypeLabel": "线性渐变",
+      "reloadedRotationValue": "24",
+      "reloadedOpacityValue": "72",
+      "reloadedGradientAngleValue": "42",
+      "reloadedTopLeftRadiusValue": "36",
+      "reloadedShadowOffsetXValue": "12",
+      "reloadedShadowChecked": true,
+      "reloadedUniformRadiusChecked": false,
+      "renderStateAfterReload": {
+        "constructorName": "FabricShapeRect",
+        "rectFillType": "linear-gradient",
+        "rectCornerRadii": {
+          "topLeft": 36,
+          "topRight": 8,
+          "bottomRight": 48,
+          "bottomLeft": 18
+        },
+        "rectShadow": {
+          "color": "#0F172A",
+          "offsetX": 12,
+          "offsetY": 16,
+          "blur": 28
+        },
+        "shadowColor": "#0F172A",
+        "width": 380,
+        "height": 220
+      }
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "result": "passed"
+}

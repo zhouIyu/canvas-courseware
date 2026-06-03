@@ -19,6 +19,7 @@ import {
 } from "../shared";
 import EmptyState from "../shared/EmptyState.vue";
 import InspectorImageSection from "./InspectorImageSection.vue";
+import InspectorRectSection from "./InspectorRectSection.vue";
 import InspectorTextSection from "./InspectorTextSection.vue";
 
 /** 属性面板需要的只读状态输入。 */
@@ -79,6 +80,9 @@ const hasSingleSelection = computed(
 const hasMultipleSelection = computed(() => props.selectedCount > 1);
 
 /** 当前节点的透明度百分比。 */
+/** 当前节点是否锁定宽高比。 */
+const nodeLockAspectRatio = computed(() => (props.selectedNode as any)?.lockAspectRatio ?? false);
+
 const nodeOpacityPercent = computed(() =>
   props.selectedNode ? Math.round(props.selectedNode.opacity * 100) : 100,
 );
@@ -181,9 +185,24 @@ const handleNodeBaseNumberChange = (
   }
 
   const minimum = field === "width" || field === "height" ? 1 : Number.NEGATIVE_INFINITY;
-  updateNode({
-    [field]: readNumberInputValue(value, props.selectedNode[field], minimum),
-  });
+  const rawValue = readNumberInputValue(value, props.selectedNode[field], minimum);
+  const patch: NodePatch = {};
+
+  if (field === "width" && nodeLockAspectRatio.value && props.selectedNode.height > 0) {
+    /* 锁定宽高比时，修改宽度后自动按比例计算高度 */
+    const aspectRatio = props.selectedNode.width / props.selectedNode.height;
+    patch.width = rawValue;
+    patch.height = Math.round(rawValue / aspectRatio);
+  } else if (field === "height" && nodeLockAspectRatio.value && props.selectedNode.width > 0) {
+    /* 锁定宽高比时，修改高度后自动按比例计算宽度 */
+    const aspectRatio = props.selectedNode.width / props.selectedNode.height;
+    patch.height = rawValue;
+    patch.width = Math.round(rawValue * aspectRatio);
+  } else {
+    patch[field] = rawValue;
+  }
+
+  updateNode(patch);
 };
 
 /** 更新节点透明度。 */
@@ -194,6 +213,17 @@ const handleNodeOpacityChange = (value: number | string | undefined) => {
 
   updateNode({
     opacity: readNumberInputValue(value, nodeOpacityPercent.value, 0) / 100,
+  });
+};
+
+/** 切换锁定宽高比状态。 */
+const handleLockAspectRatioChange = (value: boolean | string | number) => {
+  if (!props.selectedNode) {
+    return;
+  }
+
+  updateNode({
+    lockAspectRatio: readCheckedValue(value, nodeLockAspectRatio.value),
   });
 };
 
@@ -208,58 +238,6 @@ const handleNodeToggle = (
 
   updateNode({
     [field]: readCheckedValue(value, props.selectedNode[field]),
-  });
-};
-
-/** 更新矩形填充色。 */
-const handleRectFillChange = (value: string | undefined) => {
-  if (props.selectedNode?.type !== "rect") {
-    return;
-  }
-
-  updateNode({
-    props: {
-      fill: readTextInputValue(value, props.selectedNode.props.fill),
-    },
-  });
-};
-
-/** 更新矩形描边色。 */
-const handleRectStrokeChange = (value: string | undefined) => {
-  if (props.selectedNode?.type !== "rect") {
-    return;
-  }
-
-  updateNode({
-    props: {
-      stroke: readTextInputValue(value, props.selectedNode.props.stroke ?? "#0D9488"),
-    },
-  });
-};
-
-/** 更新矩形描边宽度。 */
-const handleRectStrokeWidthChange = (value: number | string | undefined) => {
-  if (props.selectedNode?.type !== "rect") {
-    return;
-  }
-
-  updateNode({
-    props: {
-      strokeWidth: readNumberInputValue(value, props.selectedNode.props.strokeWidth ?? 0, 0),
-    },
-  });
-};
-
-/** 更新矩形圆角。 */
-const handleRectRadiusChange = (value: number | string | undefined) => {
-  if (props.selectedNode?.type !== "rect") {
-    return;
-  }
-
-  updateNode({
-    props: {
-      radius: readNumberInputValue(value, props.selectedNode.props.radius ?? 0, 0),
-    },
   });
 };
 
@@ -474,6 +452,15 @@ const handleAnimationOffsetYChange = (
               @change="handleNodeToggle('locked', $event)"
             />
           </div>
+
+          <div class="toggle-field">
+            <span class="field-label">锁定宽高比</span>
+            <a-switch
+              class="field-toggle"
+              :model-value="nodeLockAspectRatio"
+              @change="handleLockAspectRatioChange"
+            />
+          </div>
         </div>
 
         <p class="group-footnote">当前透明度：{{ formatOpacityValue(selectedNode.opacity) }}</p>
@@ -485,54 +472,11 @@ const handleAnimationOffsetYChange = (
         @update-node="forwardNodeUpdate"
       />
 
-      <div v-if="selectedNode.type === 'rect'" class="group-card">
-        <div class="group-head">
-          <h4>矩形属性</h4>
-          <span class="group-badge">Rect</span>
-        </div>
-
-        <div class="field-grid">
-          <div class="field">
-            <span class="field-label">填充色</span>
-            <a-color-picker
-              class="field-input color-input"
-              :model-value="selectedNode.props.fill"
-              show-text
-              @change="handleRectFillChange"
-            />
-          </div>
-
-          <div class="field">
-            <span class="field-label">描边色</span>
-            <a-color-picker
-              class="field-input color-input"
-              :model-value="selectedNode.props.stroke ?? '#0D9488'"
-              show-text
-              @change="handleRectStrokeChange"
-            />
-          </div>
-
-          <div class="field">
-            <span class="field-label">描边宽度</span>
-            <a-input-number
-              class="field-input"
-              min="0"
-              :model-value="selectedNode.props.strokeWidth ?? 0"
-              @change="handleRectStrokeWidthChange"
-            />
-          </div>
-
-          <div class="field">
-            <span class="field-label">圆角</span>
-            <a-input-number
-              class="field-input"
-              min="0"
-              :model-value="selectedNode.props.radius ?? 0"
-              @change="handleRectRadiusChange"
-            />
-          </div>
-        </div>
-      </div>
+      <InspectorRectSection
+        v-if="selectedNode.type === 'rect'"
+        :node="selectedNode"
+        @update-node="forwardNodeUpdate"
+      />
 
       <InspectorImageSection
         v-if="selectedNode.type === 'image'"

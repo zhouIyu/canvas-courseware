@@ -222,11 +222,11 @@
 - [x] P0 `VNext-38-A` Text 元素属性增强：已为 Text 节点补齐字体选择、两端对齐、行高、透明度与旋转角度编辑入口；属性面板拆出独立 `InspectorTextSection`，文本 schema / 默认值 / 导入解析同步支持新增字段，并新增 `pnpm test:vnext-38-a` 覆盖“编辑 -> 自动保存 -> 刷新回显”链路；已通过 `pnpm typecheck`、`pnpm build` 与 `pnpm test:vnext-38-a`
 - [x] P0 `VNext-38-B` Image 元素属性增强：已为 Image 节点补齐适配方式切换、水平 / 垂直翻转与基础裁剪入口，并把图片渲染统一收口到固定 frame 模型，确保编辑态 / 预览态对 `objectFit / flip / crop` 的表现一致；属性面板拆出独立 `InspectorImageSection`，图片 schema / 默认值 / 导入解析同步支持新增字段，并新增 `pnpm test:vnext-38-b` 覆盖“编辑 -> 自动保存 -> 刷新回显 + 预览像素验证”链路；已通过 `pnpm typecheck`、`pnpm build` 与 `pnpm test:vnext-38-b`
 - [x] UI 修复：将图片裁剪从基础属性面板迁移到“选择图片 / 更换图片 / 重新裁剪”弹窗链路，避免右侧属性栏继续承载重裁剪交互；已通过 `pnpm typecheck`、`pnpm build`、`pnpm test:vnext-38-b`、`pnpm test:vnext-21`、`pnpm test:vnext-23` 与 `pnpm test:bug-image-inspector-overflow`
-- [x] P0 `BUG-VNEXT38-01` 多选旋转后拖拽回退：已将编辑态 `ActiveSelection` 的批量回写从“仅支持平移”升级为“按节点回写完整几何补丁”，修复多选统一旋转后再拖拽单节点时其他节点回退到旋转前状态的问题；已通过 `pnpm typecheck`、`pnpm build`、`pnpm test:bug-vnext38-01` 与 `pnpm test:bug-rotate-drift` 验证
+- [x] P0 `BUG-VNEXT38-01` 多选旋转后拖拽回退：当前已在编辑态统一禁用 `ActiveSelection` 多选旋转，避免继续暴露不稳定的批量旋转链路；同时保留多选拖拽与单节点旋转能力，并通过 `pnpm typecheck`、`pnpm build`、`pnpm test:bug-vnext38-01` 与 `pnpm test:bug-rotate-drift` 验证
 
 ## 待完成
 
-- [ ] P0 `VNext-38-C` Rect 元素属性增强：补齐圆角、渐变填充、透明度、旋转角度与基础阴影
+- [x] P0 `VNext-38-C` Rect 元素属性增强：补齐圆角、渐变填充、透明度、旋转角度与基础阴影
 - [ ] P0 `VNext-38-D` 通用属性与旋转手柄：补齐旋转手柄、角度输入、锁定宽高比与尺寸联动
 - [ ] P1 `VNext-38-E` 选中对象信息显示：补齐尺寸、坐标与旋转角度的实时浮动反馈
 - [ ] P1 `VNext-38-F` Tab 键切换选中与快捷键补全：补齐轮换选中、全选、层级、锁定与隐藏快捷键
@@ -244,10 +244,11 @@
 - `VNext-38` 已完成版本规划，并已同步进入当前执行池。
 - `VNext-38-A` 已完成开发、自测与回归，Text 基础属性链路已补齐。
 - `VNext-38-B` 已完成开发、自测与回归，Image 基础属性链路已补齐。
-- `BUG-VNEXT38-01` 已完成修复、自测与回归，多选统一旋转后的标准文档几何已可稳定持久化。
+- `BUG-VNEXT38-01` 已完成修复、自测与回归；当前编辑器已禁用多选旋转，避免批量旋转链路继续产生状态回退。
 - 图片裁剪交互已从基础属性区迁移到选图弹窗，当前编辑器默认通过“插入图片 / 更换图片 / 重新裁剪”进入裁剪流程。
 - `VNext-37-A / VNext-37-B / VNext-37-C / VNext-37-D / VNext-37-E / VNext-37-F / VNext-37-G / VNext-37-H` 已完成开发、自测与回归。
-- 当前建议继续推进 `VNext-38-C / D`，先补齐 Rect 基础属性，再继续通用旋转交互与尺寸联动能力。
+- `VNext-38-C` 已完成开发、自测与回归，Rect 属性面板已补齐渐变、圆角、阴影、描边与透明度控制。
+- VNext-38-D 的 lockAspectRatio 与锁宽高比联动已完成，等待测试验证。
 - 下一步等待用户 review；确认后即可切换到 `VNext-38` 的开发执行。
 - 详细版本范围与批次说明以 `docs/VNEXT.md` 为准。
 

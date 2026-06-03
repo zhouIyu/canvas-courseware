@@ -7,6 +7,41 @@ export type TextAlign = "left" | "center" | "right" | "justify";
 export type TextFontStyle = "normal" | "italic";
 export type ObjectFit = "fill" | "contain" | "cover";
 export type EasingName = "linear" | "ease-in" | "ease-out" | "ease-in-out";
+export type RectFillType = "solid" | "linear-gradient";
+
+/** 矩形渐变填充的双色定义。 */
+export interface RectGradientFill {
+  /** 当前渐变的起始颜色。 */
+  from: string;
+  /** 当前渐变的结束颜色。 */
+  to: string;
+  /** 当前线性渐变角度，按度数表达。 */
+  angle: number;
+}
+
+/** 矩形四角圆角半径配置。 */
+export interface RectCornerRadii {
+  /** 左上角圆角半径。 */
+  topLeft: number;
+  /** 右上角圆角半径。 */
+  topRight: number;
+  /** 右下角圆角半径。 */
+  bottomRight: number;
+  /** 左下角圆角半径。 */
+  bottomLeft: number;
+}
+
+/** 矩形基础阴影配置。 */
+export interface RectShadow {
+  /** 阴影颜色。 */
+  color: string;
+  /** 阴影 X 方向偏移。 */
+  offsetX: number;
+  /** 阴影 Y 方向偏移。 */
+  offsetY: number;
+  /** 阴影模糊半径。 */
+  blur: number;
+}
 
 /** 图片裁剪窗口在原始资源上的归一化描述。 */
 export interface ImageCrop {
@@ -74,6 +109,7 @@ export interface BaseNode<TType extends CoursewareNodeType, TProps> {
   opacity: number;
   visible: boolean;
   locked: boolean;
+  lockAspectRatio: boolean;
   props: TProps;
 }
 
@@ -102,9 +138,13 @@ export interface ImageNodeProps {
 
 export interface RectNodeProps {
   fill: string;
+  fillType?: RectFillType;
+  gradient?: RectGradientFill;
   stroke?: string;
   strokeWidth?: number;
   radius?: number;
+  cornerRadii?: RectCornerRadii;
+  shadow?: RectShadow;
 }
 
 export type TextNode = BaseNode<"text", TextNodeProps>;
@@ -195,6 +235,8 @@ export interface NodeBasePatch {
   opacity?: number;
   visible?: boolean;
   locked?: boolean;
+  /** 是否锁定当前节点的宽高比，编辑器缩放/尺寸编辑时保持比例。 */
+  lockAspectRatio?: boolean;
 }
 
 export type NodePatch = NodeBasePatch & {
